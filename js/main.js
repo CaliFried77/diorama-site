@@ -3,6 +3,7 @@ import './01-core-ui.js';
 import './02-news.js';
 import './03-weather.js';
 import './04-focus-audio.js';
+import './11-calendar.js';
 import './05-workspace.js';
 import './06-data-manager.js';
 import './07-habitat-state.js';
