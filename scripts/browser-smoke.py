@@ -169,7 +169,13 @@ async def assert_app_smoke(browser_type, name: str, base_url: str):
 
     # Theme toggle.
     await page.locator("#themeToggleBtn").click()
-    assert await page.evaluate("localStorage.getItem('diorama_theme') in ['light', 'dark']")
+    theme_state = await page.evaluate("""() => ({
+        stored: localStorage.getItem('diorama_theme'),
+        bodyLight: document.body.classList.contains('theme-light'),
+        label: document.querySelector('#themeModeLabel')?.textContent?.trim() || ''
+    })""")
+    assert theme_state["stored"] in ("light", "dark"), f"{name}: theme preference was not persisted: {theme_state}"
+    assert (theme_state["stored"] == "light") == theme_state["bodyLight"], f"{name}: saved theme and rendered theme differ: {theme_state}"
 
     # News categories render mocked, safe text content.
     await page.locator("#newsBtn").click()
