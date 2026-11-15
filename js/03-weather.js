@@ -105,6 +105,44 @@ import { registerWeatherPreviewRenderer } from './services.js';
         const DIRS = ['K', 'KD', 'D', 'GD', 'G', 'GB', 'B', 'KB'];
         const uvName = (u) => u < 3 ? 'Düşük' : u < 6 ? 'Orta' : u < 8 ? 'Yüksek' : u < 11 ? 'Çok yüksek' : 'Aşırı';
         const hhmm = (str) => str.slice(11, 16);
+
+        function pixelMoonMarkup(phase) {
+            const size = 9;
+            const center = 4;
+            const radius = 4.25;
+            const normalizedPhase = ((phase % 8) + 8) % 8;
+            const angle = normalizedPhase * Math.PI / 4;
+            let tiles = '';
+
+            for (let y = 0; y < size; y++) {
+                const dy = y - center;
+                const halfWidth = Math.sqrt(Math.max(0, radius * radius - dy * dy));
+                for (let x = 0; x < size; x++) {
+                    const dx = x - center;
+                    if (dx * dx + dy * dy > radius * radius) continue;
+
+                    const lit = normalizedPhase <= 4
+                        ? dx >= Math.cos(angle) * halfWidth
+                        : dx <= -Math.cos(angle) * halfWidth;
+                    const edge = [
+                        [0, -1], [1, 0], [0, 1], [-1, 0],
+                    ].some(([ox, oy]) => {
+                        const nx = dx + ox, ny = dy + oy;
+                        return nx * nx + ny * ny > radius * radius;
+                    });
+                    const highlight = lit && (x <= 3 && y <= 3);
+                    const color = edge ? '#817aa0'
+                        : highlight ? '#fff0b8'
+                            : lit ? '#f4d27c' : '#34445f';
+                    tiles += `<rect x="${x * 3}" y="${y * 3}" width="3" height="3" fill="${color}"/>`;
+                }
+            }
+
+            const sparkle = normalizedPhase === 0 || normalizedPhase === 4
+                ? '<rect x="29" y="4" width="3" height="3" fill="#c4d8f5"/><rect x="3" y="28" width="2" height="2" fill="#a9c5ec"/>'
+                : '<rect x="29" y="7" width="2" height="2" fill="#a9c5ec"/>';
+            return `<svg class="wx-pixel-moon" viewBox="0 0 36 36" width="36" height="36" shape-rendering="crispEdges" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">${tiles}${sparkle}</svg>`;
+        }
         function airQualityDescriptor(value) {
             if (value <= 20) return { label: 'İyi', tone: 'good', note: 'Hava koşulları elverişli' };
             if (value <= 40) return { label: 'Fena değil', tone: 'fair', note: 'Çoğu kişi için kabul edilebilir' };
@@ -143,7 +181,6 @@ import { registerWeatherPreviewRenderer } from './services.js';
             const uv = Math.max(0, Number(dy.uv_index_max[0]) || 0);
             const uvPct = Math.min(100, uv / 11 * 100);
             const phase = Math.round(moonPhaseNow() * 8) % 8;
-            const moonGlyphs = ['🌑', '🌒', '🌓', '🌔', '🌕', '🌖', '🌗', '🌘'];
             const live = WX.live;
             const skyPct = live ? Math.round(clamp01(live.isDay ? live.sunP : live.moonP) * 100) : 0;
             const dayState = isDay ? 'Güneş ufkun üzerinde' : 'Gece gökyüzü';
@@ -171,7 +208,7 @@ import { registerWeatherPreviewRenderer } from './services.js';
                     </section>
                     <section class="wx-moon-card">
                         <div class="wx-mini-heading"><span>AY EVRESİ</span><span>GÖKYÜZÜ</span></div>
-                        <div class="wx-moon-display"><span aria-hidden="true">${moonGlyphs[phase]}</span><strong>${moonName(moonPhaseNow())}</strong></div>
+                        <div class="wx-moon-display"><span class="wx-moon-art">${pixelMoonMarkup(phase)}</span><strong>${moonName(moonPhaseNow())}</strong></div>
                         <small>Ay döngüsündeki bugünkü konum</small>
                     </section>
                 </div>`;
