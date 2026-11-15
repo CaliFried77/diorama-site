@@ -8,9 +8,9 @@
     "test": "node scripts/build-css.mjs && node build.mjs && node --test tests/*.test.mjs",
     "security": "node scripts/security-audit.mjs",
     "build": "node scripts/build-css.mjs && node build.mjs",
-    "dev": "npx wrangler dev",
-    "deploy": "npm run build && npx wrangler deploy",
-    "deploy:dry-run": "npm run build && npx wrangler deploy --dry-run",
+    "dev": "npx --yes wrangler@4.162.0 dev",
+    "deploy": "npm run build && npx --yes wrangler@4.162.0 deploy",
+    "deploy:dry-run": "npm run build && npx --yes wrangler@4.162.0 deploy --dry-run",
     "test:news": "node --test tests/rss-api.test.mjs tests/news-system.test.mjs tests/news-backup.test.mjs",
     "test:cloudflare": "node --test tests/cloudflare-adapter.test.mjs",
     "test:browser": "npm run build && python scripts/browser-smoke.py"

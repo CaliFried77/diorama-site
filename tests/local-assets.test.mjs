@@ -15,6 +15,7 @@ const distLicense = await readFile(new URL('../dist/LICENSE', import.meta.url), 
 const distNotices = await readFile(new URL('../dist/THIRD_PARTY_NOTICES.md', import.meta.url), 'utf8');
 const build = await readFile(new URL('../build.mjs', import.meta.url), 'utf8');
 const manifest = JSON.parse(await readFile(new URL('../dist/manifest.webmanifest', import.meta.url), 'utf8'));
+const packageJson = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'));
 
 test('the page does not depend on Tailwind CDN and loads local CSS utilities including the news reader layer', () => {
   assert.equal(html.includes('cdn.tailwindcss.com'), false);
@@ -104,6 +105,7 @@ test('GitHub quality workflow is present and covers CI plus real-browser smoke t
   assert.match(workflow, /npm run check/);
   assert.match(workflow, /npm test/);
   assert.match(workflow, /npm run security/);
+  assert.match(workflow, /wrangler@4\.162\.0 deploy --dry-run/);
   assert.match(workflow, /playwright install --with-deps chromium firefox/);
   assert.match(workflow, /npm run test:browser/);
   assert.match(workflow, /permissions:\s+contents: read/);

@@ -27,7 +27,7 @@ Node.js 22 or newer is required.
 npm run dev
 ```
 
-Wrangler starts the local Worker and serves the static app and same-origin API routes. The first run may download Wrangler through `npx`.
+Wrangler `4.162.0` is pinned in the project scripts. The first run downloads that exact CLI version through `npx`; local and CI builds therefore use the same Worker toolchain.
 
 ## Validate and build
 
@@ -64,7 +64,7 @@ For a real deployment, use `npm run deploy` only after the branch, account bindi
 
 The Cloudflare migration is developed on the dedicated Git branch `migration/cloudflare-pages`. Keep `main` separate. Netlify is an archived fallback and is not part of this development branch.
 
-The Worker name is `diorama-cloudflare`. Its static assets come from `dist/`; only `/api/*` is routed through Worker code. The GitHub Actions workflow runs syntax/import checks, unit tests, the security audit, a Wrangler dry-run on the migration branch, and Chromium/Firefox browser smoke tests.
+The Worker name is `diorama-cloudflare`. Its static assets come from `dist/`; only `/api/*` is routed through Worker code. The Wrangler CLI is pinned to `4.162.0` for repeatable builds. The GitHub Actions workflow runs syntax/import checks, unit tests, the security audit, a Wrangler dry-run on the migration branch, and Chromium/Firefox browser smoke tests.
 
 See:
 

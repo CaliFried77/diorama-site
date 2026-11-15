@@ -20,18 +20,18 @@ npm install
 npm run dev
 ```
 
-Wrangler ilk çalıştırmada `npx` üzerinden indirilir. Yerel Worker / Static Assets ortamı `wrangler.toml` dosyasındaki yapılandırmayı kullanır.
+Wrangler `4.162.0` proje komutlarında sabitlenmiştir; ilk çalıştırmada `npx` bu sürümü indirir. Yerel Worker / Static Assets ortamı `wrangler.toml` dosyasındaki yapılandırmayı kullanır.
 
 ## GitHub bağlantısı ve güvenli önizleme
 
-1. Cloudflare Dashboard'da **Workers & Pages → Create → Worker** yoluyla GitHub deposunu bağla.
-2. Depo: `CaliFried77/diorama-site`.
-3. Üretim/izlenen dal olarak yalnızca `migration/cloudflare-pages` seç.
-4. Build command: `npm run build`.
-5. Worker entrypoint ve Static Assets ayarlarını `wrangler.toml` dosyasından kullan.
-6. Worker adı `diorama-cloudflare` olarak kalmalı.
-7. İlk yayın yalnızca yeni `workers.dev` önizleme adresine yapılmalı. Mevcut domain veya Netlify DNS kayıtları değiştirilmemeli.
-8. RSS API, güvenlik başlıkları, rate-limit binding'leri, cache ve tarayıcı testleri doğrulanmadan gerçek kullanıcı trafiğine geçilmemeli.
+1. Cloudflare Dashboard'da **Workers & Pages → Create application → GitHub** yoluyla depoyu bağla ve GitHub erişimini onayla.
+2. Depo: `CaliFried77/diorama-site`; proje kök dizini: `/`.
+3. Worker adı `diorama-cloudflare` olmalı; `wrangler.toml` dosyasını kaynak yapılandırma olarak kullan.
+4. **Settings → Build → Branch control** altında bu ayrı test Worker'ının izlenen/production dalını `migration/cloudflare-pages` olarak ayarla. `main` dalını seçme; o dal eski Netlify sürümünü koruyor.
+5. Build command: `npm run build`. Deploy command: `npx --yes wrangler@4.162.0 deploy`.
+6. İlk yayında yalnızca bu yeni Worker'ın `workers.dev` adresini etkin bırak. Özel domain ekleme, DNS kayıtlarını veya `diorama77.netlify.app` adresini değiştirme.
+7. Cloudflare önizlemesi hazır olduğunda gerçek RSS uç noktalarını, güvenlik başlıklarını, rate-limit binding'lerini, cache davranışını ve Firefox/Chromium kullanımını test et.
+8. Bu kontroller bitmeden `main` dalına merge veya gerçek kullanıcı domain'ine geçiş yapma.
 
 ## Rate-limit binding'leri
 
@@ -51,6 +51,8 @@ npm run security
 npm run build
 npm run deploy:dry-run
 ```
+
+`wrangler` komutları `4.162.0` sürümünü kullanır. CI'daki dry-run, gerçek dağıtım yapmadan Worker bundle ve yapılandırmasını doğrular.
 
 Önizleme ortamında ayrıca şunları dene:
 
