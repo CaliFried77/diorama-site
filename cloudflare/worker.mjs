@@ -1,5 +1,5 @@
-import { createNewsHandler } from '../netlify/functions/news.mjs';
-import { createCustomNewsHandler } from '../netlify/functions/custom-news.mjs';
+import { createNewsHandler } from '../server/news-handler.mjs';
+import { createCustomNewsHandler } from '../server/custom-news-handler.mjs';
 import { fetchAndParseFeedCloudflare } from './rss-fetch.mjs';
 
 const newsHandler = createNewsHandler({
@@ -7,10 +7,11 @@ const newsHandler = createNewsHandler({
 });
 
 const customNewsHandler = createCustomNewsHandler({
-  fetchFeed: (url, options) => fetchAndParseFeedCloudflare(url, options),
+  fetchFeed: (url) => fetchAndParseFeedCloudflare(url, { timeoutMs: 6_500 }),
 });
 
 const SECURITY_HEADERS = {
+  'Content-Security-Policy': "default-src 'none'; base-uri 'none'; frame-ancestors 'none'",
   'X-Content-Type-Options': 'nosniff',
   'Referrer-Policy': 'strict-origin-when-cross-origin',
   'X-Frame-Options': 'DENY',
@@ -47,7 +48,6 @@ async function checkRateLimit(request, limiter) {
     return jsonError('API hız sınırı yapılandırılamadı.', 503);
   }
 
-  // Cloudflare provides this header at the edge. Missing IP metadata fails closed.
   const clientIp = request.headers.get('CF-Connecting-IP')?.trim();
   if (!clientIp) return jsonError('İstemci adresi doğrulanamadı.', 503);
 
@@ -99,10 +99,8 @@ async function handleNewsRequest(request, env, ctx) {
 
   const response = await newsHandler(request);
   const headers = new Headers(response.headers);
-  const cacheable = response.status === 200 && headers.has('Netlify-CDN-Cache-Control');
-  headers.delete('Netlify-CDN-Cache-Control');
+  const cacheable = response.status === 200 && /^public\b/.test(headers.get('Cache-Control') || '');
   headers.set('X-Diorama-Cache', 'MISS');
-  if (cacheable) headers.set('Cache-Control', 'public, max-age=30');
 
   const publicResponse = applySecurityHeaders(new Response(response.body, {
     status: response.status,
@@ -142,10 +140,7 @@ export default {
 
     if (pathname === '/api/news') return handleNewsRequest(request, env, ctx);
     if (pathname === '/api/custom-news') return handleCustomNewsRequest(request, env);
-
-    if (pathname.startsWith('/api/')) {
-      return jsonError('API uç noktası bulunamadı.', 404);
-    }
+    if (pathname.startsWith('/api/')) return jsonError('API uç noktası bulunamadı.', 404);
 
     return env.ASSETS.fetch(request);
   },

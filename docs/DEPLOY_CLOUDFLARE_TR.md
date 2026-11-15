@@ -1,58 +1,73 @@
-# Diorama — Cloudflare geçişi
+# Diorama — Cloudflare Workers dağıtım rehberi
 
-Bu dosya yalnızca \`migration/cloudflare-pages\` dalındaki Cloudflare taşıma çalışmasını açıklar.
-
-## Güvenli ayrım
-
-- \`main\` dalı ve Netlify projesi mevcut haliyle korunur.
-- Netlify ayarları, DNS kayıtları ve \`diorama77.netlify.app\` adresi bu geçişin parçası değildir.
-- Cloudflare için ayrı bir Worker adı kullanılır: \`diorama-cloudflare\`.
-- Cloudflare'a bağlanırken üretim dalı olarak yalnızca \`migration/cloudflare-pages\` seçilmelidir. \`main\` seçilmemelidir.
+Bu dal yalnızca Cloudflare geçişi içindir: `migration/cloudflare-pages`. Mevcut `main` dalı ve Netlify sitesi bu çalışmanın dışında tutulur.
 
 ## Mimari
 
-Diorama'nın statik dosyaları mevcut \`npm run build\` komutuyla \`dist/\` içine üretilir. Cloudflare Workers Static Assets bu klasörü yayınlar. Worker kodu yalnızca şu iki API yolu için çalışır:
+- Statik uygulama `npm run build` ile `dist/` içine üretilir.
+- Cloudflare Workers Static Assets, `dist/` dosyalarını sunar.
+- `cloudflare/worker.mjs` yalnızca `/api/*` isteklerini işler.
+- Ortak RSS parser ve API handler'ları `server/` altındadır; Cloudflare'a özel ağ taşıması `cloudflare/rss-fetch.mjs` içindedir.
+- `_headers`, statik dosyalara güvenlik başlıklarını uygular. Worker API yanıtları kendi başlıklarını doğrudan ekler.
+- Uygulamanın offline shell Service Worker dosyası build sırasında `dist/sw.js` olarak üretilir.
 
-- \`GET /api/news\`
-- \`POST /api/custom-news\`
+## Yerel geliştirme
 
-API iş mantığı mevcut test edilmiş handler fabrikalarını kullanır. RSS HTTP taşıması Cloudflare Workers Fetch API'sine uyarlanmıştır. Her yönlendirme hedefi yeniden HTTPS olarak doğrulanır; \`global_fetch_strictly_public\` uyumluluk bayrağı da dış istekleri genel İnternet ile sınırlar. Netlify'ın DNS'e sabitleme yöntemi Cloudflare'da desteklenmeyen \`dns.lookup\` / \`https.request({ lookup })\` davranışına dayandığı için aynen taşınmaz.
+Node.js 22+:
 
-Haber API'si için Cloudflare Cache API üzerinde 4 dakikalık kenar önbelleği vardır. \`?refresh=1\` isteği önbelleği atlar. Özel RSS ekleme uç noktası önbelleğe alınmaz.
+```bash
+npm install
+npm run dev
+```
 
-İki API uç noktasının her biri IP başına yaklaşık 40 istek / 60 saniye hız sınırıyla ayrı ayrı korunur. Cloudflare Rate Limiting binding sayaçları veri merkezleri arasında yaklaşık/yerel çalışır; küresel olarak kesin bir sayaç değildir.
+Wrangler ilk çalıştırmada `npx` üzerinden indirilir. Yerel Worker / Static Assets ortamı `wrangler.toml` dosyasındaki yapılandırmayı kullanır.
 
-## Cloudflare Worker bağlantısı
+## GitHub bağlantısı ve güvenli önizleme
 
-Cloudflare hesabında proje oluşturulurken:
+1. Cloudflare Dashboard'da **Workers & Pages → Create → Worker** yoluyla GitHub deposunu bağla.
+2. Depo: `CaliFried77/diorama-site`.
+3. Üretim/izlenen dal olarak yalnızca `migration/cloudflare-pages` seç.
+4. Build command: `npm run build`.
+5. Worker entrypoint ve Static Assets ayarlarını `wrangler.toml` dosyasından kullan.
+6. Worker adı `diorama-cloudflare` olarak kalmalı.
+7. İlk yayın yalnızca yeni `workers.dev` önizleme adresine yapılmalı. Mevcut domain veya Netlify DNS kayıtları değiştirilmemeli.
+8. RSS API, güvenlik başlıkları, rate-limit binding'leri, cache ve tarayıcı testleri doğrulanmadan gerçek kullanıcı trafiğine geçilmemeli.
 
-1. **Workers & Pages → Create application → GitHub** yolunu kullan.
-2. \`CaliFried77/diorama-site\` deposunu bağla.
-3. İzlenecek dal olarak \`migration/cloudflare-pages\` seç.
-4. Kök dizini depo kökü olarak bırak.
-5. Build komutunu \`npm run build\` yap.
-6. \`wrangler.toml\` dosyasındaki Worker adı \`diorama-cloudflare\` ile Cloudflare projesinin adının aynı olduğundan emin ol.
-7. Build ortamında Node.js 22 seç.
-8. İlk dağıtımın yalnızca yeni Cloudflare Worker adresinde yapıldığını doğrula.
+## Rate-limit binding'leri
 
-Cloudflare Workers Builds, GitHub'a bağlanmış Worker için commit'lerde otomatik build ve deploy çalıştırabilir. \`wrangler.toml\` içindeki \`main\`, \`assets\`, rate-limit binding'leri ve uyumluluk ayarları bu dağıtımın yapılandırmasıdır.
+`wrangler.toml` iki ayrı binding tanımlar:
 
-## Dağıtım öncesi kontrol listesi
+- `NEWS_RATE_LIMITER`: built-in category feed API
+- `CUSTOM_NEWS_RATE_LIMITER`: user-provided feed API
 
-- [ ] \`npm run check\`
-- [ ] \`npm test\`
-- [ ] \`npm run security\`
-- [ ] Browser smoke testleri
-- [ ] \`/api/news?category=gundem\` yanıtı
-- [ ] \`/api/news?category=teknoloji\` yanıtı
-- [ ] \`/api/news?category=bilim\` yanıtı
-- [ ] \`/api/news?category=gundem&refresh=1\` önbelleği atlıyor
-- [ ] \`POST /api/custom-news\` aynı-kaynak kontrolünü uyguluyor
-- [ ] Hatalı RSS adresleri, yönlendirmeler ve büyük yanıtlar reddediliyor
-- [ ] İki hız sınırı binding'i de çalışıyor
-- [ ] Çevrimdışı mod ve Service Worker doğrulandı
-- [ ] Firefox masaüstü ve mobil boyutlarda görsel kontrol yapıldı
+Her biri 60 saniyede 40 birim olarak yapılandırılmıştır. Namespace kimlikleri Cloudflare hesabı içinde benzersiz olmalı. Cloudflare rate-limit kararları POP/lokasyon bazında yaklaşık çalışır; katı ve küresel bir kota gibi değerlendirilmemelidir.
+
+## Kontroller
+
+```bash
+npm run check
+npm test
+npm run security
+npm run build
+npm run deploy:dry-run
+```
+
+Önizleme ortamında ayrıca şunları dene:
+
+- `GET /api/news?category=gundem`
+- `GET /api/news?category=teknoloji`
+- `GET /api/news?category=bilim`
+- `GET /api/news?category=gundem&refresh=1`
+- `POST /api/custom-news` aynı kaynaklı ve hatalı Origin denemeleriyle
+- büyük istek gövdesi, HTTP URL, literal IP, local hostname ve yönlendirme reddi
+- 429 rate limit yanıtı ve eksik binding durumunda 503
+- Firefox/Chromium, Service Worker ve çevrimdışı shell
+- gerçek RSS yayıncılarının yanıtları ve Worker CPU süreleri
 
 ## Ücretsiz katman notu
 
-Workers Free için günlük istek ve istek başına CPU sınırları vardır. Statik dosyalar CDN üzerinden sunulur; Worker yalnızca \`/api/*\` rotalarında çalıştırılır. API yanıtının kenar önbelleği RSS ayrıştırma işini tekrar tekrar yapmayı azaltır. Gerçek RSS kaynakları ve CPU kullanımı yeni Worker preview adresinde doğrulanmadan Netlify yayını değiştirilmemelidir.
+Workers Free planı günlük 100.000 Worker isteği ve istek başına 10 ms CPU süresiyle sınırlar. Statik dosyalar Workers Static Assets üzerinden sunulur; Worker kodu yalnızca `/api/*` yollarında çalışır. RSS kaynaklarını paralel okumak ağ beklemesidir, ancak XML ayrıştırma CPU tüketir. Bu nedenle 14 kaynak kategorilerinin gerçek CPU süreleri preview'da ölçülmeden ücretsiz katmanda sorunsuz çalıştığı varsayılmamalıdır.
+
+## Geri dönüş
+
+Netlify'deki mevcut `main` deploy'u ve `diorama77.netlify.app` adresi değişmeden kalır. Cloudflare geçişi başarısız olursa kullanıcılar eski adrese dönebilir. Bu aşama tamamlanmadan `main` dalına merge veya Netlify ayar değişikliği yapılmaz.

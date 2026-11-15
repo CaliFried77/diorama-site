@@ -1,4 +1,4 @@
-import { normalizePublicFeedUrl, parseRssXml, MAX_FEED_BYTES } from '../netlify/lib/rss-core.mjs';
+import { normalizePublicFeedUrl, parseRssXml, MAX_FEED_BYTES } from '../server/rss-parser.mjs';
 
 const MAX_REDIRECTS = 3;
 const DEFAULT_TIMEOUT_MS = 9_000;
@@ -12,9 +12,7 @@ async function readBoundedText(response, maxBytes) {
 
   if (!response.body) {
     const text = await response.text();
-    if (new TextEncoder().encode(text).byteLength > maxBytes) {
-      throw new Error('RSS yanıtı boyut sınırını aşıyor.');
-    }
+    if (new TextEncoder().encode(text).byteLength > maxBytes) throw new Error('RSS yanıtı boyut sınırını aşıyor.');
     return text;
   }
 
@@ -52,14 +50,6 @@ async function readBoundedText(response, maxBytes) {
   }
 }
 
-/**
- * Cloudflare-specific RSS transport.
- *
- * It deliberately uses the Workers Fetch API instead of node:dns.lookup and
- * node:https custom lookup. The global_fetch_strictly_public compatibility flag
- * in wrangler.toml keeps outbound fetches on the public Internet. Redirects are
- * followed manually so every destination is revalidated as HTTPS.
- */
 export async function fetchAndParseFeedCloudflare(value, {
   fetchImpl = fetch,
   timeoutMs = DEFAULT_TIMEOUT_MS,
@@ -81,7 +71,7 @@ export async function fetchAndParseFeedCloudflare(value, {
           headers: {
             Accept: 'application/rss+xml, application/atom+xml, application/xml, text/xml;q=0.9, */*;q=0.5',
             'Accept-Encoding': 'identity',
-            'User-Agent': 'DioramaRSS/1.6.6 (+https feed reader)',
+            'User-Agent': 'DioramaRSS/2.0.0-dev.1 (+https feed reader)',
           },
         });
       } catch {
@@ -94,13 +84,9 @@ export async function fetchAndParseFeedCloudflare(value, {
         await response.body?.cancel().catch(() => {});
         if (!location) throw new Error('RSS kaynağı geçersiz yönlendirme döndürdü.');
         if (redirects === MAX_REDIRECTS) throw new Error('RSS kaynağı çok fazla yönlendirme yaptı.');
-
         let nextUrl;
-        try {
-          nextUrl = normalizePublicFeedUrl(new URL(location, url).href);
-        } catch {
-          nextUrl = null;
-        }
+        try { nextUrl = normalizePublicFeedUrl(new URL(location, url).href); }
+        catch { nextUrl = null; }
         if (!nextUrl) throw new Error('RSS yönlendirmesi güvenli bir HTTPS adresine gitmiyor.');
         url = nextUrl;
         continue;
@@ -112,9 +98,8 @@ export async function fetchAndParseFeedCloudflare(value, {
       }
 
       let xml;
-      try {
-        xml = await readBoundedText(response, maxBytes);
-      } catch (error) {
+      try { xml = await readBoundedText(response, maxBytes); }
+      catch (error) {
         if (controller.signal.aborted) throw new Error('RSS kaynağı zaman aşımına uğradı.');
         throw error;
       }

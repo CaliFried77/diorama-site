@@ -56,7 +56,7 @@ test('service worker installs all local app-shell assets and claims the page', a
   assert.ok(worker.added.some((path) => path.endsWith('/licenses/fonts/Inter-OFL.txt')));
   assert.ok(worker.added.every((path) => path.startsWith('https://diorama.test/')));
   assert.match(source, /cache:\s*'reload'/);
-  assert.match(source, /living-pixel-diorama-shell-1\.6\.6-[a-f0-9]{16}/);
+  assert.match(source, /living-pixel-diorama-shell-2\.0\.0-dev\.1-[a-f0-9]{16}/);
   assert.ok(worker.skipped);
 
   let activatePromise;

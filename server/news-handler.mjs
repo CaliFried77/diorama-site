@@ -1,5 +1,4 @@
-import { NEWS_CATEGORIES, NEWS_CATEGORY_IDS } from '../../config/news-feeds.js';
-import { fetchAndParseFeed } from '../lib/rss-core.mjs';
+import { NEWS_CATEGORIES, NEWS_CATEGORY_IDS } from '../config/news-feeds.js';
 
 const NO_CACHE_HEADERS = {
   'Content-Type': 'application/json; charset=utf-8',
@@ -10,7 +9,6 @@ const NO_CACHE_HEADERS = {
 const CACHE_HEADERS = {
   'Content-Type': 'application/json; charset=utf-8',
   'Cache-Control': 'public, max-age=30',
-  'Netlify-CDN-Cache-Control': 'public, durable, max-age=240, stale-while-revalidate=300',
   'X-Content-Type-Options': 'nosniff',
 };
 
@@ -18,9 +16,13 @@ function json(data, status = 200, headers = CACHE_HEADERS) {
   return new Response(JSON.stringify(data), { status, headers });
 }
 
-export function createNewsHandler({ fetchFeed = (source) => fetchAndParseFeed(source.rss) } = {}) {
+export function createNewsHandler({ fetchFeed } = {}) {
+  if (typeof fetchFeed !== 'function') throw new TypeError('createNewsHandler requires a fetchFeed function.');
+
   return async function handleNewsRequest(request) {
-    if (request.method !== 'GET') return json({ status: 'error', message: 'Yalnızca GET desteklenir.' }, 405, { ...NO_CACHE_HEADERS, Allow: 'GET' });
+    if (request.method !== 'GET') {
+      return json({ status: 'error', message: 'Yalnızca GET desteklenir.' }, 405, { ...NO_CACHE_HEADERS, Allow: 'GET' });
+    }
 
     const url = new URL(request.url);
     const categoryId = url.searchParams.get('category') || '';
@@ -39,7 +41,6 @@ export function createNewsHandler({ fetchFeed = (source) => fetchAndParseFeed(so
       if (!ids.length || ids.length > category.sources.length || ids.some((id) => !allowed.has(id))) {
         return json({ status: 'error', message: 'Kaynak listesinde geçersiz bir kimlik var.' }, 400, NO_CACHE_HEADERS);
       }
-      // Sort to make requests deterministic and improve CDN cache reuse.
       sources = ids.sort().map((id) => allowed.get(id));
     }
 
@@ -77,11 +78,3 @@ export function createNewsHandler({ fetchFeed = (source) => fetchAndParseFeed(so
     }, 200, responseHeaders);
   };
 }
-
-export const config = {
-  path: '/api/news',
-  method: 'GET',
-  rateLimit: { action: 'rate_limit', aggregateBy: 'ip', windowSize: 60, windowLimit: 40 },
-};
-
-export default createNewsHandler();

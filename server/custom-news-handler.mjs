@@ -1,4 +1,4 @@
-import { fetchAndParseFeed, normalizePublicFeedUrl } from '../lib/rss-core.mjs';
+import { normalizePublicFeedUrl } from './rss-parser.mjs';
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -25,13 +25,23 @@ async function readJsonBodyLimited(request, maxBytes) {
         await reader.cancel('body too large').catch(() => {});
         throw new Error('too_large');
       }
-      chunks.push(Buffer.from(value));
+      chunks.push(value);
     }
   } finally {
     reader.releaseLock();
   }
-  try { return JSON.parse(Buffer.concat(chunks, total).toString('utf8')); }
-  catch { throw new Error('invalid_json'); }
+
+  const bytes = new Uint8Array(total);
+  let offset = 0;
+  for (const chunk of chunks) {
+    bytes.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  try {
+    return JSON.parse(new TextDecoder().decode(bytes));
+  } catch {
+    throw new Error('invalid_json');
+  }
 }
 
 export function isSameOriginRequest(request) {
@@ -43,7 +53,9 @@ export function isSameOriginRequest(request) {
   return request.headers.get('sec-fetch-site')?.toLowerCase() !== 'cross-site';
 }
 
-export function createCustomNewsHandler({ fetchFeed = (url) => fetchAndParseFeed(url, { timeoutMs: 6500 }) } = {}) {
+export function createCustomNewsHandler({ fetchFeed } = {}) {
+  if (typeof fetchFeed !== 'function') throw new TypeError('createCustomNewsHandler requires a fetchFeed function.');
+
   return async function handleCustomNewsRequest(request) {
     if (request.method !== 'POST') return json({ status: 'error', message: 'Yalnızca POST desteklenir.' }, 405);
     if (!isSameOriginRequest(request)) return json({ status: 'error', message: 'Bu uç nokta yalnızca aynı kaynaktan çağrılabilir.' }, 403);
@@ -52,17 +64,20 @@ export function createCustomNewsHandler({ fetchFeed = (url) => fetchAndParseFeed
     if (!/^application\/json(?:\s*;|$)/i.test(request.headers.get('content-type') || '')) {
       return json({ status: 'error', message: 'Content-Type application/json olmalıdır.' }, 415);
     }
+
     let body;
     try { body = await readJsonBodyLimited(request, 4096); }
     catch (error) {
       if (error.message === 'too_large') return json({ status: 'error', message: 'İstek gövdesi çok büyük.' }, 413);
       return json({ status: 'error', message: 'Geçersiz JSON isteği.' }, 400);
     }
+
     const feedUrl = typeof body?.url === 'string' ? body.url : '';
     if (feedUrl.length > 2048) return json({ status: 'error', message: 'RSS adresi çok uzun.' }, 400);
     if (!normalizePublicFeedUrl(feedUrl)) {
       return json({ status: 'error', message: 'Yalnızca herkese açık HTTPS RSS/Atom adresleri kabul edilir.' }, 400);
     }
+
     try {
       const items = await fetchFeed(feedUrl);
       if (!Array.isArray(items) || !items.length) return json({ status: 'error', message: 'Akışta haber bulunamadı.' }, 502);
@@ -72,11 +87,3 @@ export function createCustomNewsHandler({ fetchFeed = (url) => fetchAndParseFeed
     }
   };
 }
-
-export const config = {
-  path: '/api/custom-news',
-  method: 'POST',
-  rateLimit: { action: 'rate_limit', aggregateBy: 'ip', windowSize: 60, windowLimit: 40 },
-};
-
-export default createCustomNewsHandler();

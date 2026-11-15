@@ -19,7 +19,7 @@ ARTIFACTS = ROOT / "browser-artifacts"
 
 
 def load_deployment_headers(request_path: str) -> dict[str, str]:
-    """Apply the matching Netlify _headers blocks for one request path."""
+    """Apply the matching Cloudflare Static Assets _headers blocks for one request path."""
     result: dict[str, str] = {}
     current_pattern: str | None = None
     for line in (ROOT / "_headers").read_text(encoding="utf-8").splitlines():
@@ -34,7 +34,7 @@ def load_deployment_headers(request_path: str) -> dict[str, str]:
             key, value = stripped.split(":", 1)
             result[key.strip()] = value.strip()
 
-    # Netlify serves the real site over HTTPS. This smoke server intentionally uses
+    # Production serves the real site over HTTPS. This smoke server intentionally uses
     # localhost HTTP, so the HTTPS-upgrade directive is omitted only from this
     # local response; the deployed CSP in _headers remains unchanged.
     csp_key = "Content-Security-Policy"

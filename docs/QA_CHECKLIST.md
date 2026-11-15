@@ -1,6 +1,6 @@
 # Kalite güvence kontrol listesi
 
-Otomatik kontroller ile gerçek cihaz/tarayıcı denemeleri birbirinin yerine geçmez. Bir sürümü yayınlamadan önce aşağıdaki listeyi tamamla ve gerçek ortamda yapılamayan adımları raporda açıkça belirt.
+Otomatik kontroller ile gerçek tarayıcı ve cihaz denemeleri birbirinin yerine geçmez. Yayından önce bu listeyi tamamla ve yapılamayan kontrolleri açıkça not et.
 
 ## Otomatik kalite kapısı
 
@@ -9,46 +9,49 @@ npm run check
 npm test
 npm run security
 npm run build
+npm run deploy:dry-run
 ```
 
-GitHub Actions bu adımları her push ve pull request üzerinde çalıştırır. Ardından Playwright ile Chromium ve Firefox motorlarında temel etkileşim, responsive genişlik ve Service Worker çevrimdışı kabuk testleri çalışır; ekran görüntüleri workflow artifact olarak saklanır. Başarısız bir adım varsa yayın paketi kullanılmamalıdır. Fiziksel iOS Safari/Android cihaz denemesi ve Lighthouse değerlendirmesi ayrıca yapılmalıdır.
+GitHub Actions; Node.js modül/import kontrollerini, testleri, güvenlik denetimini, migration dalında Wrangler dry-run paketlemesini ve Chromium/Firefox tarayıcı testlerini çalıştırır. Başarısız bir adım varsa dağıtım yapılmamalıdır.
 
-## Tarayıcı uyumluluğu
+## Tarayıcı ve işlev kontrolleri
 
-Her büyük arayüz değişikliğinde güncel Chrome, Firefox ve Safari'de kontrol et:
+- İlk açılışta saat, tarih, habitat ve arama alanı görünür.
+- Altı habitatın her birine geçiş yapılır; tema, hava ve canlı davranışları tutarlıdır.
+- Pencere yeniden boyutlandırıldığında canlılar kaybolmadan sahne uyarlanır.
+- Haber kategorileri ve bağlantıları açılır; geçici kaynak hataları durum mesajıyla gösterilir.
+- Özel RSS kaynağı ekleme, geçersiz URL ve erişilemeyen akış durumları denenir.
+- Şehir araması, geçersiz şehir ve çevrimdışı hava durumu kontrol edilir.
+- Pomodoro, ambiyans, görevler, notlar ve kısayollar kontrol edilir.
+- JSON yedek alma ve geri yükleme; kaynak tercihleri ve kaydedilmiş haberlerle birlikte test edilir.
+- Açılır paneller Escape ile kapanır; klavye odağı doğru yere döner.
+- 320, 360, 390, 430, 768, 1024 ve 1440 px genişlikler; dikey ve yatay yönler denenir.
+- %200 yakınlaştırmada temel işlevler kullanılabilir.
 
-- İlk açılışta saat, tarih, habitat ve ana arama görünür.
-- Altı mevcut habitatın her birine geçiş yapılır; tema ve hava efektleri tutarlıdır.
-- Pencere yeniden boyutlandırıldığında/yön değiştiğinde canlılar kaybolmadan sahne yeni ölçüye uyarlanır.
-- Habitat seçimi ekran okuyucuya duyurulur ve aktif öğe erişilebilir seçili durumunu taşır.
-- Manifest, SVG favicon ve 192/512 px uygulama ikonları doğru yüklenir.
-- Gündem kategorileri ve haber bağlantıları açılır; kaynak hatası varsa durum mesajı gösterilir.
-- Şehir araması, geçersiz şehir ve çevrimdışı hava durumu senaryoları denenir.
-- Pomodoro başlatma/duraklatma/sıfırlama ve ses ambiyansı denenir.
-- Görev/not ekleme, tamamlama, silme ve JSON yedek geri yükleme denenir.
-- Açılır paneller Escape ile kapanır; klavye odağı mantıklı yere döner.
-- 320, 360, 390, 430, 768, 1024 ve 1440 piksel genişlikler kontrol edilir.
-- Dikey ve yatay ekran yönlerinde yatay sayfa taşması olmaz.
-- Yakınlaştırma %200 iken temel işlevler kullanılabilir.
+## RSS ve Worker kontrolleri
 
-## Performans
+- `GET /api/news?category=gundem`, `teknoloji` ve `bilim` geçerli yanıt döndürür.
+- Kaynak seçimi yalnızca ilgili kategori allowlist'indeki kimlikleri kabul eder.
+- `?refresh=1` ortak API önbelleğini atlar.
+- `POST /api/custom-news` yalnızca aynı kaynaklı, JSON ve 4 KB altı isteği kabul eder.
+- HTTP, IP literal, yerel hostname, kimlik bilgili URL, hatalı yönlendirme ve büyük RSS yanıtları reddedilir.
+- Her iki rate-limit binding'i de bağımsız çalışır; bağlama eksikliği güvenli şekilde 503 verir.
+- Worker yanıtları güvenlik başlıkları taşır; statik yanıtlar `_headers` politikası alır.
+- API cache hit/miss, kısmi RSS kaynak hataları ve forced refresh kontrol edilir.
+- Cloudflare CPU süresi, günlük istek sayısı ve cache hit oranı gerçek önizlemede ölçülür.
 
-- `?debug=perf` ile FPS, çizim süresi, cam güncelleme süresi ve destekleniyorsa JS heap değerlerini gözlemle.
-- 6 habitatı en az 30 saniye izleyerek sürekli FPS düşüşü, büyüyen heap veya aşırı cam maliyeti ara.
+## Performans ve çevrimdışı
+
+- `?debug=perf` ile FPS, çizim süresi ve destekleniyorsa JS heap değerlerini izle.
+- Altı habitatı en az 30 saniye izleyerek FPS düşüşü, büyüyen heap veya yüksek cam maliyeti ara.
 - Sekmeyi arka plana alıp geri dön; animasyon takılmadan devam etmeli.
 - `prefers-reduced-motion` ve düşük güç/veri tasarrufu tercihlerini kontrol et.
-- Lighthouse / PageSpeed üzerinde Performance, Accessibility, Best Practices ve SEO raporlarını al. Mobil ve masaüstünü ayrı kaydet.
+- İlk çevrimiçi ziyaretin ardından Service Worker kurulur; ağ kesildiğinde arayüz, CSS, modüller, fontlar ve habitat açılır.
+- Haber ve hava gibi canlı servisler çevrimdışı durumda hata veya önbellek durumunu dürüstçe gösterir.
 
-## Çevrimdışı ve dağıtım
+## Görsel erişilebilirlik ve regresyon
 
-- Uygulamayı HTTPS veya localhost üzerinden aç; `file://` Service Worker için uygun değildir.
-- İlk çevrimiçi ziyaretten sonra Service Worker'ın kurulduğunu ve kontrolü devraldığını doğrula.
-- Ağ bağlantısını kesip sayfayı yenile; yerel arayüz, CSS, modüller ve habitat açılmalı.
-- Haber/hava gibi canlı servislerin çevrimdışında hata/önbellek durumunu dürüstçe göstermesini kontrol et.
-- Dağıtım yanıtlarında `_headers` veya `netlify.toml` güvenlik başlıklarının gerçekten gönderildiğini doğrula. CSP ihlali konsol mesajlarını incele.
-- Build tarafından üretilen Service Worker dosya listesini ve içerik hash'ini doğrula.
-- Eski Service Worker cache'inin sürüm/asset hash yükseltmesinde silindiğini doğrula.
-
-## Görsel regresyon
-
-Aynı viewport, aynı tema, aynı habitat, aynı saat/ışık ve aynı veri koşullarıyla ekran görüntüsü al. Önceki sürümle karşılaştırırken piksel animasyonunun rastgele doğasından kaynaklanan farkları değil; yerleşim, kırpılma, kontrast, tipografi ve bileşen boyutlarını değerlendir.
+- Klavye ile tüm ana akışlar kullanılabilir; odak göstergesi görünür.
+- Ekran okuyucu ile habitat, düğme ve form durumları anlaşılır.
+- Lighthouse / PageSpeed raporlarını mobil ve masaüstü ayrı al.
+- Ekran görüntülerini aynı viewport, tema, habitat ve veri koşullarıyla karşılaştır.

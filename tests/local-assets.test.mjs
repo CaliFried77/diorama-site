@@ -39,12 +39,12 @@ test('generated local utilities cover representative layout, color, responsive a
   ]) assert.ok(utilities.includes(rule), `Missing generated utility: ${rule}`);
 });
 
-test('build copies extension catalogs and deployable response headers while host config stays at the source root', () => {
+test('build copies extension catalogs and Cloudflare response headers while Wrangler config stays at the source root', () => {
   assert.match(build, /configDir/);
   assert.match(build, /_headers/);
   assert.match(build, /modulePreloads/);
   assert.match(build, /createHash/);
-  assert.doesNotMatch(build, /cp\(resolve\(root, 'netlify\.toml'/);
+  assert.doesNotMatch(build, /cp\(resolve\(root, 'wrangler\.toml'/);
 });
 
 test('service worker precaches local shell assets and leaves external live services to the network', () => {
@@ -110,7 +110,7 @@ test('GitHub quality workflow is present and covers CI plus real-browser smoke t
 });
 
 test('repository ignores build output, local artifacts and environment secrets', () => {
-  for (const entry of ['dist/', 'node_modules/', '.netlify/', 'browser-artifacts/', '.env', '.env.*', '!.env.example']) {
+  for (const entry of ['dist/', 'node_modules/', '.wrangler/', 'browser-artifacts/', '.env', '.env.*', '!.env.example']) {
     assert.ok(gitignore.split(/\r?\n/).includes(entry), `missing .gitignore entry: ${entry}`);
   }
 });
