@@ -1,8 +1,8 @@
 dist/
 node_modules/
-.netlify/
 browser-artifacts/
 coverage/
+.wrangler/
 *.log
 .DS_Store
 Thumbs.db
