@@ -413,6 +413,8 @@
   border-bottom: 1px dashed rgba(255,255,255,.2);
 }
 .wx-solar-glow { position: absolute; bottom: -2px; left: 0; height: 2px; background: linear-gradient(90deg,#38bdf8,#fbbf24); box-shadow: 0 0 10px rgba(251,191,36,.45); }
+.wx-solar-track.is-night .wx-solar-glow { background: linear-gradient(90deg,#2563eb,#a5b4fc); box-shadow: 0 0 10px rgba(129,140,248,.4); }
+.wx-solar-track.is-night .wx-solar-marker { color: #c7d2fe; border-color: rgba(165,180,252,.38); box-shadow: 0 0 14px rgba(129,140,248,.2); }
 .wx-solar-marker {
   position: absolute;
   bottom: -12px;
@@ -456,12 +458,12 @@
 .wx-hourly { display: flex; gap: 9px; padding: 2px 1px 8px; overflow-x: auto; scrollbar-width: thin; }
 .wx-hour-card {
   display: grid;
-  flex: 0 0 78px;
+  flex: 0 0 86px;
   grid-template-rows: auto 1fr auto auto;
   justify-items: center;
   align-items: center;
   gap: 6px;
-  min-height: 100px;
+  min-height: 96px;
   padding: 9px 7px;
   border: 1px solid rgba(255,255,255,.1);
   border-radius: 15px;
