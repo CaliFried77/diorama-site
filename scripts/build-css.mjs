@@ -33,16 +33,21 @@ const colors = {
   'sky-200': '#bae6fd', 'sky-300': '#7dd3fc', 'sky-400': '#38bdf8', 'slate-900': '#0f172a', 'slate-950': '#020617',
 };
 const fontSizes = {
-  xs: ['.75rem', '1rem'], sm: ['.875rem', '1.25rem'], base: ['1rem', '1.5rem'],
-  lg: ['1.125rem', '1.75rem'], xl: ['1.25rem', '1.75rem'],
-  '2xl': ['1.5rem', '2rem'], '3xl': ['1.875rem', '2.25rem'],
-  '4xl': ['2.25rem', '2.5rem'], '5xl': ['3rem', '1'], '6xl': ['3.75rem', '1'],
-  '7xl': ['4.5rem', '1'],
+  xs: ['.8125rem', '1.125rem'], sm: ['.9375rem', '1.375rem'], base: ['1.0625rem', '1.625rem'],
+  lg: ['1.1875rem', '1.75rem'], xl: ['1.3125rem', '1.875rem'],
+  '2xl': ['1.625rem', '2.125rem'], '3xl': ['2rem', '2.375rem'],
+  '4xl': ['2.375rem', '2.75rem'], '5xl': ['3.125rem', '1'], '6xl': ['3.875rem', '1'],
+  '7xl': ['4.625rem', '1'],
 };
 const radii = { none: '0', sm: '.125rem', DEFAULT: '.25rem', md: '.375rem', lg: '.5rem', xl: '.75rem', '2xl': '1rem', '3xl': '1.5rem', full: '9999px' };
 const blur = { none: '0', sm: '4px', DEFAULT: '8px', md: '12px', lg: '16px', xl: '24px', '2xl': '40px', '3xl': '64px' };
 const cssEscape = (value) => value.replace(/([^a-zA-Z0-9_-])/g, '\\$1');
 const arbitrary = (value) => value.startsWith('[') && value.endsWith(']') ? value.slice(1, -1).replaceAll('_', ' ') : null;
+const readableFontSize = (value) => {
+  const match = /^(\\d+(?:\\.\\d+)?)px$/.exec(value.trim());
+  if (!match) return value;
+  return `${Math.max(12, Math.round(Number(match[1]) * 1.1))}px`;
+};
 const colorValue = (token) => {
   const slash = token.indexOf('/');
   const name = slash >= 0 ? token.slice(0, slash) : token;
@@ -131,7 +136,7 @@ function declaration(token) {
   if ((m = token.match(/^text-(.+)$/))) {
     const size = fontSizes[m[1]];
     if (size) return `font-size:${size[0]};line-height:${size[1]}`;
-    const raw = arbitrary(m[1]); if (raw) return `font-size:${raw}`;
+    const raw = arbitrary(m[1]); if (raw) return `font-size:${readableFontSize(raw)}`;
     const c = colorValue(m[1]); if (c) return `color:${c}`;
     const align = { center:'center',left:'left',right:'right',justify:'justify' }[m[1]]; if (align) return `text-align:${align}`;
   }
