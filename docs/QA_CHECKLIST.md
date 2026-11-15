@@ -49,6 +49,12 @@ GitHub Actions; Node.js modül/import kontrollerini, testleri, güvenlik denetim
 - İlk çevrimiçi ziyaretin ardından Service Worker kurulur; ağ kesildiğinde arayüz, CSS, modüller, fontlar ve habitat açılır.
 - Haber ve hava gibi canlı servisler çevrimdışı durumda hata veya önbellek durumunu dürüstçe gösterir.
 
+## Tipografi ve okunabilirlik
+
+- Yardımcı metin, tarih, kaynak etiketi ve durum bilgileri 12px altına düşmemeli.
+- Küçük etiketler büyütüldüğünde dar ekranlarda taşma, üst üste binme ve kesilme kontrol edilmeli.
+- Başlık, gövde metni ve meta bilgi arasındaki görsel hiyerarşi korunmalı.
+
 ## Görsel erişilebilirlik ve regresyon
 
 - Klavye ile tüm ana akışlar kullanılabilir; odak göstergesi görünür.
