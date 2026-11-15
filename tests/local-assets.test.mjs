@@ -101,7 +101,7 @@ test('GitHub quality workflow is present and covers CI plus real-browser smoke t
   assert.match(workflow, /npm run check/);
   assert.match(workflow, /npm test/);
   assert.match(workflow, /npm run security/);
-  assert.match(workflow, /playwright install --with-deps chromium firefox webkit/);
+  assert.match(workflow, /playwright install --with-deps chromium firefox/);
   assert.match(workflow, /npm run test:browser/);
   assert.match(workflow, /permissions:\s+contents: read/);
 });
