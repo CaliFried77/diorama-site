@@ -33,6 +33,17 @@ def load_deployment_headers(request_path: str) -> dict[str, str]:
         if matches and ":" in stripped:
             key, value = stripped.split(":", 1)
             result[key.strip()] = value.strip()
+
+    # Netlify serves the real site over HTTPS. This smoke server intentionally uses
+    # localhost HTTP; WebKit upgrades even loopback module requests when this CSP
+    # directive is present, but the local server has no TLS listener.
+    csp_key = "Content-Security-Policy"
+    if csp_key in result:
+        result[csp_key] = "; ".join(
+            directive.strip()
+            for directive in result[csp_key].split(";")
+            if directive.strip().lower() != "upgrade-insecure-requests"
+        )
     return result
 
 
