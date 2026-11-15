@@ -639,6 +639,15 @@ const CREATURE_PROFILES = Object.freeze({
                 }
             }
 
+                // Suspended oxygen bubbles rise in staggered columns behind the driftwood.
+                for (let i = 0; i < 13; i++) {
+                    const cycle = (time * (0.006 + (i % 3) * 0.001) + i * 23) % Math.max(36, ph * 0.72);
+                    const bx = 18 + ((i * 41) % Math.max(24, pw - 36)) + Math.sin(time * 0.0008 + i) * 2;
+                    const by = ph - 18 - cycle;
+                    pRect(bx, by, 2, 2, 'rgba(186, 230, 253, 0.28)');
+                    pRect(bx, by, 1, 1, 'rgba(224, 242, 254, 0.58)');
+                }
+
             // 3. DRAGONFLY HABITAT: Rustic Wooden Pond Pier, Mossy Frog Boulders & Drifting Morning Mist
             if (hab.sceneProfile === 'wetland') {
                 ctx.fillStyle = isLightMode ? 'rgba(255, 255, 255, 0.14)' : 'rgba(167, 243, 208, 0.045)';
@@ -678,6 +687,23 @@ const CREATURE_PROFILES = Object.freeze({
                 });
             }
 
+                // A worn stepping-stone path disappears into the fern garden.
+                for (let i = 0; i < 24; i++) {
+                    const progress = i / 23;
+                    const pathX = Math.round(pw * 0.5 + Math.sin(i * 0.42) * (18 + progress * 10));
+                    const pathY = ph - 5 - Math.round((i % 4) * 1.4);
+                    const stoneW = 4 + (i % 3) * 2;
+                    pRect(pathX - stoneW, pathY, stoneW * 2, 2, isLightMode ? '#64748b' : '#25263d');
+                    pRect(pathX - stoneW + 1, pathY, Math.max(2, stoneW - 1), 1, isLightMode ? '#94a3b8' : '#3c3b5c');
+                }
+                // A few drifting fireflies add depth without crowding the butterflies.
+                for (let i = 0; i < 6; i++) {
+                    const fx = (i * 83 + Math.sin(time * 0.001 + i) * 9) % pw;
+                    const fy = ph * 0.42 + Math.sin(time * 0.0014 + i * 1.7) * 18;
+                    const glow = 0.28 + 0.34 * (0.5 + 0.5 * Math.sin(time * 0.004 + i));
+                    pRect(fx, fy, 2, 2, `rgba(253, 224, 71, ${glow.toFixed(2)})`);
+                }
+
             // 4. BUTTERFLY HABITAT: Gnarled Overhanging Corner Tree Boughs + Ivy-Clad Stone Garden Archway
             if (hab.sceneProfile === 'botanical') {
                 const branchDark = isLightMode ? '#3f1d0b' : '#15111e';
@@ -712,6 +738,23 @@ const CREATURE_PROFILES = Object.freeze({
                     if (vy % 10 === 0) pRect(vx + 1, vy - 1, 2, 2, '#e879f9');
                 }
             }
+
+                // Broken limestone shelves create a foreground reef terrace beneath the corals.
+                for (let x = 0; x < pw; x += 3) {
+                    const ridge = ph - 5 - Math.round(6 + Math.sin(x * 0.045) * 3 + Math.sin(x * 0.13) * 2);
+                    if ((x % 17) < 13) {
+                        pRect(x, ridge, 3, ph - ridge, isLightMode ? '#1e4b59' : '#101b38');
+                        if (x % 9 === 0) pRect(x, ridge, 2, 1, isLightMode ? '#38bdf8' : 'rgba(103, 232, 249, 0.58)');
+                    }
+                }
+                // Fine bubble trails drift up from the deeper ledges.
+                for (let i = 0; i < 11; i++) {
+                    const rise = (time * (0.004 + (i % 3) * 0.001) + i * 19) % Math.max(40, ph * 0.8);
+                    const bx = 20 + ((i * 47) % Math.max(24, pw - 40));
+                    const by = ph - rise - 8;
+                    pRect(bx, by, 1, 2, 'rgba(165, 243, 252, 0.42)');
+                    if (i % 3 === 0) pRect(bx + 2, by - 2, 1, 1, 'rgba(240, 171, 252, 0.55)');
+                }
 
             // 5. JELLYFISH HABITAT: Sunken Atlantean Columns, Luminous Pearl Giant Clam & Hydrothermal Reef Ledges
             if (hab.sceneProfile === 'reef') {
@@ -774,6 +817,70 @@ const CREATURE_PROFILES = Object.freeze({
                 for (let ry = 0; ry < 5; ry++) {
                     const drift = Math.sin(time * 0.003 + ry * 1.4) * 2.5;
                     pRect(bx - 3 + drift, by + 10 + ry * 2, 6 - ry, 1, `rgba(251, 191, 36, ${0.28 - ry * 0.05})`);
+                }
+            }
+
+            if (hab.sceneProfile === 'rainforest') {
+                // Giant buttress trees and an overlapping emerald canopy frame the parrot flight corridor.
+                const forestTrees = [
+                    { x: 12, top: 4, width: 18, height: 0, canopy: 38 },
+                    { x: Math.round(pw * 0.43), top: 18, width: 13, canopy: 31 },
+                    { x: pw - 34, top: 0, width: 21, canopy: 42 },
+                ];
+                forestTrees.forEach((tree, index) => {
+                    const trunkColor = isLightMode ? '#5b341f' : '#241c20';
+                    const barkColor = isLightMode ? '#8a5530' : '#49302a';
+                    const topY = Math.min(tree.top, Math.max(0, ph - 80));
+                    for (let y = topY; y < ph; y++) {
+                        const progress = (y - topY) / Math.max(1, ph - topY);
+                        const trunkW = tree.width + Math.floor(progress * 12);
+                        pRect(tree.x, y, trunkW, 1, trunkColor);
+                        pRect(tree.x + 2, y, 2, 1, barkColor);
+                        if (y % 19 === index * 4) pRect(tree.x + Math.floor(trunkW * 0.65), y, 3, 1, isLightMode ? '#a1623b' : '#654237');
+                    }
+
+                    // Buttress roots fan into the forest floor.
+                    for (let side = -1; side <= 1; side += 2) {
+                        for (let step = 0; step < 24; step++) {
+                            const rootX = tree.x + tree.width / 2 + side * step * 1.35;
+                            const rootY = ph - 1 - step * 0.72;
+                            pRect(rootX, rootY, 2 + Math.floor((24 - step) / 8), 1, trunkColor);
+                            if (step % 6 === 0) pRect(rootX, rootY - 1, 3, 1, barkColor);
+                        }
+                    }
+
+                    // Broad canopy clumps with a cool rim light.
+                    const canopyY = topY + 14 + (index % 2) * 8;
+                    for (let dy = -15; dy <= 16; dy++) {
+                        for (let dx = -tree.canopy; dx <= tree.canopy; dx++) {
+                            if ((dx * dx) / (tree.canopy * tree.canopy) + (dy * dy) / 225 <= 1) {
+                                const top = dy < -5;
+                                const lower = dy > 8;
+                                const color = top
+                                    ? (isLightMode ? '#22a06b' : '#145b43')
+                                    : lower ? (isLightMode ? '#166534' : '#0a392e')
+                                        : (isLightMode ? '#16a34a' : '#0d4a39');
+                                pRect(tree.x + tree.width / 2 + dx, canopyY + dy, 1, 1, color);
+                                if ((dx + dy + index * 3) % 23 === 0) {
+                                    pRect(tree.x + tree.width / 2 + dx, canopyY + dy, 2, 1, isLightMode ? '#86efac' : '#2dd4bf');
+                                }
+                            }
+                        }
+                    }
+                });
+
+                // Shafts of warm light filter through the canopy and fade into drifting mist.
+                ctx.fillStyle = isLightMode ? 'rgba(254, 240, 138, 0.055)' : 'rgba(167, 243, 208, 0.035)';
+                for (let ray = 0; ray < 5; ray++) {
+                    const x = Math.round((ray * 103 + Math.sin(time * 0.0005 + ray) * 13) % pw);
+                    for (let y = 22; y < ph * 0.72; y += 3) {
+                        ctx.fillRect(Math.round(x + y * 0.16), y, 4 + ray % 2, 2);
+                    }
+                }
+                ctx.fillStyle = isLightMode ? 'rgba(167, 243, 208, 0.07)' : 'rgba(45, 212, 191, 0.045)';
+                for (let band = 0; band < 3; band++) {
+                    const mistY = Math.round(ph * (0.56 + band * 0.075) + Math.sin(time * 0.0007 + band) * 3);
+                    ctx.fillRect(0, mistY, pw, 2);
                 }
             }
 
