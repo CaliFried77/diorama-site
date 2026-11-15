@@ -89,6 +89,10 @@ test('Cloudflare Worker enforces the news API rate limit and adds security heade
   assert.deepEqual(keys, ['203.0.113.10']);
   assert.equal(response.headers.get('X-Content-Type-Options'), 'nosniff');
   assert.equal(response.headers.get('X-Frame-Options'), 'DENY');
+  assert.equal(response.headers.get('Strict-Transport-Security'), 'max-age=31536000');
+  assert.equal(response.headers.get('Cross-Origin-Resource-Policy'), 'same-origin');
+  assert.equal(response.headers.get('Cross-Origin-Opener-Policy'), 'same-origin');
+  assert.equal(response.headers.get('Content-Security-Policy'), "default-src 'none'; base-uri 'none'; object-src 'none'; form-action 'none'; frame-ancestors 'none'");
 });
 
 test('Cloudflare Worker rejects custom RSS cross-origin requests and rate-limit violations', async () => {
