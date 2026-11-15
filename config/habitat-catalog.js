@@ -3,13 +3,13 @@
  * Add a new profile contract only together with its implementation and tests.
  */
 export const HABITAT_SCENE_PROFILES = Object.freeze([
-  'meadow', 'betta-aquarium', 'wetland', 'botanical', 'reef', 'koi-pond',
+  'meadow', 'betta-aquarium', 'wetland', 'botanical', 'reef', 'koi-pond', 'rainforest',
 ]);
 export const HABITAT_CREATURE_PROFILES = Object.freeze([
-  'bee', 'betta', 'dragonfly', 'butterfly', 'jellyfish', 'koi',
+  'bee', 'betta', 'dragonfly', 'butterfly', 'jellyfish', 'koi', 'parrot',
 ]);
 export const HABITAT_INTERACTION_PROFILES = Object.freeze([
-  'nectar', 'bloodworm', 'midge', 'blossom', 'plankton', 'pellet',
+  'nectar', 'bloodworm', 'midge', 'blossom', 'plankton', 'pellet', 'fruit',
 ]);
 
 export const HABITATS = [
@@ -114,6 +114,23 @@ export const HABITATS = [
     lightMid: '#0f766e',
     lightBot: '#115e59',
     rgb: [251, 113, 133],
+  },
+  {
+    id: 'rainforest',
+    sceneProfile: 'rainforest',
+    creatureProfile: 'parrot',
+    interactionProfile: 'fruit',
+    weatherSky: true,
+    name: 'Yağmur Ormanı & Renkli Papağanlar',
+    hint: 'Tıkla: Tropik Meyve',
+    dotColor: '#34d399',
+    skyTop: '#061b19',
+    skyMid: '#10352d',
+    skyBot: '#071b1a',
+    lightTop: '#38bdf8',
+    lightMid: '#86efac',
+    lightBot: '#fde68a',
+    rgb: [52, 211, 153],
   },
 ];
 
