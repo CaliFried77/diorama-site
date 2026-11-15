@@ -158,7 +158,7 @@
 .focus-custom-duration input:focus { border-color: rgba(125,211,252,.48); }
 .focus-custom-duration input::placeholder { color: rgba(255,255,255,.34); }
 .focus-custom-duration button {
-  min-height: 36px;
+  min-height: 40px;
   padding: 8px 10px;
   border: 1px solid rgba(125,211,252,.22);
   border-radius: 8px;
@@ -277,7 +277,7 @@
 .focus-stage-actions { display: grid; gap: 5px; }
 .focus-stage-button,
 .focus-stage-reset {
-  min-height: 34px;
+  min-height: 38px;
   padding: 7px 10px;
   border: 1px solid rgba(186,230,253,.2);
   border-radius: 7px;
@@ -297,6 +297,8 @@
 }
 
 @media (max-width: 639px) {
+  #weatherForm input, #weatherForm button { min-height: 40px; }
+  #wxFxToggle, #wxAutoTheme { width: 20px; height: 20px; }
   .focus-popover { width: min(380px, calc(100vw - 1rem)); max-height: min(78dvh, calc(100dvh - 6.5rem)); padding: 16px !important; }
   .focus-stage-overlay {
     position: relative;
@@ -314,7 +316,7 @@
   .focus-stage-pixel-track { margin: 0; }
   .focus-stage-status { display: none; }
   .focus-stage-actions { grid-column: 2; grid-row: 1 / span 2; }
-  .focus-stage-button, .focus-stage-reset { min-height: 36px; }
+  .focus-stage-button, .focus-stage-reset { min-height: 40px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
