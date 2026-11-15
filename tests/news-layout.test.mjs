@@ -15,7 +15,7 @@ const lastRule = (source, selector) => {
   return source.slice(open + 1, close);
 };
 
-test('news panel shares Diorama glass and is narrower and scrolls as one panel', () => {
+test('news panel shares Diorama glass, has a readable width and scrolls as one panel', () => {
   assert.match(html, /id="weatherPopover"[^>]*class="[^"]*editorial-modal/);
   assert.match(html, /id="newsPopover"[^>]*class="[^"]*editorial-modal/);
   const v163 = css.slice(css.indexOf('/* v1.6.3'));
