@@ -136,14 +136,14 @@ test('Service Worker can serve cached license notices while offline', () => {
 });
 
 
-test('GitHub quality workflow is present and covers CI plus real-browser smoke tests', () => {
+test('GitHub quality workflow is present and covers CI plus Chromium smoke tests', () => {
   assert.match(workflow, /on:\s+[\s\S]*push:/);
   assert.match(workflow, /pull_request:/);
   assert.match(workflow, /npm run check/);
   assert.match(workflow, /npm test/);
   assert.match(workflow, /npm run security/);
   assert.match(workflow, /wrangler@4\.162\.0 deploy --dry-run/);
-  assert.match(workflow, /playwright install --with-deps chromium firefox/);
+  assert.match(workflow, /playwright install --with-deps chromium/);
   assert.match(workflow, /npm run test:browser/);
   assert.match(workflow, /permissions:\s+contents: read/);
 });
