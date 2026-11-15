@@ -125,5 +125,5 @@ Before deploying a release, follow [`docs/QA_CHECKLIST.md`](docs/QA_CHECKLIST.md
 - The GitHub repository was verified at v1.6.5; key source files matched the uploaded v1.6.5 package, but the hidden `.github/workflows/quality.yml` directory was missing from the repository. The workflow is included again in this release.
 - The build now copies `LICENSE`, `THIRD_PARTY_NOTICES.md` and the four font OFL files into `dist/`, so the public site distributes the legal notices alongside the font binaries.
 - The Data Manager links to the MIT and font notices; the Service Worker can retrieve those notices offline.
-- `npm run test:browser` runs the Playwright smoke suite after browser installation. CI installs Chromium, Firefox and WebKit and runs the same browser checks.
+- `npm run test:browser` runs the Playwright smoke suite after browser installation. CI installs Chromium and Firefox and runs the same browser checks.
 - Netlify deployment instructions now describe the source-repository workflow, Node 22, `npm run build` and `dist` publish directory.
