@@ -90,7 +90,7 @@ The build output is written to `dist/`. Upload the contents of that folder to st
 
 ## Release QA checklist
 
-Before deploying a release, follow [`docs/QA_CHECKLIST.md`](docs/QA_CHECKLIST.md) for cross-browser, responsive, performance, offline, security-header and visual-regression checks. See [`MIGRATION_1.6.6_TR.md`](MIGRATION_1.6.6_TR.md) for the GitHub/Netlify upload notes and the important hidden `.github/` folder check. The optional browser suite can be run locally after installing `requirements-browser.txt` and the Playwright browsers with `python -m playwright install chromium firefox webkit`, then `npm run build && python scripts/browser-smoke.py`. Automated tests do not replace manual checks on physical devices or Lighthouse reviews.
+Before deploying a release, follow [`docs/QA_CHECKLIST.md`](docs/QA_CHECKLIST.md) for cross-browser, responsive, performance, offline, security-header and visual-regression checks. See [`MIGRATION_1.6.6_TR.md`](MIGRATION_1.6.6_TR.md) for the GitHub/Netlify upload notes and the important hidden `.github/` folder check. The optional browser suite can be run locally after installing `requirements-browser.txt` and the Playwright browsers with `python -m playwright install chromium firefox`, then `npm run build && python scripts/browser-smoke.py`. Automated tests do not replace manual checks on physical devices or Lighthouse reviews.
 
 
 ## v1.6.3 interface update
