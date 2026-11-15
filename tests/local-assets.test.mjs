@@ -13,6 +13,9 @@ const weatherModule = await readFile(new URL('../js/03-weather.js', import.meta.
 const calendarModule = await readFile(new URL('../js/11-calendar.js', import.meta.url), 'utf8');
 const coreUiModule = await readFile(new URL('../js/01-core-ui.js', import.meta.url), 'utf8');
 const dataManagerModule = await readFile(new URL('../js/06-data-manager.js', import.meta.url), 'utf8');
+const sceneryModule = await readFile(new URL('../js/09-scenery.js', import.meta.url), 'utf8');
+const creatureModule = await readFile(new URL('../js/08-creatures.js', import.meta.url), 'utf8');
+const habitatCatalog = await readFile(new URL('../config/habitat-catalog.js', import.meta.url), 'utf8');
 const cssBuilder = await readFile(new URL('../scripts/build-css.mjs', import.meta.url), 'utf8');
 const newsCss = await readFile(new URL('../css/news.css', import.meta.url), 'utf8');
 const widgetsCss = await readFile(new URL('../css/widgets.css', import.meta.url), 'utf8');
@@ -121,6 +124,46 @@ test('focus, notebook and habitat controls remain balanced after typography scal
   assert.ok(widgetsCss.includes('grid-template-columns: 36px minmax(0,1fr) 52px;'));
   assert.ok(widgetsCss.includes('.notes-task-form > * { min-width: 0;'));
   assert.ok(responsiveCss.includes('max-width: min(360px, 34vw)'));
+});
+
+test('zen mode hides the complete toolbar and focus HUD, then reveals them at the top edge', () => {
+  assert.ok(html.includes('main-header zen-fade zen-hide'));
+  assert.ok(html.includes('focus-stage-overlay zen-fade zen-hide'));
+  assert.ok(coreUiModule.includes("document.body.classList.add('zen-revealed')"));
+  assert.ok(coreUiModule.includes('e.clientY <= 76'));
+  assert.ok(coreUiModule.includes("document.body.classList.remove('zen-revealed')"));
+  assert.ok(baseCss.includes('body.zen-active.zen-revealed .zen-hide'));
+  assert.ok(baseCss.includes('visibility: hidden;'));
+});
+
+test('lunar phases render as original crisp pixel art rather than emoji glyphs', () => {
+  assert.ok(weatherModule.includes('function pixelMoonMarkup(phase)'));
+  assert.ok(weatherModule.includes('shape-rendering="crispEdges"'));
+  assert.ok(weatherModule.includes('wx-pixel-moon'));
+  assert.ok(!weatherModule.includes('moonGlyphs'));
+  assert.ok(widgetsCss.includes('.wx-moon-art'));
+});
+
+test('rainforest habitat connects its scenery, parrot flock and edible fruit interaction', () => {
+  assert.ok(habitatCatalog.includes("id: 'rainforest'"));
+  assert.ok(habitatCatalog.includes("sceneProfile: 'rainforest'"));
+  assert.ok(habitatCatalog.includes("creatureProfile: 'parrot'"));
+  assert.ok(habitatCatalog.includes("interactionProfile: 'fruit'"));
+  assert.ok(sceneryModule.includes('new PixelParrot()'));
+  assert.ok(sceneryModule.includes("hab.sceneProfile === 'rainforest'"));
+  assert.ok(sceneryModule.includes("f.type === 'canopy_vine'"));
+  assert.ok(sceneryModule.includes("s.type === 'tropical_fruit'"));
+  assert.ok(creatureModule.includes('export class PixelParrot'));
+  assert.ok(creatureModule.includes("findAvailableStimulus(this, 'tropical_fruit'"));
+  assert.ok(creatureModule.includes("interactionProfile === 'fruit'"));
+});
+
+test('existing habitat improvements preserve bespoke scene layers', () => {
+  assert.ok(sceneryModule.includes('const groveX = Math.round(pw * 0.33)'));
+  assert.ok(sceneryModule.includes('const branchY = ph - 119'));
+  assert.ok(sceneryModule.includes('Suspended oxygen bubbles rise'));
+  assert.ok(sceneryModule.includes('worn stepping-stone path'));
+  assert.ok(sceneryModule.includes('Broken limestone shelves'));
 });
 
 test('service worker precaches local shell assets and leaves external live services to the network', () => {
