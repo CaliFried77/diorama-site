@@ -19,11 +19,13 @@ GitHub Actions; Node.js modül/import kontrollerini, testleri, güvenlik denetim
 - İlk açılışta saat, tarih, habitat ve arama alanı görünür.
 - Altı habitatın her birine geçiş yapılır; tema, hava ve canlı davranışları tutarlıdır.
 - Pencere yeniden boyutlandırıldığında canlılar kaybolmadan sahne uyarlanır.
-- Haber kategorileri ve bağlantıları açılır; geçici kaynak hataları durum mesajıyla gösterilir.
+- Haber kartları kompakt açılır; karta basınca özet görünür, ayrı kaynak düğmesi yayıncı sitesini yeni sekmede açar.
+- Takvim aylar arasında gezinir; etkinlik ekleme/silme ve tarayıcı yenilemesinden sonra kalıcılık kontrol edilir.
 - Özel RSS kaynağı ekleme, geçersiz URL ve erişilemeyen akış durumları denenir.
 - Şehir araması, geçersiz şehir ve çevrimdışı hava durumu kontrol edilir.
+- Hava kalitesi isteği başarılı olduğunda Avrupa AQI, PM2.5 ve PM10 görünür; servis başarısızsa hava tahmini çalışmaya devam eder.
 - Pomodoro, ambiyans, görevler, notlar ve kısayollar kontrol edilir.
-- JSON yedek alma ve geri yükleme; kaynak tercihleri ve kaydedilmiş haberlerle birlikte test edilir.
+- JSON yedek alma ve geri yükleme; kaynak tercihleri, kaydedilmiş haberler ve takvim etkinlikleriyle birlikte test edilir.
 - Açılır paneller Escape ile kapanır; klavye odağı doğru yere döner.
 - 320, 360, 390, 430, 768, 1024 ve 1440 px genişlikler; dikey ve yatay yönler denenir.
 - %200 yakınlaştırmada temel işlevler kullanılabilir.
