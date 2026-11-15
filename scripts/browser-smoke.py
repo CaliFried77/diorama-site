@@ -162,10 +162,10 @@ async def assert_app_smoke(browser_type, name: str, base_url: str):
     weather_text = ""
     while asyncio.get_running_loop().time() < weather_deadline:
         weather_text = await weather_locator.inner_text()
-        if re.search(r"\\d+°C", weather_text):
+        if re.search(r"\d+°C", weather_text):
             break
         await page.wait_for_timeout(100)
-    assert re.search(r"\\d+°C", weather_text), f"{name}: mocked weather data did not render: {weather_text!r}"
+    assert re.search(r"\d+°C", weather_text), f"{name}: mocked weather data did not render: {weather_text!r}"
 
     # Habitat picker and cycle.
     await page.locator("#habitatMenuBtn").click()
