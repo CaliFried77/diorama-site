@@ -130,3 +130,27 @@
         flex: 0 0 auto;
     }
 }
+
+ 
+/* Readable control sizing after the typography scale increase. */
+.header-controls-left > button,
+#habitatMenuBtn,
+#themeToggleBtn,
+#zenModeBtn,
+.header-controls-right > div > button {
+    min-height: 40px;
+}
+.engine-chip {
+    min-height: 36px;
+    padding-top: .35rem;
+    padding-bottom: .35rem;
+}
+#headlineBar > span {
+    display: inline-flex;
+    align-items: center;
+    min-height: 28px;
+}
+#headlineNextBtn {
+    min-width: 32px;
+    min-height: 32px;
+}
