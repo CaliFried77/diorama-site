@@ -90,9 +90,12 @@ import { registerWeatherPreviewRenderer } from './services.js';
             box.innerHTML = '';
             WX_PREVIEWS.forEach(([kind, label], i) => {
                 const b = document.createElement('button');
-                b.type = 'button'; b.title = label; b.setAttribute('aria-label', label + ' önizlemesi');
-                b.className = 'p-1.5 rounded-lg border transition ' + (WX.preview === i ? 'bg-white/20 border-white/40' : 'bg-white/[0.05] border-white/10 hover:bg-white/10');
-                b.innerHTML = pxIcon(kind, isLightMode, 22);
+                b.type = 'button';
+                b.title = label;
+                b.setAttribute('aria-label', label + ' önizlemesi');
+                b.setAttribute('aria-pressed', WX.preview === i ? 'true' : 'false');
+                b.className = 'wx-preview-button' + (WX.preview === i ? ' is-active' : '');
+                b.innerHTML = pxIcon(kind, isLightMode, 28);
                 b.addEventListener('click', () => setWxPreview(WX.preview === i ? null : i));
                 box.appendChild(b);
             });
