@@ -7,6 +7,9 @@ const utilities = await readFile(new URL('../css/utilities.css', import.meta.url
 const sw = await readFile(new URL('../dist/sw.js', import.meta.url), 'utf8');
 const builtHtml = await readFile(new URL('../dist/index.html', import.meta.url), 'utf8');
 const main = await readFile(new URL('../js/main.js', import.meta.url), 'utf8');
+const newsCss = await readFile(new URL('../css/news.css', import.meta.url), 'utf8');
+const widgetsCss = await readFile(new URL('../css/widgets.css', import.meta.url), 'utf8');
+const responsiveCss = await readFile(new URL('../css/responsive.css', import.meta.url), 'utf8');
 const sourceLicense = await readFile(new URL('../LICENSE', import.meta.url), 'utf8');
 const sourceNotices = await readFile(new URL('../THIRD_PARTY_NOTICES.md', import.meta.url), 'utf8');
 const workflow = await readFile(new URL('../.github/workflows/quality.yml', import.meta.url), 'utf8');
@@ -60,6 +63,12 @@ test('generated typography uses a more readable scale and a 12px minimum for tin
   assert.ok(utilities.includes('.text-base{font-size:1.0625rem;line-height:1.625rem}'));
   assert.ok(utilities.includes('.text-\\\\[10px\\\\]{font-size:12px}'));
   assert.ok(utilities.includes('.text-\\\\[15px\\\\]{font-size:17px}'));
+});
+
+test('hand-authored component styles keep readable UI text at 12px or larger', () => {
+  for (const [name, css] of [['news.css', newsCss], ['widgets.css', widgetsCss], ['responsive.css', responsiveCss]]) {
+    assert.doesNotMatch(css, /(?:font-size|font):\\s*(?:[0-9]|1[01])px\\b/, `${name} contains text smaller than 12px`);
+  }
 });
 
 test('service worker precaches local shell assets and leaves external live services to the network', () => {
