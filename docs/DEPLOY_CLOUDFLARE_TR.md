@@ -26,7 +26,7 @@ Wrangler `4.162.0` proje komutlarında sabitlenmiştir; ilk çalıştırmada `np
 
 1. Cloudflare Dashboard'da **Workers & Pages → Create application → GitHub** yoluyla depoyu bağla ve GitHub erişimini onayla.
 2. Depo: `CaliFried77/diorama-site`; proje kök dizini: `/`.
-3. Worker adı `diorama-cloudflare` olmalı; `wrangler.toml` dosyasını kaynak yapılandırma olarak kullan.
+3. Worker adı `diorama-site` olmalı; `wrangler.toml` dosyasını kaynak yapılandırma olarak kullan.
 4. **Settings → Build → Branch control** altında bu ayrı test Worker'ının izlenen/production dalını `migration/cloudflare-pages` olarak ayarla. `main` dalını seçme; o dal eski Netlify sürümünü koruyor.
 5. Build command: `npm run build`. Deploy command: `npx --yes wrangler@4.162.0 deploy`.
 6. İlk yayında yalnızca bu yeni Worker'ın `workers.dev` adresini etkin bırak. Özel domain ekleme, DNS kayıtlarını veya `diorama77.netlify.app` adresini değiştirme.
