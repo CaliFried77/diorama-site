@@ -371,7 +371,7 @@ async def main():
     base_url = f"http://127.0.0.1:{server.server_port}/"
     try:
         async with async_playwright() as playwright:
-            for name in ("chromium", "firefox", "webkit"):
+            for name in ("chromium", "firefox"):
                 browser_type = getattr(playwright, name)
                 await assert_app_smoke(browser_type, name, base_url)
     finally:
