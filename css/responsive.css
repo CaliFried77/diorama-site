@@ -132,6 +132,37 @@
 }
 
  
+/* Keep the habitat chooser visually balanced with the compact header controls. */
+.habitat-control-pill {
+    max-width: min(360px, 34vw);
+}
+#habitatMenuBtn {
+    min-width: 0;
+    max-width: 100%;
+}
+#habitatNameLabel {
+    display: inline-block;
+    max-width: clamp(9rem, 15vw, 13rem);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+#habitatFeedHint {
+    max-width: 8rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+@media (max-width: 1150px) {
+    #habitatFeedHint { display: none !important; }
+    .habitat-control-pill { max-width: min(340px, 48vw); }
+    #habitatNameLabel { max-width: min(42vw, 13rem); }
+}
+@media (max-width: 639px) {
+    .habitat-control-pill { max-width: calc(100vw - 7.5rem); }
+    #habitatNameLabel { max-width: min(38vw, 10rem); }
+}
+
 /* Readable control sizing after the typography scale increase. */
 .header-controls-left > button,
 #habitatMenuBtn,
