@@ -67,6 +67,15 @@ test('generated typography and layout share a responsive root scale', () => {
   assert.ok(utilities.includes('.text-\\[15px\\]{font-size:17px}'));
 });
 
+test('text-bearing panels and buttons grow with the typography scale', () => {
+  assert.match(newsCss, /width: min\\(420px/);
+  assert.match(newsCss, /\.news-cat-btn[\\s\\S]*?min-height: 40px/);
+  assert.match(newsCss, /\.news-save-btn[\\s\\S]*?width: 40px; height: 40px/);
+  assert.match(widgetsCss, /\.focus-popover[\\s\\S]*?width: min\\(380px/);
+  assert.match(widgetsCss, /\.focus-primary-btn[\\s\\S]*?min-height: 44px/);
+  assert.match(responsiveCss, /\.engine-chip[\\s\\S]*?min-height: 36px/);
+});
+
 test('hand-authored component styles do not reintroduce tiny fixed-pixel labels', () => {
   for (const [name, css] of [['news.css', newsCss], ['widgets.css', widgetsCss], ['responsive.css', responsiveCss]]) {
     assert.doesNotMatch(css, /(?:font-size|font):\\s*(?:[0-9]|1[01])px\\b/, `${name} contains text smaller than 12px`);
