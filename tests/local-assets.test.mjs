@@ -114,3 +114,9 @@ test('repository ignores build output, local artifacts and environment secrets',
     assert.ok(gitignore.split(/\r?\n/).includes(entry), `missing .gitignore entry: ${entry}`);
   }
 });
+
+test('search input does not steal focus on page load', () => {
+  const input = html.match(/<input\\s+id="searchInput"[\\s\\S]*?\\/>/i)?.[0] ?? '';
+  assert.ok(input, 'search input markup should exist');
+  assert.doesNotMatch(input, /\\bautofocus\\b/i);
+});
