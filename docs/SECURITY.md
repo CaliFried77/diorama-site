@@ -6,7 +6,9 @@ Diorama is designed as a same-origin, local-first application. Browser features 
 
 The root `_headers` file is copied into `dist/` and applied by Cloudflare Static Assets. It defines the Content Security Policy and browser security headers for static files. Worker-generated API responses are separate responses, so `cloudflare/worker.mjs` applies their security headers directly.
 
-The CSP restricts scripts and fonts to the same origin. Existing interface effects set inline style properties, so `style-src 'unsafe-inline'` remains necessary; inline script execution is not allowed.
+The static CSP uses `default-src 'none'` and explicitly allows only same-origin application scripts, styles, fonts, images and the two Open-Meteo API hosts used for weather and city lookup. Inline scripts are not allowed. Existing interface effects write element style properties, so `style-src 'unsafe-inline'` remains necessary until those style updates are moved to classes or CSS custom properties.
+
+Static and Worker API responses also send HSTS (`max-age=31536000`, without `includeSubDomains` or `preload`), `Cross-Origin-Resource-Policy: same-origin`, and `Cross-Origin-Opener-Policy: same-origin`. HSTS is limited to this exact workers.dev hostname; it does not opt other workers.dev subdomains into HSTS. Camera, microphone and geolocation access remain denied by Permissions Policy.
 
 ## RSS and request validation
 
