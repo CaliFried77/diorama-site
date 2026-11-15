@@ -8,6 +8,11 @@ const sw = await readFile(new URL('../dist/sw.js', import.meta.url), 'utf8');
 const builtHtml = await readFile(new URL('../dist/index.html', import.meta.url), 'utf8');
 const main = await readFile(new URL('../js/main.js', import.meta.url), 'utf8');
 const baseCss = await readFile(new URL('../css/base.css', import.meta.url), 'utf8');
+const newsModule = await readFile(new URL('../js/02-news.js', import.meta.url), 'utf8');
+const weatherModule = await readFile(new URL('../js/03-weather.js', import.meta.url), 'utf8');
+const calendarModule = await readFile(new URL('../js/11-calendar.js', import.meta.url), 'utf8');
+const coreUiModule = await readFile(new URL('../js/01-core-ui.js', import.meta.url), 'utf8');
+const dataManagerModule = await readFile(new URL('../js/06-data-manager.js', import.meta.url), 'utf8');
 const cssBuilder = await readFile(new URL('../scripts/build-css.mjs', import.meta.url), 'utf8');
 const newsCss = await readFile(new URL('../css/news.css', import.meta.url), 'utf8');
 const widgetsCss = await readFile(new URL('../css/widgets.css', import.meta.url), 'utf8');
@@ -83,6 +88,39 @@ test('hand-authored component styles avoid tiny fixed-pixel labels', () => {
   for (const [name, css] of [['news.css', newsCss], ['widgets.css', widgetsCss], ['responsive.css', responsiveCss]]) {
     assert.ok(forbiddenSizes.every((token) => !css.includes(token)), `${name} contains tiny fixed-pixel text`);
   }
+});
+
+test('news cards start collapsed and reveal the publisher link after expansion', () => {
+  assert.ok(newsModule.includes('const expandedNewsIds = new Set();'));
+  assert.ok(newsModule.includes('if (isExpanded) {'));
+  assert.ok(newsModule.includes("openSource.textContent = 'Haberi kaynağında aç ↗';"));
+  assert.ok(newsCss.includes('-webkit-line-clamp: 2;'));
+});
+
+test('weather panel includes CAMS air quality and an artistic solar display', () => {
+  assert.ok(weatherModule.includes('air-quality-api.open-meteo.com'));
+  assert.ok(weatherModule.includes("current: 'european_aqi,pm2_5,pm10'"));
+  assert.ok(weatherModule.includes("getElementById('wxAstral')"));
+  assert.ok(widgetsCss.includes('width: min(520px'));
+  assert.ok(widgetsCss.includes('aspect-ratio: 1 / 1;'));
+  assert.ok(widgetsCss.includes('height: 94px;'));
+});
+
+test('calendar is available in the header, opens as a popover and is included in backups', () => {
+  assert.ok(main.includes("import './11-calendar.js';"));
+  assert.ok(html.includes('id="calendarBtn"'));
+  assert.ok(html.includes('id="calendarPopover"'));
+  assert.ok(coreUiModule.includes("getElementById('calendarBtn')"));
+  assert.ok(calendarModule.includes("'diorama_calendar_events_v1'"));
+  assert.ok(calendarModule.includes('function normalizeEvents'));
+  assert.ok(dataManagerModule.includes("'diorama_calendar_events_v1'"));
+});
+
+test('focus, notebook and habitat controls remain balanced after typography scaling', () => {
+  assert.ok(widgetsCss.includes('font-size: 0.8125rem;'));
+  assert.ok(widgetsCss.includes('grid-template-columns: 36px minmax(0,1fr) 52px;'));
+  assert.ok(widgetsCss.includes('.notes-task-form > * { min-width: 0;'));
+  assert.ok(responsiveCss.includes('max-width: min(360px, 34vw)'));
 });
 
 test('service worker precaches local shell assets and leaves external live services to the network', () => {
