@@ -3,6 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Yaşayan piksel habitatları, hava durumu, haberler ve odak alanıyla kişisel yeni sekme deneyimi.">
+    <meta name="application-name" content="Living Pixel Diorama">
+    <meta name="theme-color" content="#04070d">
+    <meta name="color-scheme" content="dark light">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="tr_TR">
+    <meta property="og:title" content="Living Pixel Diorama — Yaşayan Piksel Habitatı">
+    <meta property="og:description" content="Kişisel yeni sekme alanında yaşayan piksel habitatları, hava durumu, haberler ve odak zamanı.">
+    <link rel="icon" type="image/svg+xml" href="./icons/diorama.svg">
+    <link rel="apple-touch-icon" href="./icons/diorama-192.png">
+    <link rel="manifest" href="./manifest.webmanifest">
+    <!-- BUILD:MODULE_PRELOADS -->
     <title>Yeni Sekme — Yaşayan Piksel Diorama</title>
     <!-- Optional typography enhancement: core layout and all utility styles are local. -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -17,6 +29,7 @@
 
     <!-- Full-Bleed Continuous Living Pixel Art Diorama Canvas -->
     <canvas id="habitatCanvas" aria-hidden="true" tabindex="-1" class="fixed inset-0 w-full h-full z-0 cursor-crosshair"></canvas>
+    <span id="habitatAnnouncement" class="sr-only" aria-live="polite" aria-atomic="true">Alacakaranlık Çayırı & Bal Arıları</span>
 
     <!-- =========================================================
          TOP BAR: HABITAT & THEME CONTROLS (LEFT) + AGENDA & TOOLS (RIGHT)

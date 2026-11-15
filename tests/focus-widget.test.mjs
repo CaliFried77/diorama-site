@@ -6,7 +6,7 @@ const [html, js, css, sw, weatherJs] = await Promise.all([
   readFile(new URL('../index.html', import.meta.url), 'utf8'),
   readFile(new URL('../js/04-focus-audio.js', import.meta.url), 'utf8'),
   readFile(new URL('../css/widgets.css', import.meta.url), 'utf8'),
-  readFile(new URL('../sw.js', import.meta.url), 'utf8'),
+  readFile(new URL('../dist/sw.js', import.meta.url), 'utf8'),
   readFile(new URL('../js/03-weather.js', import.meta.url), 'utf8'),
 ]);
 
@@ -34,8 +34,8 @@ test('focus session restores from local storage and persists across page lifecyc
   assert.match(js, /localStorage\.setItem\(FOCUS_STORAGE_KEY/);
   assert.match(js, /window\.addEventListener\('pagehide'/);
   assert.match(js, /document\.addEventListener\('visibilitychange'/);
-  assert.match(sw, /CACHE_PREFIX = 'living-pixel-diorama-shell-'[\s\S]*?CACHE_NAME = `\$\{CACHE_PREFIX\}1\.6\.3`/);
-  assert.match(sw, /'\.\/js\/focus-timer-state\.js'/);
+  assert.match(sw, /CACHE_PREFIX = 'living-pixel-diorama-shell-'[\s\S]*?living-pixel-diorama-shell-1\.6\.4-[a-f0-9]{16}/);
+  assert.match(sw, /\"\.\/js\/focus-timer-state\.js\"/);
   assert.match(sw, /\.\/css\/widgets\.css/);
 });
 

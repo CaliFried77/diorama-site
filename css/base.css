@@ -94,7 +94,6 @@ img, video { max-width: 100%; height: auto; }
         /* Crisp 16-bit Pixel Art Scaling */
         #habitatCanvas {
             image-rendering: pixelated;
-            image-rendering: crisp-edges;
         }
 
         /* =========================================================

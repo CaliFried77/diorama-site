@@ -6,7 +6,9 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const failures = [];
 const html = await readFile(resolve(root, 'index.html'), 'utf8');
 const headers = await readFile(resolve(root, '_headers'), 'utf8');
-const sw = await readFile(resolve(root, 'sw.js'), 'utf8');
+const swTemplate = await readFile(resolve(root, 'sw.template.js'), 'utf8');
+const buildScript = await readFile(resolve(root, 'build.mjs'), 'utf8');
+const customNews = await readFile(resolve(root, 'netlify/functions/custom-news.mjs'), 'utf8');
 const packageJson = JSON.parse(await readFile(resolve(root, 'package.json'), 'utf8'));
 const releaseVersion = packageJson.version;
 
@@ -17,8 +19,10 @@ if (!/(?:^|;)\s*script-src\s+'self'(?:;|$)/.test(headers) || /(?:^|;)\s*script-s
 for (const directive of ['object-src \'none\'', 'base-uri \'self\'', 'frame-ancestors \'none\'', 'X-Content-Type-Options: nosniff', 'Referrer-Policy: strict-origin-when-cross-origin']) {
   if (!headers.includes(directive)) failures.push(`Missing security header/directive: ${directive}`);
 }
-const expectedCacheMarker = 'CACHE_NAME = `${CACHE_PREFIX}' + releaseVersion + '`';
-if (!sw.includes(expectedCacheMarker)) failures.push(`Service worker cache version is not aligned with release ${releaseVersion}.`);
+if (!swTemplate.includes('__CACHE_NAME__') || !swTemplate.includes('__APP_SHELL_JSON__') || !buildScript.includes('createHash')) failures.push(`Service worker app shell is not generated from build assets for release ${releaseVersion}.`);
+if (!swTemplate.includes("cache: 'reload'") || !swTemplate.includes("cache: 'no-cache'")) failures.push('Service Worker must bypass stale HTTP assets during install and prefer revalidated network resources while online.');
+if (!customNews.includes('isSameOriginRequest') || !customNews.includes('sec-fetch-site')) failures.push('Custom RSS endpoint is missing its browser origin check.');
+if (!html.includes('manifest.webmanifest') || !html.includes('name="description"') || !html.includes('property="og:title"')) failures.push('App metadata, manifest or Open Graph basics are missing.');
 
 const scan = async (dir) => {
   const entries = await readdir(dir, { withFileTypes: true });

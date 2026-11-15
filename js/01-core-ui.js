@@ -36,6 +36,8 @@ import { refreshWeatherPreviewButtons, refreshDataManagerStats } from './service
 
         function applyThemeMode() {
             document.body.classList.toggle('theme-light', isLightMode);
+            const themeColor = document.querySelector('meta[name="theme-color"]');
+            if (themeColor) themeColor.setAttribute('content', isLightMode ? '#dbeafe' : '#04070d');
             themeIconSlot.innerHTML = isLightMode ? SVG_ICONS.sun : SVG_ICONS.moon;
             themeIconSlot.className = isLightMode
                 ? 'w-3.5 h-3.5 flex items-center justify-center text-amber-300'

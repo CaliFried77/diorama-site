@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import vm from 'node:vm';
 import { readFile } from 'node:fs/promises';
 
-const source = await readFile(new URL('../sw.js', import.meta.url), 'utf8');
+const source = await readFile(new URL('../dist/sw.js', import.meta.url), 'utf8');
 
 function loadWorker() {
   const listeners = new Map();
@@ -13,7 +13,7 @@ function loadWorker() {
   let skipped = false;
   let claimed = false;
   const cache = {
-    async addAll(paths) { added = [...paths]; paths.forEach((path) => cacheItems.set(new URL(path, 'https://diorama.test/').href, { cached: path })); },
+    async addAll(paths) { added = [...paths].map((path) => path.url || path); paths.forEach((path) => cacheItems.set(path.url || new URL(path, 'https://diorama.test/').href, { cached: path.url || path })); },
     async put(key, value) { cacheItems.set(typeof key === 'string' ? key : key.url, value); },
     async match(key) { return cacheItems.get(typeof key === 'string' ? new URL(key, 'https://diorama.test/').href : key.url) ?? null; },
   };
@@ -29,7 +29,7 @@ function loadWorker() {
     addEventListener(type, callback) { listeners.set(type, callback); },
     async skipWaiting() { skipped = true; },
   };
-  const context = { self, caches, URL, Response: { error: () => ({ error: true }) }, fetch: async () => { throw new Error('offline'); } };
+  const context = { self, caches, URL, Request, Response: { error: () => ({ error: true }) }, fetch: async () => { throw new Error('offline'); } };
   vm.runInNewContext(source, context, { filename: 'sw.js' });
   return { listeners, cacheItems, deleted, get added() { return added; }, get skipped() { return skipped; }, get claimed() { return claimed; }, caches, context };
 }
@@ -39,14 +39,19 @@ test('service worker installs all local app-shell assets and claims the page', a
   let installPromise;
   worker.listeners.get('install')({ waitUntil(promise) { installPromise = promise; } });
   await installPromise;
-  assert.ok(worker.added.includes('./css/utilities.css'));
-  assert.ok(worker.added.includes('./css/news.css'));
-  assert.ok(worker.added.includes('./css/widgets.css'));
-  assert.ok(worker.added.includes('./js/10-glass-renderer.js'));
-  assert.ok(worker.added.includes('./js/focus-timer-state.js'));
-  assert.ok(worker.added.includes('./js/performance-monitor.js'));
-  assert.ok(worker.added.includes('./config/news-feeds.js'));
-  assert.ok(worker.added.includes('./config/habitat-catalog.js'));
+  assert.ok(worker.added.some((path) => path.endsWith('/css/utilities.css')));
+  assert.ok(worker.added.some((path) => path.endsWith('/css/news.css')));
+  assert.ok(worker.added.some((path) => path.endsWith('/css/widgets.css')));
+  assert.ok(worker.added.some((path) => path.endsWith('/js/10-glass-renderer.js')));
+  assert.ok(worker.added.some((path) => path.endsWith('/js/focus-timer-state.js')));
+  assert.ok(worker.added.some((path) => path.endsWith('/js/performance-monitor.js')));
+  assert.ok(worker.added.some((path) => path.endsWith('/config/news-feeds.js')));
+  assert.ok(worker.added.some((path) => path.endsWith('/config/habitat-catalog.js')));
+  assert.ok(worker.added.some((path) => path.endsWith('/manifest.webmanifest')));
+  assert.ok(worker.added.some((path) => path.endsWith('/icons/diorama-192.png')));
+  assert.ok(worker.added.every((path) => path.startsWith('https://diorama.test/')));
+  assert.match(source, /cache:\s*'reload'/);
+  assert.match(source, /living-pixel-diorama-shell-1\.6\.4-[a-f0-9]{16}/);
   assert.ok(worker.skipped);
 
   let activatePromise;
@@ -82,4 +87,24 @@ test('external API requests are not intercepted by the local app shell', () => {
 test('same-origin RSS API calls are never added to the static app-shell cache', async () => {
   assert.doesNotMatch(source, /api\/news/);
   assert.doesNotMatch(source, /api\/custom-news/);
+});
+
+
+test('static resources prefer revalidated network responses and use cache only offline', async () => {
+  const worker = loadWorker();
+  let fetchOptions;
+  worker.context.fetch = async (request, options) => {
+    fetchOptions = options;
+    return { ok: true, marker: 'fresh response', clone() { return this; } };
+  };
+  const event = {
+    request: { method: 'GET', mode: 'cors', url: 'https://diorama.test/js/main.js' },
+    respondWith(promise) { this.responsePromise = promise; },
+  };
+  worker.cacheItems.set('https://diorama.test/js/main.js', { marker: 'stale cached response' });
+  worker.listeners.get('fetch')(event);
+  const response = await event.responsePromise;
+  assert.equal(response.marker, 'fresh response');
+  assert.equal(fetchOptions.cache, 'no-cache');
+  assert.equal(worker.cacheItems.get('https://diorama.test/js/main.js').marker, 'fresh response');
 });

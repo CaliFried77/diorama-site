@@ -1,7 +1,7 @@
 import { HABITATS, HABITAT_IDS } from '../config/habitat-catalog.js';
 export { HABITATS };
 import { lsRaw, lsPut } from './storage.js';
-import { requestHabitatInit } from './services.js';
+import { calculateFrameChance, calculateFrameSmoothing, scaleSceneCollections } from './scene-math.js';
 
 /* HABITAT-STATE — Living Pixel Diorama
    Native ES module. Cross-file dependencies are declared with imports and exports. */
@@ -24,29 +24,40 @@ import { requestHabitatInit } from './services.js';
         export let ph = 240;
 
         export function frameChance(probability) {
-            const p = Math.max(0, Math.min(1, probability));
-            return Math.random() < 1 - Math.pow(1 - p, frameScale);
+            return calculateFrameChance(probability, frameScale, Math.random());
         }
 
         export function frameSmoothing(amount) {
-            const p = Math.max(0, Math.min(1, amount));
-            return 1 - Math.pow(1 - p, frameScale);
+            return calculateFrameSmoothing(amount, frameScale);
         }
 
         function resizePixelCanvas() {
-            pw = Math.ceil(window.innerWidth / PIXEL_SCALE);
-            ph = Math.ceil(window.innerHeight / PIXEL_SCALE);
+            const previousWidth = pw;
+            const previousHeight = ph;
+            const nextWidth = Math.max(1, Math.ceil(window.innerWidth / PIXEL_SCALE));
+            const nextHeight = Math.max(1, Math.ceil(window.innerHeight / PIXEL_SCALE));
+            if (nextWidth === previousWidth && nextHeight === previousHeight) return;
+
+            pw = nextWidth;
+            ph = nextHeight;
             canvas.width = pw;
             canvas.height = ph;
             ctx.imageSmoothingEnabled = false;
+
+            if (previousWidth > 0 && previousHeight > 0 && creatures.length + stimuli.length + ambientParticles.length + flora.length + shootingStars.length > 0) {
+                scaleSceneCollections(
+                    [creatures, stimuli, ambientParticles, flora, shootingStars],
+                    pw / previousWidth,
+                    ph / previousHeight,
+                );
+                bgSilhouettes.length = 0;
+                for (let x = 0; x < pw; x += 4) {
+                    const height = 22 + Math.sin(x * 0.018) * 12 + Math.cos(x * 0.045) * 6;
+                    bgSilhouettes.push({ x, h: height });
+                }
+            }
         }
-        let resizeTimer;
-        window.addEventListener('resize', () => {
-            resizePixelCanvas();
-            clearTimeout(resizeTimer);
-            resizeTimer = setTimeout(() => requestHabitatInit(currentHabitatIdx), 250);
-        });
-        resizePixelCanvas();
+        window.addEventListener('resize', resizePixelCanvas, { passive: true });
 
         export function pRect(x, y, w, h, color) {
             ctx.fillStyle = color;
@@ -78,6 +89,9 @@ import { requestHabitatInit } from './services.js';
         export let flora = [];
         export let bgSilhouettes = [];
         export let shootingStars = [];
+
+        // Initial sizing happens after all mutable scene collections are initialized.
+        resizePixelCanvas();
 
         
 export function setCurrentHabitatIndex(index) {

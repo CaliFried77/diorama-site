@@ -3,7 +3,6 @@ import { PixelBee, PixelBetta, PixelDragonfly, PixelButterfly, PixelJellyfish, P
 import { isLightMode } from './01-core-ui.js';
 import { wxFxOn, drawWxSky } from './03-weather.js';
 import { sceneCache } from './scene-state.js';
-import { registerHabitatInitializer } from './services.js';
 
 const CREATURE_PROFILES = Object.freeze({
     bee: { count: 8, create: () => new PixelBee() },
@@ -24,6 +23,8 @@ const CREATURE_PROFILES = Object.freeze({
             const hab = HABITATS[currentHabitatIdx];
 
             document.getElementById('habitatNameLabel').textContent = hab.name;
+            const announcement = document.getElementById('habitatAnnouncement');
+            if (announcement) announcement.textContent = `Habitat değiştirildi: ${hab.name}`;
             document.getElementById('habitatFeedHint').textContent = hab.hint;
             const dot = document.getElementById('habitatDot');
             dot.style.backgroundColor = hab.dotColor;
@@ -1046,6 +1047,3 @@ const CREATURE_PROFILES = Object.freeze({
                 if (s.life <= 0) stimuli.splice(i, 1);
             }
         }
-
-        
-registerHabitatInitializer(initHabitat);

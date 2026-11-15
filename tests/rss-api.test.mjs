@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { parseRssXml, isPublicIpv4, normalizePublicFeedUrl, fetchRssXml } from '../netlify/lib/rss-core.mjs';
 import newsFunction, { createNewsHandler, config as newsConfig } from '../netlify/functions/news.mjs';
-import customFunction, { createCustomNewsHandler, config as customConfig } from '../netlify/functions/custom-news.mjs';
+import customFunction, { createCustomNewsHandler, isSameOriginRequest, config as customConfig } from '../netlify/functions/custom-news.mjs';
 
 const rssFixture = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0"><channel><item>
@@ -194,4 +194,12 @@ test('custom feed URL is sent only in the POST body, never in the query string',
   assert.match(implementation, /method:\s*'POST'/);
   assert.match(implementation, /body:\s*JSON\.stringify\(\{\s*url:\s*source\.rss\s*\}\)/);
   assert.doesNotMatch(implementation, /searchParams\.set\(['"]url['"]/);
+});
+
+
+test('custom RSS proxy rejects cross-origin browser requests and accepts same-origin requests', () => {
+  assert.equal(isSameOriginRequest(new Request('https://diorama.test/api/custom-news', { method: 'POST', headers: { origin: 'https://diorama.test' } })), true);
+  assert.equal(isSameOriginRequest(new Request('https://diorama.test/api/custom-news', { method: 'POST', headers: { origin: 'https://attacker.test' } })), false);
+  assert.equal(isSameOriginRequest(new Request('https://diorama.test/api/custom-news', { method: 'POST', headers: { 'sec-fetch-site': 'cross-site' } })), false);
+  assert.equal(isSameOriginRequest(new Request('https://diorama.test/api/custom-news', { method: 'POST' })), true);
 });

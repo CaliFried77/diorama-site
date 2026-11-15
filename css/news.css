@@ -419,3 +419,49 @@
 
 /* Fixed navigation text is pixel-styled; article titles/descriptions stay in a reading font. */
 .news-cat-btn, .news-filter-btn { font-family: 'Pixelify Sans', 'JetBrains Mono', monospace; letter-spacing: .01em; }
+
+
+/* Readability floor: small source/status labels remain legible over every habitat. */
+.news-eyebrow,
+.news-section-heading,
+.news-source-summary,
+.news-settings-heading p,
+.news-source-row-copy strong,
+.news-source-status,
+.news-add-source-form label,
+.news-add-footer p,
+.news-list-meta,
+.news-card-source,
+.news-card-date,
+.news-card-title,
+.news-card-description,
+.news-read-status,
+.news-empty-state,
+.news-provider-note,
+.news-provider-note a,
+.news-cat-btn,
+.news-filter-btn,
+.news-icon-btn,
+.news-source-remove,
+.news-add-source-btn {
+  font-size: 11px;
+}
+.news-settings-heading h4 { font-size: 12px; }
+.news-eyebrow, .news-section-heading { color: rgba(255,255,255,.76); }
+.news-eyebrow,
+.news-section-heading,
+.news-source-summary,
+.news-settings-heading p,
+.news-add-footer p,
+.news-card-description,
+.news-empty-state,
+.news-provider-note { color: rgba(255,255,255,.74); }
+.news-source-status,
+.news-card-date,
+.news-list-meta { color: rgba(255,255,255,.68); }
+.news-card-title { font-size: 12px; line-height: 1.5; }
+.news-card.is-featured .news-card-title { font-size: 14px; }
+.news-card-description { font-size: 11px; line-height: 1.55; }
+@media (max-width: 380px) {
+  .news-card-date, .news-source-status, .news-filter-btn, .news-cat-btn { font-size: 11px; }
+}

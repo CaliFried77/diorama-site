@@ -19,6 +19,9 @@ Her büyük arayüz değişikliğinde güncel Chrome, Firefox ve Safari'de kontr
 
 - İlk açılışta saat, tarih, habitat ve ana arama görünür.
 - Altı mevcut habitatın her birine geçiş yapılır; tema ve hava efektleri tutarlıdır.
+- Pencere yeniden boyutlandırıldığında/yön değiştiğinde canlılar kaybolmadan sahne yeni ölçüye uyarlanır.
+- Habitat seçimi ekran okuyucuya duyurulur ve aktif öğe erişilebilir seçili durumunu taşır.
+- Manifest, SVG favicon ve 192/512 px uygulama ikonları doğru yüklenir.
 - Gündem kategorileri ve haber bağlantıları açılır; kaynak hatası varsa durum mesajı gösterilir.
 - Şehir araması, geçersiz şehir ve çevrimdışı hava durumu senaryoları denenir.
 - Pomodoro başlatma/duraklatma/sıfırlama ve ses ambiyansı denenir.
@@ -43,7 +46,8 @@ Her büyük arayüz değişikliğinde güncel Chrome, Firefox ve Safari'de kontr
 - Ağ bağlantısını kesip sayfayı yenile; yerel arayüz, CSS, modüller ve habitat açılmalı.
 - Haber/hava gibi canlı servislerin çevrimdışında hata/önbellek durumunu dürüstçe göstermesini kontrol et.
 - Dağıtım yanıtlarında `_headers` veya `netlify.toml` güvenlik başlıklarının gerçekten gönderildiğini doğrula. CSP ihlali konsol mesajlarını incele.
-- Eski Service Worker cache'inin sürüm yükseltmesinde silindiğini doğrula.
+- Build tarafından üretilen Service Worker dosya listesini ve içerik hash'ini doğrula.
+- Eski Service Worker cache'inin sürüm/asset hash yükseltmesinde silindiğini doğrula.
 
 ## Görsel regresyon
 

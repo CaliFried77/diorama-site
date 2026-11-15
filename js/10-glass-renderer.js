@@ -136,6 +136,9 @@ import { lsPut, esc } from './storage.js';
                 const row = document.createElement('button');
                 row.type = 'button';
                 row.className = `w-full px-3 py-2 rounded-2xl flex items-center justify-between text-left transition ${active ? 'bg-white/15 border border-white/25 text-white' : 'hover:bg-white/[0.06] border border-transparent text-white/75 hover:text-white'}`;
+                row.setAttribute('aria-pressed', active ? 'true' : 'false');
+                if (active) row.setAttribute('aria-current', 'true');
+                else row.removeAttribute('aria-current');
                 row.innerHTML = `
                     <div class="flex items-center gap-2.5 min-w-0">
                         <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background:${h.dotColor}"></span>

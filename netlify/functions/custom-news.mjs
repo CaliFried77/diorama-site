@@ -34,9 +34,19 @@ async function readJsonBodyLimited(request, maxBytes) {
   catch { throw new Error('invalid_json'); }
 }
 
+export function isSameOriginRequest(request) {
+  const origin = request.headers.get('origin');
+  if (origin) {
+    try { return new URL(origin).origin === new URL(request.url).origin; }
+    catch { return false; }
+  }
+  return request.headers.get('sec-fetch-site')?.toLowerCase() !== 'cross-site';
+}
+
 export function createCustomNewsHandler({ fetchFeed = (url) => fetchAndParseFeed(url, { timeoutMs: 6500 }) } = {}) {
   return async function handleCustomNewsRequest(request) {
     if (request.method !== 'POST') return json({ status: 'error', message: 'Yalnızca POST desteklenir.' }, 405);
+    if (!isSameOriginRequest(request)) return json({ status: 'error', message: 'Bu uç nokta yalnızca aynı kaynaktan çağrılabilir.' }, 403);
     const declaredLength = Number(request.headers.get('content-length') || 0);
     if (declaredLength > 4096) return json({ status: 'error', message: 'İstek gövdesi çok büyük.' }, 413);
     if (!/^application\/json(?:\s*;|$)/i.test(request.headers.get('content-type') || '')) {
