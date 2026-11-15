@@ -17,7 +17,7 @@ import { NEWS_CATEGORY_IDS } from '../config/news-feeds.js';
             'diorama_theme', 'diorama_username', 'diorama_engine', 'diorama_city',
             'diorama_wxfx', 'diorama_wx_autotheme', 'diorama_pinned_habitat', 'diorama_ambient_volume',
             'diorama_news_source_preferences_v1', 'diorama_news_custom_sources_v1',
-            'diorama_news_read_ids_v1', 'diorama_news_saved_ids_v1'
+            'diorama_news_read_ids_v1', 'diorama_news_saved_ids_v1', 'diorama_calendar_events_v1'
         ];
         const DATA_HABITAT_IDS = HABITAT_IDS;
         const DATA_ENGINE_IDS = new Set(['google', 'duckduckgo', 'youtube', 'perplexity', 'github']);
@@ -208,6 +208,34 @@ import { NEWS_CATEGORY_IDS } from '../config/news-feeds.js';
                     if (customTotal > 20) throw new Error('Özel kaynak toplam sınırı aşılıyor.');
                     prefs.diorama_news_custom_sources_v1 = JSON.stringify(cleanCustom);
                 }
+                if (input.diorama_calendar_events_v1 !== undefined) {
+                    if (typeof input.diorama_calendar_events_v1 !== 'string' || input.diorama_calendar_events_v1.length > 100000) {
+                        throw new Error('Takvim etkinlikleri geçersiz.');
+                    }
+                    let calendarEvents;
+                    try { calendarEvents = JSON.parse(input.diorama_calendar_events_v1); }
+                    catch { throw new Error('Takvim etkinlikleri okunamadı.'); }
+                    if (!Array.isArray(calendarEvents) || calendarEvents.length > 500) {
+                        throw new Error('Takvim etkinlik listesi geçersiz veya çok büyük.');
+                    }
+                    const seenIds = new Set();
+                    const cleanEvents = calendarEvents.map((item, index) => {
+                        if (!isPlainRecord(item) || typeof item.id !== 'string' || !/^cal-[a-z0-9-]{8,72}$/i.test(item.id)
+                            || seenIds.has(item.id) || typeof item.title !== 'string' || !item.title.trim() || item.title.length > 100
+                            || typeof item.date !== 'string' || !/^\\d{4}-\\d{2}-\\d{2}$/.test(item.date)) {
+                            throw new Error(`${index + 1}. takvim etkinliği doğrulanamadı.`);
+                        }
+                        const eventDate = new Date(`${item.date}T12:00:00`);
+                        const dateKey = `${eventDate.getFullYear()}-${String(eventDate.getMonth() + 1).padStart(2, '0')}-${String(eventDate.getDate()).padStart(2, '0')}`;
+                        if (!Number.isFinite(eventDate.getTime()) || dateKey !== item.date) throw new Error(`${index + 1}. etkinliğin tarihi geçersiz.`);
+                        if (item.time !== undefined && item.time !== '' && (typeof item.time !== 'string' || !/^(?:[01]\\d|2[0-3]):[0-5]\\d$/.test(item.time))) {
+                            throw new Error(`${index + 1}. etkinliğin saati geçersiz.`);
+                        }
+                        seenIds.add(item.id);
+                        return { id: item.id, title: item.title.trim(), date: item.date, time: item.time || '' };
+                    });
+                    prefs.diorama_calendar_events_v1 = JSON.stringify(cleanEvents);
+                }
                 for (const key of ['diorama_news_read_ids_v1', 'diorama_news_saved_ids_v1']) {
                     if (input[key] !== undefined) {
                         if (typeof input[key] !== 'string' || input[key].length > 30000) throw new Error(`${key} ayarı geçersiz.`);
@@ -278,7 +306,7 @@ import { NEWS_CATEGORY_IDS } from '../config/news-feeds.js';
             try {
                 const raw = JSON.parse(await file.text());
                 const validated = validateBackupObject(raw);
-                const groupNames = validated.scope === 'all' ? 'görevler, notlar, kısayollar ve tercihler' : ({ tasks: 'görevler', notes: 'notlar', shortcuts: 'kısayollar' })[validated.scope];
+                const groupNames = validated.scope === 'all' ? 'görevler, notlar, kısayollar, takvim ve tercihler' : ({ tasks: 'görevler', notes: 'notlar', shortcuts: 'kısayollar' })[validated.scope];
                 const ok = window.confirm(`Bu yedek ${groupNames} verilerinin mevcut kayıtlarının üzerine yazacak. Devam edilsin mi?`);
                 if (!ok) return;
                 persistImportedBackup(validated);
