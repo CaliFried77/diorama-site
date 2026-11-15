@@ -8,6 +8,7 @@ const sw = await readFile(new URL('../dist/sw.js', import.meta.url), 'utf8');
 const builtHtml = await readFile(new URL('../dist/index.html', import.meta.url), 'utf8');
 const main = await readFile(new URL('../js/main.js', import.meta.url), 'utf8');
 const baseCss = await readFile(new URL('../css/base.css', import.meta.url), 'utf8');
+const cssBuilder = await readFile(new URL('../scripts/build-css.mjs', import.meta.url), 'utf8');
 const newsCss = await readFile(new URL('../css/news.css', import.meta.url), 'utf8');
 const widgetsCss = await readFile(new URL('../css/widgets.css', import.meta.url), 'utf8');
 const responsiveCss = await readFile(new URL('../css/responsive.css', import.meta.url), 'utf8');
@@ -62,7 +63,7 @@ test('generated typography and layout share a responsive root scale', () => {
   assert.ok(baseCss.includes('font-size: clamp(17.333px, calc(16px + .13vw), 18px);'));
   assert.ok(utilities.includes('.text-xs{font-size:.75rem;line-height:1rem}'));
   assert.ok(utilities.includes('.text-sm{font-size:.875rem;line-height:1.25rem}'));
-  assert.ok(utilities.includes('.text-base{font-size:1rem;line-height:1.5rem}'));
+  assert.ok(cssBuilder.includes("base: ['1rem', '1.5rem']"));
   assert.ok(utilities.includes('.text-\\[10px\\]{font-size:13px}'));
   assert.ok(utilities.includes('.text-\\[15px\\]{font-size:17px}'));
 });
@@ -71,7 +72,7 @@ test('text-bearing panels and buttons grow with the typography scale', () => {
   assert.ok(newsCss.includes('width: min(420px'));
   assert.ok(newsCss.includes('.news-cat-btn {'));
   assert.ok(newsCss.includes('min-height: 40px;'));
-  assert.ok(newsCss.includes('width: 40px; height: 40px;'));
+  assert.ok(newsCss.includes('width: 36px; height: 36px;'));
   assert.ok(widgetsCss.includes('width: min(380px'));
   assert.ok(widgetsCss.includes('min-height: 44px;'));
   assert.ok(responsiveCss.includes('min-height: 36px;'));
