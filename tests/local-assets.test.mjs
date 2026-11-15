@@ -59,7 +59,7 @@ test('build copies extension catalogs and Cloudflare response headers while Wran
 });
 
 test('generated typography and layout share a responsive root scale', () => {
-  assert.ok(baseCss.includes('font-size: clamp(16.5px, calc(15.5px + .18vw), 18px);'));
+  assert.ok(baseCss.includes('font-size: clamp(17.333px, calc(16px + .13vw), 18px);'));
   assert.ok(utilities.includes('.text-xs{font-size:.75rem;line-height:1rem}'));
   assert.ok(utilities.includes('.text-sm{font-size:.875rem;line-height:1.25rem}'));
   assert.ok(utilities.includes('.text-base{font-size:1rem;line-height:1.5rem}'));
