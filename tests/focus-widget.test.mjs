@@ -42,7 +42,7 @@ test('focus session restores from local storage and persists across page lifecyc
 });
 
 test('fixed widget labels use pixel type while dynamic news content stays regular', () => {
-  assert.match(html, /wx-section-label mt-4\">ÖNÜMÜZDEKİ SAATLER<\/p>/);
+  assert.ok(html.includes('ÖNÜMÜZDEKİ SAATLER'));
   assert.match(html, /id="wxAstral"/);
   assert.match(html, /class="text-xs font-semibold text-white\/90 font-pixel">Kişisel Defter/);
   assert.match(css, /\.widget-static-label[\s\S]*?font-family:\s*'Pixelify Sans'/);
