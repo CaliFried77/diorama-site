@@ -348,6 +348,7 @@ import { refreshWeatherPreviewButtons, refreshDataManagerStats } from './service
             { btn: document.getElementById('newsBtn'), panel: document.getElementById('newsPopover') },
             { btn: document.getElementById('weatherBtn'), panel: document.getElementById('weatherPopover') },
             { btn: document.getElementById('focusBtn'), panel: document.getElementById('focusPopover') },
+            { btn: document.getElementById('calendarBtn'), panel: document.getElementById('calendarPopover') },
             { btn: document.getElementById('notesBtn'), panel: document.getElementById('notesPopover') },
             { btn: document.getElementById('dataManagerBtn'), panel: document.getElementById('dataManagerPopover') }
         ];
