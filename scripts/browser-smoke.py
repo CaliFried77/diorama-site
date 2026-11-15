@@ -206,10 +206,33 @@ async def assert_app_smoke(browser_type, name: str, base_url: str):
     for width, height in ((320, 740), (390, 844), (768, 1024), (1440, 900)):
         await page.set_viewport_size({"width": width, "height": height})
         await page.wait_for_timeout(150)
-        overflow = await page.evaluate("Math.max(document.documentElement.scrollWidth, document.body.scrollWidth) > window.innerWidth + 1")
-        assert not overflow, f"{name}: horizontal overflow at {width}px"
         ARTIFACTS.mkdir(exist_ok=True)
         await page.screenshot(path=str(ARTIFACTS / f"{name}-{width}x{height}.png"), full_page=True)
+        overflow_state = await page.evaluate("""() => {
+            const width = window.innerWidth;
+            const overflowing = [...document.querySelectorAll('body *')].map((el) => {
+                const rect = el.getBoundingClientRect();
+                return {
+                    tag: el.tagName.toLowerCase(),
+                    id: el.id || '',
+                    className: typeof el.className === 'string' ? el.className.slice(0, 180) : '',
+                    left: Math.round(rect.left),
+                    right: Math.round(rect.right),
+                    width: Math.round(rect.width),
+                    scrollWidth: el.scrollWidth
+                };
+            }).filter((item) => item.width > 0 && (item.left < -1 || item.right > width + 1))
+              .sort((a, b) => b.right - a.right)
+              .slice(0, 15);
+            return {
+                viewport: width,
+                documentWidth: document.documentElement.scrollWidth,
+                bodyWidth: document.body.scrollWidth,
+                overflow: Math.max(document.documentElement.scrollWidth, document.body.scrollWidth) > width + 1,
+                elements: overflowing
+            };
+        }""")
+        assert not overflow_state["overflow"], f"{name}: horizontal overflow at {width}px: {json.dumps(overflow_state, ensure_ascii=False)}"
 
     # Verify service-worker readiness and offline app-shell re-open where supported.
     sw_supported = await page.evaluate("'serviceWorker' in navigator")
