@@ -1,5 +1,5 @@
 import { currentHabitatIdx, HABITATS, creatures, stimuli, ambientParticles, flora, bgSilhouettes, shootingStars, pw, ph, lerpHex, ctx, pRect, frameChance, frameScale, setCurrentHabitatIndex } from './07-habitat-state.js';
-import { PixelBee, PixelBetta, PixelDragonfly, PixelButterfly, PixelJellyfish, PixelKoi } from './08-creatures.js';
+import { PixelBee, PixelBetta, PixelDragonfly, PixelButterfly, PixelJellyfish, PixelKoi, PixelParrot } from './08-creatures.js';
 import { isLightMode } from './01-core-ui.js';
 import { wxFxOn, drawWxSky } from './03-weather.js';
 import { sceneCache } from './scene-state.js';
@@ -11,6 +11,7 @@ const CREATURE_PROFILES = Object.freeze({
     butterfly: { count: 8, create: () => new PixelButterfly() },
     jellyfish: { count: 8, create: () => new PixelJellyfish() },
     koi: { count: 7, create: () => new PixelKoi() },
+    parrot: { count: 5, create: () => new PixelParrot() },
 });
 
 /* SCENERY — Living Pixel Diorama
@@ -124,6 +125,17 @@ const CREATURE_PROFILES = Object.freeze({
                         phase: Math.random() * Math.PI * 2
                     });
                 }
+                // A natural dark gravel bed anchors the aquascape and softens the glass-bottom edge.
+                for (let i = 0; i < 42; i++) {
+                    flora.push({
+                        type: 'pebble',
+                        x: Math.random() * pw,
+                        y: ph - 4 - Math.random() * 7,
+                        w: 2 + Math.floor(Math.random() * 5),
+                        h: 1 + Math.floor(Math.random() * 3),
+                        shade: ['#102c3a', '#183c4b', '#24505a', '#0b2431'][i % 4]
+                    });
+                }
 
             } else if (hab.sceneProfile === 'wetland') {
                 // Organic Wetland Shoreline: Cattails, Yellow Water Iris, Umbrella Papyrus, Arrowhead & Mossy Rocks
@@ -160,7 +172,7 @@ const CREATURE_PROFILES = Object.freeze({
                         });
                     }
                 }
-                for (let i = 0; i < 12; i++) {
+                for (let i = 0; i < 16; i++) {
                     flora.push({
                         type: 'lily',
                         x: 32 + Math.random() * (pw - 64),
@@ -168,6 +180,17 @@ const CREATURE_PROFILES = Object.freeze({
                         r: 6 + Math.floor(Math.random() * 6),
                         flower: i % 2 === 0,
                         flowerCol: ['#fde047', '#f472b6', '#f8fafc'][i % 3]
+                    });
+                }
+                for (let i = 0; i < 18; i++) {
+                    const shoreX = i < 9 ? Math.random() * pw * 0.28 : pw * 0.72 + Math.random() * pw * 0.28;
+                    flora.push({
+                        type: 'pebble',
+                        x: shoreX,
+                        y: ph - 8 - Math.random() * 16,
+                        w: 3 + Math.floor(Math.random() * 5),
+                        h: 2 + Math.floor(Math.random() * 3),
+                        shade: ['#18383a', '#23474a', '#31575a'][i % 3]
                     });
                 }
 
@@ -269,6 +292,58 @@ const CREATURE_PROFILES = Object.freeze({
                         r: 8 + Math.floor(Math.random() * 5),
                         flower: i % 2 === 0,
                         flowerCol: i % 4 === 0 ? '#f8fafc' : '#f472b6'
+                    });
+                }
+
+            } else if (hab.sceneProfile === 'rainforest') {
+                // Layered tropical understory: elephant-ear leaves, bromeliads, orchids and hanging lianas.
+                for (let x = 8; x < pw - 8; x += 10 + Math.floor(Math.random() * 9)) {
+                    const roll = Math.random();
+                    if (roll < 0.48) {
+                        flora.push({
+                            type: 'tropical_leaf',
+                            x,
+                            h: 28 + Math.random() * 48,
+                            dir: Math.random() < 0.5 ? -1 : 1,
+                            hue: Math.random() < 0.5 ? '#0f766e' : '#15803d',
+                            phase: Math.random() * Math.PI * 2
+                        });
+                    } else if (roll < 0.72) {
+                        flora.push({
+                            type: 'bromeliad',
+                            x,
+                            h: 17 + Math.random() * 15,
+                            hue: Math.random() < 0.5 ? '#e11d48' : '#f97316',
+                            phase: Math.random() * Math.PI * 2
+                        });
+                    } else {
+                        flora.push({
+                            type: 'orchid',
+                            x,
+                            h: 24 + Math.random() * 24,
+                            hue: Math.random() < 0.5 ? '#e879f9' : '#f9a8d4',
+                            phase: Math.random() * Math.PI * 2
+                        });
+                    }
+                }
+                for (let i = 0; i < 9; i++) {
+                    flora.push({
+                        type: 'canopy_vine',
+                        x: 18 + Math.random() * (pw - 36),
+                        startY: 4 + Math.random() * 25,
+                        len: 28 + Math.random() * Math.min(82, ph * 0.34),
+                        phase: Math.random() * Math.PI * 2,
+                        hue: i % 2 === 0 ? '#16a34a' : '#0f766e'
+                    });
+                }
+                for (let i = 0; i < 34; i++) {
+                    flora.push({
+                        type: 'pebble',
+                        x: Math.random() * pw,
+                        y: ph - 3 - Math.random() * 8,
+                        w: 2 + Math.floor(Math.random() * 5),
+                        h: 1 + Math.floor(Math.random() * 3),
+                        shade: ['#123a32', '#1a4a3b', '#245847'][i % 3]
                     });
                 }
             }
