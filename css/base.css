@@ -315,6 +315,13 @@ body.zen-active .zen-hide {
     opacity: 0 !important;
     transform: translateY(10px) scale(0.98);
     pointer-events: none !important;
+    visibility: hidden;
+}
+body.zen-active.zen-revealed .zen-hide {
+    opacity: 1 !important;
+    transform: translateY(0) scale(1);
+    pointer-events: auto !important;
+    visibility: visible;
 }
 
 [contenteditable="true"]:focus {
