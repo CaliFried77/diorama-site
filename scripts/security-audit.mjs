@@ -26,6 +26,9 @@ if (!/(?:^|;)\s*script-src\s+'self'(?:;|$)/.test(headers) || /(?:^|;)\s*script-s
 for (const directive of [
   "object-src 'none'", "base-uri 'self'", "frame-ancestors 'none'",
   'X-Content-Type-Options: nosniff', 'Referrer-Policy: strict-origin-when-cross-origin',
+  'Strict-Transport-Security: max-age=31536000',
+  'Cross-Origin-Resource-Policy: same-origin',
+  'Cross-Origin-Opener-Policy: same-origin',
 ]) {
   if (!headers.includes(directive)) failures.push('Missing static security header/directive: ' + directive);
 }
@@ -70,6 +73,9 @@ if (/rss2json\.com/i.test(appCode)) failures.push('Browser/server code still dep
 if (!headers.includes("connect-src 'self'")) failures.push('Static CSP must keep API requests same-origin.');
 if (!cloudflareWorker.includes("'Content-Security-Policy'") || !cloudflareWorker.includes("default-src 'none'")) {
   failures.push('Worker-generated API responses must receive a restrictive CSP.');
+}
+for (const header of ["'Strict-Transport-Security'", "'Cross-Origin-Resource-Policy'", "'Cross-Origin-Opener-Policy'", "'X-Content-Type-Options'", "'X-Frame-Options'", "'Permissions-Policy'"]) {
+  if (!cloudflareWorker.includes(header)) failures.push('Worker-generated API responses are missing security header: ' + header);
 }
 if (/fonts\.googleapis\.com|fonts\.gstatic\.com/i.test([html, main, baseCss, headers].join('\n'))) {
   failures.push('External Google Fonts dependency remains; fonts must be self-hosted.');
