@@ -145,7 +145,7 @@ import { registerWeatherPreviewRenderer } from './services.js';
             const phase = Math.round(moonPhaseNow() * 8) % 8;
             const moonGlyphs = ['🌑', '🌒', '🌓', '🌔', '🌕', '🌖', '🌗', '🌘'];
             const live = WX.live;
-            const sunPct = live?.isDay ? Math.round(clamp01(live.sunP) * 100) : 0;
+            const skyPct = live ? Math.round(clamp01(live.isDay ? live.sunP : live.moonP) * 100) : 0;
             const dayState = isDay ? 'Güneş ufkun üzerinde' : 'Gece gökyüzü';
             document.getElementById('wxAstral').innerHTML = `
                 <section class="wx-solar-card">
@@ -153,9 +153,9 @@ import { registerWeatherPreviewRenderer } from './services.js';
                         <span>GÜNÜN IŞIĞI</span>
                         <strong>${dayState}</strong>
                     </div>
-                    <div class="wx-solar-track" role="img" aria-label="Gün doğumu ${hhmm(dy.sunrise[0])}, gün batımı ${hhmm(dy.sunset[0])}">
-                        <span class="wx-solar-glow" style="width:${sunPct}%"></span>
-                        <span class="wx-solar-marker" style="left:${sunPct}%">${isDay ? '☀' : '☾'}</span>
+                    <div class="wx-solar-track \${isDay ? 'is-day' : 'is-night'}" role="img" aria-label="Gün doğumu ${hhmm(dy.sunrise[0])}, gün batımı ${hhmm(dy.sunset[0])}">
+                        <span class="wx-solar-glow" style="width:${skyPct}%"></span>
+                        <span class="wx-solar-marker" style="left:${skyPct}%">${isDay ? '☀' : '☾'}</span>
                     </div>
                     <div class="wx-solar-times">
                         <span><i>↗</i><small>GÜN DOĞUMU</small><strong>${hhmm(dy.sunrise[0])}</strong></span>
@@ -195,7 +195,7 @@ import { registerWeatherPreviewRenderer } from './services.js';
                             <span>PM2.5 <strong>${airQuality.pm2_5.toFixed(1)} <small>µg/m³</small></strong></span>
                             <span>PM10 <strong>${airQuality.pm10.toFixed(1)} <small>µg/m³</small></strong></span>
                         </div>
-                        <p class="wx-air-disclaimer">CAMS model tahmini · yaklaşık 11 km çözünürlük</p>
+                        <p class="wx-air-disclaimer">CAMS model tahmini · bölgeye göre yaklaşık 11–45 km çözünürlük</p>
                     </section>`;
             } else {
                 airBox.innerHTML = `
