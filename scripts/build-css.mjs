@@ -46,7 +46,7 @@ const arbitrary = (value) => value.startsWith('[') && value.endsWith(']') ? valu
 const readableFontSize = (value) => {
   const match = /^(\d+(?:\.\d+)?)px$/.exec(value.trim());
   if (!match) return value;
-  return `${Math.max(12, Math.round(Number(match[1]) * 1.125))}px`;
+  return `${Math.max(13, Math.round(Number(match[1]) * 1.125))}px`;
 };
 const colorValue = (token) => {
   const slash = token.indexOf('/');
