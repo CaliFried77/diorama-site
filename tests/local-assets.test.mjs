@@ -7,6 +7,7 @@ const utilities = await readFile(new URL('../css/utilities.css', import.meta.url
 const sw = await readFile(new URL('../dist/sw.js', import.meta.url), 'utf8');
 const builtHtml = await readFile(new URL('../dist/index.html', import.meta.url), 'utf8');
 const main = await readFile(new URL('../js/main.js', import.meta.url), 'utf8');
+const baseCss = await readFile(new URL('../css/base.css', import.meta.url), 'utf8');
 const newsCss = await readFile(new URL('../css/news.css', import.meta.url), 'utf8');
 const widgetsCss = await readFile(new URL('../css/widgets.css', import.meta.url), 'utf8');
 const responsiveCss = await readFile(new URL('../css/responsive.css', import.meta.url), 'utf8');
@@ -57,8 +58,8 @@ test('build copies extension catalogs and Cloudflare response headers while Wran
   assert.equal(packageJson.scripts['deploy:dry-run'], 'npm run build && npx --yes wrangler@4.162.0 deploy --dry-run');
 });
 
-test('generated typography uses a more readable scale and a 12px minimum for tiny labels', () => {
-  assert.match(await readFile(new URL('../css/base.css', import.meta.url), 'utf8'), /font-size: clamp\\(16\\.5px, calc\\(15\\.5px \\+ \\.18vw\\), 18px\\)/);
+test('generated typography and layout share a responsive root scale', () => {
+  assert.ok(baseCss.includes('font-size: clamp(16.5px, calc(15.5px + .18vw), 18px);'));
   assert.ok(utilities.includes('.text-xs{font-size:.75rem;line-height:1rem}'));
   assert.ok(utilities.includes('.text-sm{font-size:.875rem;line-height:1.25rem}'));
   assert.ok(utilities.includes('.text-base{font-size:1rem;line-height:1.5rem}'));
@@ -66,9 +67,9 @@ test('generated typography uses a more readable scale and a 12px minimum for tin
   assert.ok(utilities.includes('.text-\\[15px\\]{font-size:17px}'));
 });
 
-test('hand-authored component styles keep readable UI text at 12px or larger', () => {
+test('hand-authored component styles do not reintroduce tiny fixed-pixel labels', () => {
   for (const [name, css] of [['news.css', newsCss], ['widgets.css', widgetsCss], ['responsive.css', responsiveCss]]) {
-    assert.doesNotMatch(css, /(?:font-size|font):\s*(?:[0-9]|1[01])px\b/, `${name} contains text smaller than 12px`);
+    assert.doesNotMatch(css, /(?:font-size|font):\\s*(?:[0-9]|1[01])px\\b/, `${name} contains text smaller than 12px`);
   }
 });
 
