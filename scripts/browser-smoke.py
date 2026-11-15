@@ -259,8 +259,22 @@ async def assert_app_smoke(browser_type, name: str, base_url: str):
                 };
             }""")
             await context.set_offline(True)
-            await page.reload(wait_until="domcontentloaded", timeout=20000)
-            await page.locator("#heroClock").wait_for(state="visible", timeout=10000)
+            if name == "firefox":
+                # Playwright's Firefox offline emulation rejects top-level reloads with
+                # NS_ERROR_OFFLINE even when the Service Worker and app-shell cache are
+                # active. Verify the cached shell through a same-origin request instead.
+                offline_status = await page.evaluate("""async () => {
+                    try {
+                        const response = await fetch('./index.html', { cache: 'no-store' });
+                        return response.status;
+                    } catch {
+                        return -1;
+                    }
+                }""")
+                assert offline_status == 200, f"{name}: cached app shell fetch failed while offline: {offline_status}"
+            else:
+                await page.reload(wait_until="domcontentloaded", timeout=20000)
+                await page.locator("#heroClock").wait_for(state="visible", timeout=10000)
             await context.set_offline(False)
         except Exception as error:
             try:
