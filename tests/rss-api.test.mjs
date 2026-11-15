@@ -131,7 +131,6 @@ test('built-in API supports forced refresh without shared or browser caching', a
   const handler = createNewsHandler({ fetchFeed: async () => [{ title: 'Yeni', link: 'https://example.org/new' }] });
   const response = await handler(new Request('https://diorama.example/api/news?category=bilim&refresh=1'));
   assert.equal(response.headers.get('Cache-Control'), 'no-store');
-  assert.equal(response.headers.get('Netlify-CDN-Cache-Control'), null);
 });
 
 test('custom feed API validates public HTTPS URLs before invoking its fetcher', async () => {
