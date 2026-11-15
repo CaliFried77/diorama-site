@@ -237,16 +237,45 @@ async def assert_app_smoke(browser_type, name: str, base_url: str):
     # Verify service-worker readiness and offline app-shell re-open where supported.
     sw_supported = await page.evaluate("'serviceWorker' in navigator")
     if sw_supported:
+        sw_state = {}
         try:
             await asyncio.wait_for(page.evaluate("() => navigator.serviceWorker.ready.then(() => true)"), timeout=20)
             await page.reload(wait_until="domcontentloaded", timeout=20000)
             await page.locator("#heroClock").wait_for(state="visible", timeout=10000)
+            await page.wait_for_function("navigator.serviceWorker.controller !== null", timeout=10000)
+            sw_state = await page.evaluate("""async () => {
+                const registration = await navigator.serviceWorker.getRegistration();
+                const cacheNames = await caches.keys();
+                const indexUrl = new URL('./index.html', location.origin).href;
+                const cachedIndex = await caches.match(indexUrl);
+                return {
+                    hasController: Boolean(navigator.serviceWorker.controller),
+                    controllerScript: navigator.serviceWorker.controller?.scriptURL || null,
+                    registrationActive: Boolean(registration?.active),
+                    activeState: registration?.active?.state || null,
+                    cacheNames,
+                    cachedIndex: Boolean(cachedIndex),
+                    cachedIndexStatus: cachedIndex?.status || null
+                };
+            }""")
             await context.set_offline(True)
             await page.reload(wait_until="domcontentloaded", timeout=20000)
             await page.locator("#heroClock").wait_for(state="visible", timeout=10000)
             await context.set_offline(False)
         except Exception as error:
-            raise AssertionError(f"{name}: service worker/offline shell smoke test failed: {error}") from error
+            try:
+                offline_state = await page.evaluate("""async () => ({
+                    hasController: Boolean(navigator.serviceWorker?.controller),
+                    cacheNames: await caches.keys(),
+                    cachedIndex: Boolean(await caches.match(new URL('./index.html', location.origin).href))
+                })""")
+            except Exception as diagnostic_error:
+                offline_state = {"diagnosticError": str(diagnostic_error)}
+            raise AssertionError(
+                f"{name}: service worker/offline shell smoke test failed: {error}; "
+                f"state before offline: {json.dumps(sw_state, ensure_ascii=False)}; "
+                f"current state: {json.dumps(offline_state, ensure_ascii=False)}"
+            ) from error
 
     assert not page_errors, f"{name}: JavaScript runtime errors: {page_errors}"
     await context.close()
