@@ -456,8 +456,8 @@ const CREATURE_PROFILES = Object.freeze({
                 // Low mossy cobblestone foundation wall along the meadow ridge
                 for (let sx = startX; sx < endX; sx += 4) {
                     const undulate = Math.round(Math.sin(sx * 0.05) * 1.5);
-                    const sy = ph - 12 + undulate;
-                    pRect(sx, sy, 3, 7, stoneDark);
+                    const sy = ph - 8 + undulate;
+                    pRect(sx, sy, 3, 8, stoneDark);
                     pRect(sx, sy, 2, 2, stoneHi);
                     pRect(sx + 1, sy + 3, 2, 2, stoneMid);
                     if (sx % 8 === 0) pRect(sx, sy - 1, 3, 1, isLightMode ? '#16a34a' : '#14532d'); // Moss cushion
@@ -466,14 +466,14 @@ const CREATURE_PROFILES = Object.freeze({
                 // Wavy rustic split-rails with natural wood sag between posts
                 for (let sx = startX; sx < endX - 4; sx++) {
                     const sag = Math.round(Math.sin((sx % 22) / 22 * Math.PI) * 1.4);
-                    pRect(sx, ph - 22 + sag, 1, 2, woodDark);
-                    pRect(sx, ph - 22 + sag, 1, 1, woodHi);
                     pRect(sx, ph - 16 + sag, 1, 2, woodDark);
+                    pRect(sx, ph - 16 + sag, 1, 1, woodHi);
+                    pRect(sx, ph - 10 + sag, 1, 2, woodDark);
                 }
 
                 // Sculpted Timber Posts with Chamfered Caps, Climbing Rose Vines & Glowing Gate Lantern
                 for (let px = startX; px < endX; px += 22) {
-                    const postH = (px === startX) ? 26 : 21;
+                    const postH = (px === startX) ? 22 : 18;
                     const py = ph - 6 - postH;
                     pRect(px - 1, py, 4, postH, woodDark);
                     pRect(px - 1, py, 1, postH, woodHi);
@@ -497,30 +497,32 @@ const CREATURE_PROFILES = Object.freeze({
                     }
                 }
 
-                // Ancient Oak Tree Trunk & Extending Bough on the Left
+                // Grand old oak: a taller, wider trunk with a broad canopy that frames the meadow.
                 const trunkCol = isLightMode ? '#451a03' : '#1c1217';
                 const barkHi = isLightMode ? '#78350f' : '#2e1d24';
-                for (let y = ph - 98; y < ph; y++) {
-                    const w = 12 + Math.floor((y - (ph - 98)) * 0.14);
+                for (let y = ph - 132; y < ph; y++) {
+                    const depth = y - (ph - 132);
+                    const w = 17 + Math.floor(depth * 0.19);
                     pRect(0, y, w, 1, trunkCol);
-                    pRect(w - 3, y, 2, 1, barkHi);
+                    pRect(w - 5, y, 3, 1, barkHi);
+                    if (y % 17 === 0) pRect(4, y, 4, 1, isLightMode ? '#92400e' : '#3f2830');
                 }
-                const branchY = ph - 88;
-                for (let bx = 8; bx <= 64; bx++) {
-                    const by = branchY + Math.floor(Math.sin(bx * 0.08) * 2);
-                    const bw = Math.max(2, Math.floor(7 - (bx - 8) * 0.08));
+                const branchY = ph - 119;
+                for (let bx = 12; bx <= 112; bx++) {
+                    const by = branchY + Math.floor(Math.sin(bx * 0.055) * 3);
+                    const bw = Math.max(2, Math.floor(10 - (bx - 12) * 0.065));
                     pRect(bx, by, 1, bw, trunkCol);
                     pRect(bx, by, 1, 1, barkHi);
                 }
 
-                // Lush Layered Pixel Foliage Canopy with Apple/Blossom Dots
+                // Layered oak canopy, with warm blossom/fruit pixels and scalloped edges.
                 const leafDark = isLightMode ? '#14532d' : '#0b221e';
                 const leafMid = isLightMode ? '#15803d' : '#11332b';
                 const leafHi = isLightMode ? '#22c55e' : '#1b4d3e';
                 const canopyBlobs = [
-                    { cx: 18, cy: ph - 108, rx: 28, ry: 18 },
-                    { cx: 46, cy: ph - 100, rx: 24, ry: 15 },
-                    { cx: 66, cy: ph - 92, rx: 16, ry: 11 }
+                    { cx: 25, cy: ph - 145, rx: 40, ry: 28 },
+                    { cx: 70, cy: ph - 137, rx: 38, ry: 26 },
+                    { cx: 111, cy: ph - 127, rx: 25, ry: 20 }
                 ];
                 canopyBlobs.forEach((b, bIdx) => {
                     for (let dy = -b.ry; dy <= b.ry; dy++) {
@@ -539,10 +541,29 @@ const CREATURE_PROFILES = Object.freeze({
                 });
 
                 // Hanging Golden Skep Beehive swaying gently from the oak branch (at x = 48)
+                // A smaller orchard tree in the middle distance makes the meadow feel wooded.
+                const groveX = Math.round(pw * 0.33);
+                for (let y = ph - 88; y < ph; y++) {
+                    const width = 7 + Math.floor((y - (ph - 88)) * 0.09);
+                    pRect(groveX, y, width, 1, isLightMode ? '#5c2d16' : '#24161a');
+                    if (y % 11 === 0) pRect(groveX + width - 2, y, 2, 1, barkHi);
+                }
+                [[groveX + 6, ph - 105, 25, 19], [groveX + 29, ph - 98, 22, 16]].forEach(([cx, cy, rx, ry], idx) => {
+                    for (let dy = -ry; dy <= ry; dy++) {
+                        for (let dx = -rx; dx <= rx; dx++) {
+                            if (dx * dx / (rx * rx) + dy * dy / (ry * ry) <= 1) {
+                                pRect(cx + dx, cy + dy, 1, 1, dy < -ry * 0.25 ? leafHi : (dy > ry * 0.4 ? leafDark : leafMid));
+                                if ((dx + dy + idx) % 31 === 0) pRect(cx + dx, cy + dy, 2, 2, '#fbbf24');
+                            }
+                        }
+                    }
+                });
+
+                // Hanging Golden Skep Beehive swaying beneath the broad oak bough.
                 const hiveSway = Math.round(Math.sin(time * 0.0016) * 1.2);
-                const hx = 48 + hiveSway;
+                const hx = 76 + hiveSway;
                 const hy = branchY + 5;
-                pRect(48, branchY + 2, 1, 4, '#78350f');
+                pRect(76, branchY + 2, 1, 4, '#78350f');
                 for (let ry = 0; ry <= 12; ry++) {
                     const hw = Math.round(3 + Math.sin((ry / 12) * Math.PI) * 4.5);
                     const tierCol = ry % 3 === 0 ? '#b45309' : (ry % 2 === 0 ? '#f59e0b' : '#d97706');
