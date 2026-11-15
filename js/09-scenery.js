@@ -889,6 +889,74 @@ const CREATURE_PROFILES = Object.freeze({
                 if (f.type === 'pebble') {
                     pRect(f.x, f.y, f.w, f.h, isLightMode ? 'rgba(15, 55, 65, 0.35)' : f.shade);
 
+                } else if (f.type === 'canopy_vine') {
+                    // Hanging lianas with alternating paired leaves.
+                    for (let y = 0; y < f.len; y++) {
+                        const sway = Math.sin(time * 0.0011 + f.phase + y * 0.045) * (y / f.len) * 4;
+                        const px = f.x + sway;
+                        const py = f.startY + y;
+                        pRect(px, py, 1, 1, f.hue);
+                        if (y > 5 && y % 9 === 0) {
+                            const leaf = y % 18 === 0 ? '#4ade80' : '#22c55e';
+                            pRect(px - 3, py, 3, 2, leaf);
+                            pRect(px + 1, py - 2, 3, 2, leaf);
+                            pRect(px - 2, py - 1, 1, 1, '#a3e635');
+                        }
+                    }
+
+                } else if (f.type === 'tropical_leaf') {
+                    // Tall elephant-ear / banana foliage with broad alternating blades.
+                    const stemShade = isLightMode ? '#166534' : '#0f513c';
+                    for (let y = 0; y < f.h; y++) {
+                        const sway = Math.sin(time * 0.0014 + f.phase + y * 0.05) * (y / f.h) * 3;
+                        const px = f.x + sway;
+                        const py = ph - y;
+                        pRect(px, py, 1, 1, stemShade);
+                        if (y > 8 && y % 5 === 0) {
+                            const side = ((y / 5) % 2 === 0 ? 1 : -1) * f.dir;
+                            const span = Math.round(3 + Math.sin((y / f.h) * Math.PI) * 7);
+                            for (let leaf = 0; leaf < span; leaf++) {
+                                const leafX = px + side * leaf;
+                                const leafY = py - Math.round(leaf * 0.38);
+                                pRect(leafX, leafY, 2, 1, f.hue);
+                                if (leaf % 3 === 0) pRect(leafX, leafY - 1, 1, 1, '#4ade80');
+                            }
+                            pRect(px + side * span, py - Math.round(span * 0.38), 2, 1, '#86efac');
+                        }
+                    }
+
+                } else if (f.type === 'bromeliad') {
+                    // Rosette leaves and a vivid central tropical flower.
+                    const centerX = f.x;
+                    const centerY = ph - f.h;
+                    for (let blade = -3; blade <= 3; blade++) {
+                        const lean = blade * 2.1;
+                        const bladeHeight = f.h * (0.72 + (3 - Math.abs(blade)) * 0.08);
+                        for (let y = 0; y < bladeHeight; y++) {
+                            const progress = y / bladeHeight;
+                            const x = centerX + lean * progress + Math.sin(time * 0.001 + f.phase + blade) * progress;
+                            pRect(x, ph - y, 2, 1, blade % 2 === 0 ? '#15803d' : '#0f766e');
+                            if (y % 5 === 0 && y > 4) pRect(x + (blade < 0 ? -2 : 2), ph - y, 2, 1, '#4ade80');
+                        }
+                    }
+                    pRect(centerX - 3, centerY - 3, 7, 4, f.hue);
+                    pRect(centerX - 1, centerY - 5, 3, 3, '#facc15');
+                    pRect(centerX, centerY - 6, 1, 2, '#fff7ad');
+
+                } else if (f.type === 'orchid') {
+                    // Delicate orchid stem with layered five-petal blossoms.
+                    for (let y = 0; y < f.h; y++) {
+                        const sway = Math.sin(time * 0.0016 + f.phase + y * 0.06) * (y / f.h) * 2;
+                        pRect(f.x + sway, ph - y, 1, 1, isLightMode ? '#166534' : '#115e59');
+                    }
+                    const flowerY = ph - f.h;
+                    const flowerX = f.x + Math.sin(time * 0.0016 + f.phase + f.h * 0.06) * 2;
+                    pRect(flowerX - 3, flowerY, 3, 2, f.hue);
+                    pRect(flowerX + 1, flowerY, 3, 2, f.hue);
+                    pRect(flowerX - 2, flowerY - 2, 5, 2, '#fbcfe8');
+                    pRect(flowerX - 1, flowerY - 1, 3, 2, '#fef08a');
+                    pRect(flowerX, flowerY + 1, 1, 2, '#f59e0b');
+
                 } else if (f.type === 'sunflower') {
                     const stemShade = isLightMode ? '#15803d' : '#14532d';
                     let topX = f.x;
@@ -1185,7 +1253,17 @@ const CREATURE_PROFILES = Object.freeze({
                 const s = stimuli[i];
                 s.life -= frameScale;
 
-                if (s.type === 'honey_nectar') {
+                if (s.type === 'tropical_fruit') {
+                    // Ripe mango / guava morsels float for a moment, inviting the macaws to forage.
+                    s.phase += 0.09 * frameScale;
+                    s.y = s.baseY + Math.sin(s.phase) * 1.4;
+                    pRect(s.x - 2, s.y - 1, 5, 4, s.hue || '#f97316');
+                    pRect(s.x - 1, s.y - 2, 3, 1, '#facc15');
+                    pRect(s.x + 1, s.y - 3, 3, 1, '#16a34a');
+                    pRect(s.x + 1, s.y - 4, 1, 2, '#4ade80');
+                    pRect(s.x - 1, s.y, 2, 1, 'rgba(255,255,255,0.6)');
+
+                } else if (s.type === 'honey_nectar') {
                     // Floating Golden Honey Droplet & Orbiting Pollen Motes
                     s.phase += 0.12 * frameScale;
                     s.y = s.baseY + Math.sin(s.phase) * 1.6;
