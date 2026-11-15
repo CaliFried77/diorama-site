@@ -112,6 +112,21 @@ import { stimuli, canvas, PIXEL_SCALE, HABITATS, currentHabitatIdx, pw, ph, fram
                         claimedBy: null
                     });
                 }
+            } else if (interactionProfile === 'fruit') {
+                // Small ripe tropical fruit drops for the parrots to investigate
+                for (let i = 0; i < 3; i++) {
+                    const offset = (i - 1) * 7;
+                    stimuli.push({
+                        type: 'tropical_fruit',
+                        x: px + offset + (Math.random() - 0.5) * 3,
+                        y: py + (Math.random() - 0.5) * 6,
+                        baseY: py + (Math.random() - 0.5) * 6,
+                        phase: Math.random() * Math.PI * 2,
+                        hue: ['#f97316', '#e11d48', '#facc15'][i],
+                        life: 280,
+                        claimedBy: null
+                    });
+                }
             }
         });
 
@@ -1058,4 +1073,108 @@ import { stimuli, canvas, PIXEL_SCALE, HABITATS, currentHabitatIdx, pw, ph, fram
             }
         }
 
-        
+
+        /* ============================================================================
+           CREATURE 7: SCARLET MACAW & TROPICAL PARROT FLOCK
+           Compact pixel birds with vivid layered plumage, long tails and curious fruit
+           seeking. Their paths remain gentle so the forest canopy stays readable.
+           ============================================================================ */
+        const PARROT_PALETTES = Object.freeze([
+            { body: '#0f9f6e', breast: '#facc15', head: '#ef4444', wing: '#0369a1', wingHi: '#38bdf8', tail: '#dc2626', tailAlt: '#f59e0b' },
+            { body: '#0284c7', breast: '#f97316', head: '#facc15', wing: '#7c3aed', wingHi: '#c084fc', tail: '#0f766e', tailAlt: '#22c55e' },
+            { body: '#16a34a', breast: '#fef08a', head: '#f43f5e', wing: '#ea580c', wingHi: '#fbbf24', tail: '#7c3aed', tailAlt: '#ec4899' },
+            { body: '#0f766e', breast: '#f472b6', head: '#fb923c', wing: '#1d4ed8', wingHi: '#60a5fa', tail: '#facc15', tailAlt: '#f97316' },
+        ]);
+
+        export class PixelParrot {
+            constructor() {
+                this.x = Math.random() * pw;
+                this.y = 28 + Math.random() * Math.max(24, ph * 0.48);
+                this.vx = (Math.random() < 0.5 ? -1 : 1) * (0.2 + Math.random() * 0.14);
+                this.vy = (Math.random() - 0.5) * 0.1;
+                this.phase = Math.random() * Math.PI * 2;
+                this.eatCooldown = 0;
+                this.palette = PARROT_PALETTES[Math.floor(Math.random() * PARROT_PALETTES.length)];
+                this.size = Math.random() < 0.28 ? 1.2 : 1;
+                this.trail = [];
+            }
+
+            update(time) {
+                this.phase += 0.075 * frameScale;
+                if (this.eatCooldown > 0) this.eatCooldown = Math.max(0, this.eatCooldown - frameScale);
+
+                const fruit = findAvailableStimulus(this, 'tropical_fruit', 170);
+                if (fruit) {
+                    const dx = fruit.x - this.x;
+                    const dy = fruit.y - this.y;
+                    const distance = Math.max(1, Math.hypot(dx, dy));
+                    if (distance < 8) {
+                        fruit.life = 0;
+                        this.eatCooldown = 95;
+                        this.vy = -0.18;
+                    } else {
+                        this.vx += (dx / distance) * 0.018 * frameScale;
+                        this.vy += (dy / distance) * 0.018 * frameScale;
+                    }
+                } else {
+                    this.vy += Math.sin(time * 0.0012 + this.phase) * 0.0022 * frameScale;
+                    this.vx += Math.sin(time * 0.00045 + this.phase * 0.6) * 0.0012 * frameScale;
+                }
+
+                this.vx = Math.max(-0.62, Math.min(0.62, this.vx));
+                this.vy = Math.max(-0.34, Math.min(0.34, this.vy));
+                this.x += this.vx * frameScale;
+                this.y += this.vy * frameScale;
+
+                const upperLimit = 22;
+                const lowerLimit = Math.max(upperLimit + 20, ph * 0.66);
+                if (this.y < upperLimit) { this.y = upperLimit; this.vy = Math.abs(this.vy) + 0.04; }
+                if (this.y > lowerLimit) { this.y = lowerLimit; this.vy = -Math.abs(this.vy) - 0.04; }
+                if (this.x < -18) this.x = pw + 18;
+                if (this.x > pw + 18) this.x = -18;
+
+                if (this.trail.length > 4) this.trail.shift();
+                if (frameChance(0.22)) this.trail.push({ x: this.x, y: this.y + 3 });
+            }
+
+            draw() {
+                const palette = this.palette;
+                const dir = this.vx >= 0 ? 1 : -1;
+                const scale = this.size;
+                const bx = Math.round(this.x);
+                const by = Math.round(this.y);
+                const flap = Math.round(Math.sin(this.phase * 2.8) * 2);
+
+                this.trail.forEach((point, index) => {
+                    pRect(point.x - dir * (index + 2) * 2, point.y + index, 1, 1, 'rgba(125, 211, 252, 0.3)');
+                });
+
+                // Long paired tail feathers.
+                pRect(bx - dir * 5, by + 3, 2, 7 * scale, palette.tail);
+                pRect(bx - dir * 7, by + 4, 2, 8 * scale, palette.tailAlt);
+                pRect(bx - dir * 3, by + 4, 1, 6 * scale, palette.wingHi);
+
+                // Back wing, layered wing coverts and feather tips.
+                pRect(bx - dir * 2, by - 5 - flap, 7 * scale, 4 * scale, palette.wing);
+                pRect(bx - dir * 1, by - 6 - flap, 4 * scale, 2 * scale, palette.wingHi);
+                pRect(bx - dir * 4, by - 2 - flap, 3 * scale, 2 * scale, palette.tailAlt);
+
+                // Rounded body and bright breast patch.
+                pRect(bx - 4 * scale, by - 2 * scale, 9 * scale, 7 * scale, palette.body);
+                pRect(bx - 1 * scale, by, 5 * scale, 4 * scale, palette.breast);
+                pRect(bx - 3 * scale, by - 3 * scale, 5 * scale, 2 * scale, palette.wingHi);
+
+                // Head, eye-ring and hooked orange beak.
+                pRect(bx + dir * 3 * scale, by - 6 * scale, 6 * scale, 6 * scale, palette.head);
+                pRect(bx + dir * 5 * scale, by - 7 * scale, 3 * scale, 2 * scale, palette.head);
+                pRect(bx + dir * 7 * scale, by - 4 * scale, 3 * scale, 2 * scale, '#f59e0b');
+                pRect(bx + dir * 8 * scale, by - 2 * scale, 2 * scale, 1 * scale, '#c2410c');
+                pRect(bx + dir * 6 * scale, by - 5 * scale, 2 * scale, 2 * scale, '#fff7ed');
+                pRect(bx + dir * 7 * scale, by - 4 * scale, 1 * scale, 1 * scale, '#111827');
+
+                // Tiny feet.
+                pRect(bx - 1 * scale, by + 5 * scale, 1 * scale, 2 * scale, '#7c2d12');
+                pRect(bx + 2 * scale, by + 5 * scale, 1 * scale, 2 * scale, '#7c2d12');
+            }
+        }
+
