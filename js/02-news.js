@@ -44,6 +44,7 @@ let sourcePreferences = normalizeNewsPreferences(lsGet(SOURCE_PREFS_KEY, {}));
 let customSources = readCustomSources();
 let readIds = new Set(readIdArray(READ_IDS_KEY));
 let savedIds = new Set(readIdArray(SAVED_IDS_KEY));
+const expandedNewsIds = new Set();
 
 const newsListContainer = document.getElementById('newsListContainer');
 const newsSourceSub = document.getElementById('newsSourceSub');
@@ -181,26 +182,21 @@ function renderNewsCards(emptyMessage = '') {
   }
 
   const fragment = document.createDocumentFragment();
-  filtered.forEach((item, index) => {
+  filtered.forEach((item) => {
     const itemId = item.itemId || createArticleId(item);
     const isRead = readIds.has(itemId);
     const isSaved = savedIds.has(itemId);
+    const isExpanded = expandedNewsIds.has(itemId);
+    const source = getAllSources(activeNewsCat).find((entry) => entry.id === item.sourceId);
+    const sourceUrl = safeExternalUrl(item.link, source?.homepage);
     const card = document.createElement('article');
-    card.className = `news-card${isRead ? ' is-read' : ''}${index === 0 ? ' is-featured' : ''}`;
+    card.className = `news-card${isRead ? ' is-read' : ''}${isExpanded ? ' is-expanded' : ''}`;
 
-    const mainLink = document.createElement('a');
-    mainLink.className = 'news-card-link';
-    mainLink.href = safeExternalUrl(item.link, getAllSources(activeNewsCat).find((source) => source.id === item.sourceId)?.homepage);
-    mainLink.target = '_blank';
-    mainLink.rel = 'noopener noreferrer';
-    mainLink.referrerPolicy = 'no-referrer';
-    mainLink.addEventListener('click', () => {
-      readIds.delete(itemId);
-      readIds.add(itemId);
-      persistIdSet(READ_IDS_KEY, readIds);
-      card.classList.add('is-read');
-      if (activeFilter === 'unread') setTimeout(() => renderNewsCards(), 0);
-    });
+    const expandButton = document.createElement('button');
+    expandButton.type = 'button';
+    expandButton.className = 'news-card-expand';
+    expandButton.setAttribute('aria-expanded', isExpanded ? 'true' : 'false');
+    expandButton.setAttribute('aria-label', isExpanded ? 'Haber detayını daralt' : `Haber detayını göster: ${item.title}`);
 
     const meta = document.createElement('div');
     meta.className = 'news-card-meta';
@@ -216,19 +212,18 @@ function renderNewsCards(emptyMessage = '') {
     const title = document.createElement('h4');
     title.className = 'news-card-title';
     title.textContent = item.title;
-    mainLink.append(meta, title);
-    if (item.description) {
-      const description = document.createElement('p');
-      description.className = 'news-card-description';
-      description.textContent = item.description;
-      mainLink.appendChild(description);
-    }
+
+    const expandHint = document.createElement('span');
+    expandHint.className = 'news-card-expand-hint';
+    expandHint.textContent = isExpanded ? 'Detayları gizle' : 'Özeti gör';
+    expandButton.append(meta, title, expandHint);
 
     const actions = document.createElement('div');
     actions.className = 'news-card-actions';
     const readStatus = document.createElement('span');
     readStatus.className = 'news-read-status';
     readStatus.textContent = isRead ? 'Okundu' : 'Yeni';
+
     const saveButton = document.createElement('button');
     saveButton.type = 'button';
     saveButton.className = 'news-save-btn';
@@ -244,7 +239,42 @@ function renderNewsCards(emptyMessage = '') {
       renderNewsCards();
     });
     actions.append(readStatus, saveButton);
-    card.append(mainLink, actions);
+    card.append(expandButton, actions);
+
+    if (isExpanded) {
+      const details = document.createElement('div');
+      details.className = 'news-card-details';
+      const description = document.createElement('p');
+      description.className = 'news-card-description';
+      description.textContent = item.description || 'Bu haber için yayıncı tarafından bir açıklama sağlanmamış.';
+      const openSource = document.createElement('a');
+      openSource.className = 'news-open-source';
+      openSource.href = sourceUrl;
+      openSource.target = '_blank';
+      openSource.rel = 'noopener noreferrer';
+      openSource.referrerPolicy = 'no-referrer';
+      openSource.textContent = 'Haberi kaynağında aç ↗';
+      openSource.addEventListener('click', () => {
+        readIds.delete(itemId);
+        readIds.add(itemId);
+        persistIdSet(READ_IDS_KEY, readIds);
+      });
+      details.append(description, openSource);
+      card.appendChild(details);
+    }
+
+    expandButton.addEventListener('click', () => {
+      if (expandedNewsIds.has(itemId)) {
+        expandedNewsIds.delete(itemId);
+      } else {
+        expandedNewsIds.add(itemId);
+        if (expandedNewsIds.size > 80) expandedNewsIds.delete(expandedNewsIds.values().next().value);
+        readIds.delete(itemId);
+        readIds.add(itemId);
+        persistIdSet(READ_IDS_KEY, readIds);
+      }
+      renderNewsCards();
+    });
     fragment.appendChild(card);
   });
   newsListContainer.appendChild(fragment);
