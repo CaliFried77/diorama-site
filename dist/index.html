@@ -86,11 +86,12 @@
                     <span class="hidden sm:inline font-pixel tracking-wide">Gündem</span>
                 </button>
 
-                <div id="newsPopover" role="region" aria-label="Gündem ve haberler" aria-hidden="true" inert class="popover-panel editorial-modal rounded-3xl p-4 sm:p-5 w-[360px] sm:w-[430px] absolute right-0 mt-2.5 z-50 max-h-[84vh] overflow-y-auto news-popover">
-                    <div class="flex items-center justify-between gap-3 mb-3">
+                <div id="newsPopover" role="region" aria-label="Gündem ve haberler" aria-hidden="true" inert class="popover-panel editorial-modal rounded-3xl p-4 sm:p-5 absolute right-0 mt-2.5 z-50 max-h-[84vh] overflow-y-auto news-popover">
+                    <div class="news-masthead">
                         <div class="min-w-0">
-                            <h3 class="text-xs font-semibold text-white/95 font-pixel tracking-wide">Haber Merkezi</h3>
-                            <p id="newsSourceSub" class="text-[11px] text-white/55 mt-0.5" aria-live="polite">Haber akışı bekleniyor</p>
+                            <p class="news-eyebrow">Diorama · Güncel</p>
+                            <h3 class="news-title">Haber Merkezi</h3>
+                            <p id="newsSourceSub" class="news-source-summary" aria-live="polite">Haber akışı bekleniyor</p>
                         </div>
                         <div class="flex items-center gap-1 shrink-0">
                             <button id="newsSettingsBtn" type="button" aria-label="Haber kaynaklarını yönet" aria-controls="newsSettingsPanel" aria-expanded="false" title="Kaynakları yönet" class="news-icon-btn">
@@ -102,6 +103,7 @@
                         </div>
                     </div>
 
+                    <div class="news-section-heading"><span>Akışa göz at</span><span class="news-section-rule" aria-hidden="true"></span></div>
                     <div id="newsCategories" class="flex gap-1 p-1 rounded-xl bg-black/30 border border-white/10 mb-3 overflow-x-auto" role="group" aria-label="Haber kategorileri"></div>
 
                     <div class="news-search-row">

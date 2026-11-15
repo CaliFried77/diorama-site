@@ -181,12 +181,12 @@ function renderNewsCards(emptyMessage = '') {
   }
 
   const fragment = document.createDocumentFragment();
-  filtered.forEach((item) => {
+  filtered.forEach((item, index) => {
     const itemId = item.itemId || createArticleId(item);
     const isRead = readIds.has(itemId);
     const isSaved = savedIds.has(itemId);
     const card = document.createElement('article');
-    card.className = `news-card${isRead ? ' is-read' : ''}`;
+    card.className = `news-card${isRead ? ' is-read' : ''}${index === 0 ? ' is-featured' : ''}`;
 
     const mainLink = document.createElement('a');
     mainLink.className = 'news-card-link';
@@ -626,12 +626,15 @@ document.getElementById('headlineNextBtn').addEventListener('click', () => {
   updateHeadlineTicker();
 });
 newsCategoriesContainer.addEventListener('keydown', (event) => {
-  if (!['ArrowLeft', 'ArrowRight'].includes(event.key)) return;
+  if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
   const buttons = [...newsCategoriesContainer.querySelectorAll('button')];
   const current = buttons.indexOf(document.activeElement);
   if (current < 0 || !buttons.length) return;
   event.preventDefault();
-  buttons[(current + (event.key === 'ArrowRight' ? 1 : -1) + buttons.length) % buttons.length].focus();
+  const next = event.key === 'Home' ? 0 : event.key === 'End' ? buttons.length - 1
+    : (current + (event.key === 'ArrowRight' ? 1 : -1) + buttons.length) % buttons.length;
+  buttons[next].focus();
+  buttons[next].click();
 });
 newsSearchInput.addEventListener('input', () => {
   searchQuery = newsSearchInput.value.slice(0, 120);

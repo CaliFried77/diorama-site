@@ -221,7 +221,6 @@ input[type="file"]::file-selector-button:hover{background-color:rgb(255 255 255 
 @media(min-width:640px){.sm\:text-\[15px\]{font-size:15px}}
 @media(min-width:640px){.sm\:text-base{font-size:1rem;line-height:1.5rem}}
 @media(min-width:640px){.sm\:w-\[390px\]{width:390px}}
-@media(min-width:640px){.sm\:w-\[430px\]{width:430px}}
 .space-y-1 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(.25rem * (1 - var(--tw-space-y-reverse)));margin-bottom:calc(.25rem * var(--tw-space-y-reverse));}
 .space-y-1\.5 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(.375rem * (1 - var(--tw-space-y-reverse)));margin-bottom:calc(.375rem * var(--tw-space-y-reverse));}
 .space-y-2 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(.5rem * (1 - var(--tw-space-y-reverse)));margin-bottom:calc(.5rem * var(--tw-space-y-reverse));}
