@@ -42,15 +42,15 @@ test('focus session restores from local storage and persists across page lifecyc
 });
 
 test('fixed widget labels use pixel type while dynamic news content stays regular', () => {
-  assert.match(html, /Önümüzdeki saatler<\/p>/);
-  assert.match(html, /class="text-xs text-white\/60 mt-4 mb-1\.5 font-pixel"/);
+  assert.match(html, /wx-section-label mt-4\">ÖNÜMÜZDEKİ SAATLER<\/p>/);
+  assert.match(html, /id="wxAstral"/);
   assert.match(html, /class="text-xs font-semibold text-white\/90 font-pixel">Kişisel Defter/);
   assert.match(css, /\.widget-static-label[\s\S]*?font-family:\s*'Pixelify Sans'/);
 });
 
 test('fixed weather and workspace labels use pixel type while search and user-entered focus text stay readable', () => {
   assert.match(html, /id="focusStatusSub"[^>]*font-pixel/);
-  assert.match(html, /Sahnede dene<\/p>/);
+  assert.match(html, /wx-preview-grid/);
   assert.match(weatherJs, /wxAirQuality/);
   assert.match(weatherJs, /wx-solar-card/);
   assert.match(weatherJs, /wx-hour-card/);
