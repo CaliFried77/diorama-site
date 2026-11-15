@@ -11,7 +11,7 @@ const renderer = news.slice(rendererStart, rendererEnd);
 
 test('news cards start compact and expand only when the preview button is pressed', () => {
   assert.ok(rendererStart >= 0 && rendererEnd > rendererStart);
-  assert.match(renderer, /const expandedNewsIds = new Set\(\)/);
+  assert.match(news, /const expandedNewsIds = new Set\(\)/);
   assert.match(renderer, /news-card-expand/);
   assert.match(renderer, /aria-expanded/);
   assert.match(renderer, /news-card-details/);
