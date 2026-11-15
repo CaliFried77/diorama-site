@@ -103,7 +103,7 @@
 
 /* Tablet header: keep the two control groups on separate rows instead of
    forcing the full desktop toolbar beyond the viewport width. */
-@media (min-width: 640px) and (max-width: 1023px) {
+@media (min-width: 640px) and (max-width: 1150px) {
     .main-header {
         display: grid;
         grid-template-columns: minmax(0, 1fr);
