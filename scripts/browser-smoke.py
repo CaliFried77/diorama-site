@@ -224,7 +224,13 @@ async def assert_app_smoke(browser_type, name: str, base_url: str):
     await page.locator("#newsPopover.open").wait_for(state="visible")
     await page.locator("#newsCategories .news-cat-btn").nth(1).click()
     try:
-        await page.locator("#newsListContainer a").first.wait_for(state="visible", timeout=12000)
+        first_news_card = page.locator("#newsListContainer .news-card").first
+        await first_news_card.wait_for(state="visible", timeout=12000)
+        await first_news_card.locator(".news-card-expand").click()
+        source_link = first_news_card.locator(".news-open-source")
+        await source_link.wait_for(state="visible", timeout=5000)
+        assert await source_link.get_attribute("target") == "_blank"
+        assert "noopener" in (await source_link.get_attribute("rel") or "")
     except Exception as error:
         news_diagnostics = await page.evaluate("""() => ({
             sourceSummary: document.querySelector('#newsSourceSub')?.textContent || '',
@@ -234,7 +240,7 @@ async def assert_app_smoke(browser_type, name: str, base_url: str):
             selectedCategory: document.querySelector('#newsCategories .news-cat-btn[aria-pressed="true"]')?.dataset.cat || ''
         })""")
         raise AssertionError(
-            f"{name}: mocked news cards did not render: {error}; "
+            f"{name}: compact news reader flow failed: {error}; "
             f"diagnostics={json.dumps(news_diagnostics, ensure_ascii=False)}; "
             f"apiRequests={api_requests}; pageErrors={page_errors}; "
             f"consoleErrors={console_errors}; failedRequests={failed_requests}"
