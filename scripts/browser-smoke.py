@@ -41,7 +41,7 @@ class AppHandler(SimpleHTTPRequestHandler):
         super().__init__(*args, directory=str(DIST), **kwargs)
 
     def end_headers(self):
-        path = urlparse(self.path).path or "/"
+        path = urlparse(getattr(self, "path", "/")).path or "/"
         for key, value in load_deployment_headers(path).items():
             self.send_header(key, value)
         super().end_headers()
