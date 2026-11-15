@@ -155,4 +155,3 @@
   .news-icon-btn[aria-busy="true"] svg { animation: none; }
   .news-icon-btn, .news-filter-btn, .news-cat-btn, .news-card { transition: none; }
 }
-
