@@ -136,7 +136,7 @@ async def mock_external_request(route):
         await route.fulfill(status=200, content_type="application/json", body=json.dumps(weather_payload()))
         return
     # Fonts are self-hosted; any external font request is blocked by this test route.
-    if parsed.netloc not in ("127.0.0.1", "localhost"):
+    if parsed.hostname not in ("127.0.0.1", "localhost"):
         await route.abort()
         return
     await route.continue_()
