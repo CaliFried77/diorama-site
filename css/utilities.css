@@ -82,6 +82,8 @@ input[type="file"]::file-selector-button{color:#fff}
 .gap-2\.5{gap:.625rem}
 .gap-3{gap:.75rem}
 .gap-4{gap:1rem}
+.gap-x-3{column-gap:.75rem}
+.gap-y-1{row-gap:.25rem}
 .grid{display:grid}
 .grid-cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}
 .group{position:relative}
@@ -218,6 +220,7 @@ input[type="file"]::file-selector-button:hover{background-color:rgb(255 255 255 
 .space-y-1\.5 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(.375rem * (1 - var(--tw-space-y-reverse)));margin-bottom:calc(.375rem * var(--tw-space-y-reverse));}
 .space-y-2 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(.5rem * (1 - var(--tw-space-y-reverse)));margin-bottom:calc(.5rem * var(--tw-space-y-reverse));}
 .space-y-3 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(.75rem * (1 - var(--tw-space-y-reverse)));margin-bottom:calc(.75rem * var(--tw-space-y-reverse));}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border-width:0}
 .tabular-nums{font-variant-numeric:tabular-nums}
 .text-4xl{font-size:2.25rem;line-height:2.5rem}
 .text-5xl{font-size:3rem;line-height:1}

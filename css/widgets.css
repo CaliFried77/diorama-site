@@ -205,12 +205,36 @@
 .focus-task-field input:focus { border-color: rgba(125,211,252,.42); }
 .focus-task-field input::placeholder { color: rgba(255,255,255,.4); }
 
+/* Ambient Volume Control */
+.focus-volume-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, .07);
+}
+.focus-volume-row label {
+  color: rgba(255, 255, 255, .58);
+  font-size: 9px;
+  letter-spacing: .04em;
+  white-space: nowrap;
+}
+.focus-volume-slider {
+  flex: 1 1 auto;
+  height: 4px;
+  accent-color: #7dd3fc;
+  cursor: pointer;
+}
+
+/* Top-center Focus HUD positioned cleanly below the header bar so it never blocks header controls */
 .focus-stage-overlay {
   position: fixed;
-  top: max(14px, env(safe-area-inset-top, 0px));
+  top: calc(env(safe-area-inset-top, 0px) + 4.4rem);
   left: 50%;
-  z-index: 85;
-  width: min(560px, calc(100vw - 28px));
+  z-index: 25;
+  width: min(520px, calc(100vw - 28px));
   transform: translateX(-50%);
   pointer-events: none;
 }
@@ -219,9 +243,9 @@
   display: grid;
   grid-template-columns: minmax(0,1fr) minmax(116px,auto) auto;
   align-items: center;
-  gap: 15px;
+  gap: 14px;
   min-width: 0;
-  padding: 12px 14px;
+  padding: 10px 14px;
   border: 1px solid rgba(186,230,253,.25);
   border-radius: 15px;
   color: rgba(255,255,255,.95);
@@ -239,21 +263,21 @@
 .focus-stage-copy { display: grid; min-width: 0; gap: 4px; }
 .focus-stage-kicker { display: flex; align-items: center; gap: 6px; color: rgba(186,230,253,.84); font-size: 8px; letter-spacing: .05em; white-space: nowrap; }
 .focus-stage-habitat { overflow: hidden; color: rgba(255,255,255,.94); font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
-.focus-stage-task { overflow: hidden; color: rgba(255,255,255,.43); font-size: 8px; text-overflow: ellipsis; white-space: nowrap; max-width: 170px; }
+.focus-stage-task { overflow: hidden; color: rgba(255,255,255,.55); font-size: 8px; text-overflow: ellipsis; white-space: nowrap; max-width: 170px; }
 .focus-stage-meter { min-width: 0; text-align: center; }
 .focus-stage-time {
   color: #f0faff;
-  font: 400 29px/1 'Silkscreen', 'Pixelify Sans', monospace;
+  font: 400 28px/1 'Silkscreen', 'Pixelify Sans', monospace;
   letter-spacing: -.06em;
   text-shadow: 0 0 18px rgba(125,211,252,.38), 0 2px 0 rgba(0,0,0,.5);
   font-variant-numeric: tabular-nums;
 }
-.focus-stage-pixel-track { height: 7px; margin-top: 7px; }
-.focus-stage-status { margin-top: 5px; color: rgba(186,230,253,.58); font-size: 7px; letter-spacing: .05em; white-space: nowrap; }
+.focus-stage-pixel-track { height: 7px; margin-top: 6px; }
+.focus-stage-status { margin-top: 4px; color: rgba(186,230,253,.62); font-size: 7px; letter-spacing: .05em; white-space: nowrap; }
 .focus-stage-actions { display: grid; gap: 5px; }
 .focus-stage-button,
 .focus-stage-reset {
-  min-height: 29px;
+  min-height: 28px;
   padding: 5px 8px;
   border: 1px solid rgba(186,230,253,.2);
   border-radius: 7px;
@@ -266,9 +290,22 @@
 .focus-stage-reset { color: rgba(255,255,255,.55); border-color: rgba(255,255,255,.1); background: rgba(255,255,255,.045); }
 .focus-stage-reset:hover { color: #fff; background: rgba(255,255,255,.1); }
 
+@media (min-width: 640px) and (max-width: 1023px) {
+  .focus-stage-overlay {
+    top: calc(env(safe-area-inset-top, 0px) + 7.2rem);
+  }
+}
+
 @media (max-width: 639px) {
   .focus-popover { width: min(340px, calc(100vw - 1rem)); max-height: min(72dvh, calc(100dvh - 7rem)); padding: 13px !important; }
-  .focus-stage-overlay { top: calc(env(safe-area-inset-top, 0px) + 6.15rem); width: calc(100vw - 1rem); }
+  .focus-stage-overlay {
+    position: relative;
+    top: auto;
+    left: auto;
+    transform: none;
+    width: calc(100vw - 1.5rem);
+    margin: .6rem auto 0;
+  }
   .focus-stage-shell { grid-template-columns: minmax(0,1fr) auto; gap: 9px; padding: 9px 10px; border-radius: 12px; }
   .focus-stage-copy { gap: 3px; }
   .focus-stage-task { max-width: 42vw; }

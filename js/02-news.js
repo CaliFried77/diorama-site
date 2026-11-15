@@ -644,8 +644,10 @@ document.querySelectorAll('.news-filter-btn').forEach((button) => button.addEven
   activeFilter = ['all', 'unread', 'saved'].includes(button.dataset.filter) ? button.dataset.filter : 'all';
   renderNewsCards();
 }));
+const headlineBarEl = document.getElementById('headlineBar');
 setInterval(() => {
-  if (!document.hidden && currentNewsItems.length) {
+  const isHoveredOrFocused = typeof headlineBarEl?.matches === 'function' && headlineBarEl.matches(':hover, :focus-within');
+  if (!document.hidden && currentNewsItems.length && !isHoveredOrFocused) {
     tickerIdx = (tickerIdx + 1) % currentNewsItems.length;
     updateHeadlineTicker();
   }

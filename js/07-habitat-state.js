@@ -1,3 +1,4 @@
+import { invalidateBackgroundCache } from './scene-state.js';
 import { HABITATS, HABITAT_IDS } from '../config/habitat-catalog.js';
 export { HABITATS };
 import { lsRaw, lsPut } from './storage.js';
@@ -43,6 +44,7 @@ import { calculateFrameChance, calculateFrameSmoothing, scaleSceneCollections } 
             canvas.width = pw;
             canvas.height = ph;
             ctx.imageSmoothingEnabled = false;
+            invalidateBackgroundCache();
 
             if (previousWidth > 0 && previousHeight > 0 && creatures.length + stimuli.length + ambientParticles.length + flora.length + shootingStars.length > 0) {
                 scaleSceneCollections(

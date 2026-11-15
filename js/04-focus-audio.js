@@ -1,3 +1,4 @@
+import { closeAllPopovers } from './01-core-ui.js';
 /* FOCUS-AUDIO — Living Pixel Diorama
    Refresh-safe focus timer and Web Audio soundscape generator. */
 import {
@@ -76,11 +77,7 @@ function setPresetState(totalSec) {
 }
 
 function closeFocusPopover() {
-  if (!focusPopover) return;
-  focusPopover.classList.remove('open');
-  focusPopover.setAttribute('aria-hidden', 'true');
-  focusPopover.inert = true;
-  focusBtn?.setAttribute('aria-expanded', 'false');
+  closeAllPopovers(false);
 }
 
 function updateFocusStageVisibility() {
@@ -265,7 +262,12 @@ if (focusSession.status === 'running') startFocusTicker();
         let audioCtx = null;
         let activeSoundSource = null;
         let activeSoundType = null;
+        let ambientVolume = Math.min(100, Math.max(5, Number(localStorage.getItem('diorama_ambient_volume')) || 40)) / 100;
         const soundActiveDot = document.getElementById('soundActiveDot');
+        const ambientVolumeSlider = document.getElementById('ambientVolumeSlider');
+        const ambientVolumeValue = document.getElementById('ambientVolumeValue');
+        if (ambientVolumeSlider) ambientVolumeSlider.value = String(Math.round(ambientVolume * 100));
+        if (ambientVolumeValue) ambientVolumeValue.textContent = `${Math.round(ambientVolume * 100)}%`;
 
         function playChime() {
             try {
@@ -342,7 +344,7 @@ if (focusSession.status === 'running') startFocusTicker();
             }
 
             const gain = audioCtx.createGain();
-            gain.gain.setValueAtTime(0.0001, audioCtx.currentTime); gain.gain.linearRampToValueAtTime(0.4, audioCtx.currentTime + 0.8); source._gain = gain;
+            gain.gain.setValueAtTime(0.0001, audioCtx.currentTime); gain.gain.linearRampToValueAtTime(ambientVolume, audioCtx.currentTime + 0.8); source._gain = gain;
             source.connect(filter);
             filter.connect(gain);
             gain.connect(audioCtx.destination);
@@ -365,6 +367,19 @@ if (focusSession.status === 'running') startFocusTicker();
 
         document.querySelectorAll('.sound-btn').forEach(btn => {
             btn.addEventListener('click', () => toggleAmbientSound(btn.dataset.sound));
+        });
+        ambientVolumeSlider?.addEventListener('input', () => {
+            const pct = Math.min(100, Math.max(5, Number(ambientVolumeSlider.value) || 40));
+            ambientVolume = pct / 100;
+            if (ambientVolumeValue) ambientVolumeValue.textContent = `${pct}%`;
+            try { localStorage.setItem('diorama_ambient_volume', String(pct)); } catch {}
+            if (activeSoundSource?._gain && audioCtx) {
+                const g = activeSoundSource._gain.gain;
+                const now = audioCtx.currentTime;
+                g.cancelScheduledValues(now);
+                g.setValueAtTime(g.value, now);
+                g.linearRampToValueAtTime(ambientVolume, now + 0.12);
+            }
         });
 
         

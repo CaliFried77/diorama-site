@@ -286,6 +286,15 @@ import { lsPut, esc } from './storage.js';
                 toggleZenMode();
                 return;
             }
+            if (e.key === '/' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+                const active = document.activeElement;
+                const isTyping = active && (['INPUT', 'TEXTAREA', 'SELECT'].includes(active.tagName) || active.isContentEditable);
+                if (!isTyping) {
+                    e.preventDefault();
+                    document.getElementById('searchInput')?.focus();
+                    return;
+                }
+            }
             if (e.key === 'Escape') {
                 const openEntry = popovers.find(p => p.panel.classList.contains('open'));
                 if (openEntry) {

@@ -12,7 +12,7 @@ export function calculateFrameSmoothing(amount, frameScale) {
 }
 
 const X_POSITION_KEYS = new Set(['x', 'baseX', 'targetX', 'originX', 'startX', 'endX', 'homeX', 'anchorX', 'centerX']);
-const Y_POSITION_KEYS = new Set(['y', 'baseY', 'targetY', 'originY', 'startY', 'endY', 'homeY', 'anchorY', 'centerY']);
+const Y_POSITION_KEYS = new Set(['y', 'baseY', 'targetY', 'originY', 'startY', 'endY', 'homeY', 'anchorY', 'centerY', 'h']);
 
 /** Scale viewport-relative positions in place without recreating scene entities. */
 export function scaleSceneCollections(collections, scaleX, scaleY) {

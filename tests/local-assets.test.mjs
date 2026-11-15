@@ -33,6 +33,9 @@ test('generated local utilities cover representative layout, color, responsive a
     'input[type="file"]::file-selector-button',
     '.group:hover .group-hover\\:opacity-100',
     '.placeholder-white\\/55::placeholder',
+    '.sr-only{position:absolute;width:1px;height:1px',
+    '.gap-x-3{column-gap:.75rem}',
+    '.gap-y-1{row-gap:.25rem}',
   ]) assert.ok(utilities.includes(rule), `Missing generated utility: ${rule}`);
 });
 

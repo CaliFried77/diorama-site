@@ -300,6 +300,11 @@
                                 <span class="font-pixel">Rüzgar</span>
                             </button>
                         </div>
+                        <div class="focus-volume-row">
+                            <label for="ambientVolumeSlider" class="font-pixel">SES SEVİYESİ</label>
+                            <input id="ambientVolumeSlider" type="range" min="5" max="100" step="5" value="40" aria-label="Doğa ambiyansı ses seviyesi" class="focus-volume-slider">
+                            <span id="ambientVolumeValue" class="text-[10px] font-mono text-white/60">40%</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -497,6 +502,7 @@
                 <input
                     id="searchInput"
                     type="text"
+                    autofocus
                     aria-label="Arama veya web adresi"
                     autocomplete="off"
                     placeholder="Google'da ara veya bir adres yaz..."

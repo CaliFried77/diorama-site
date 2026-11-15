@@ -15,7 +15,7 @@ import { NEWS_CATEGORY_IDS } from '../config/news-feeds.js';
         const DATA_BACKUP_VERSION = 1;
         const DATA_PREF_KEYS = [
             'diorama_theme', 'diorama_username', 'diorama_engine', 'diorama_city',
-            'diorama_wxfx', 'diorama_wx_autotheme', 'diorama_pinned_habitat',
+            'diorama_wxfx', 'diorama_wx_autotheme', 'diorama_pinned_habitat', 'diorama_ambient_volume',
             'diorama_news_source_preferences_v1', 'diorama_news_custom_sources_v1',
             'diorama_news_read_ids_v1', 'diorama_news_saved_ids_v1'
         ];
@@ -177,6 +177,11 @@ import { NEWS_CATEGORY_IDS } from '../config/news-feeds.js';
                 if (input.diorama_pinned_habitat !== undefined) {
                     if (input.diorama_pinned_habitat !== '' && !DATA_HABITAT_IDS.has(input.diorama_pinned_habitat)) throw new Error('Sabitlenmiş habitat ayarı geçersiz.');
                     prefs.diorama_pinned_habitat = input.diorama_pinned_habitat;
+                }
+                if (input.diorama_ambient_volume !== undefined) {
+                    const vol = Number(input.diorama_ambient_volume);
+                    if (!Number.isInteger(vol) || vol < 5 || vol > 100) throw new Error('Ambiyans ses seviyesi ayarı geçersiz.');
+                    prefs.diorama_ambient_volume = String(vol);
                 }
                 if (input.diorama_news_source_preferences_v1 !== undefined) {
                     if (typeof input.diorama_news_source_preferences_v1 !== 'string' || input.diorama_news_source_preferences_v1.length > 20000) throw new Error('Haber kaynak tercihleri geçersiz.');

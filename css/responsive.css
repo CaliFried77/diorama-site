@@ -6,6 +6,7 @@
 }
 .hero-date {
     display: block;
+    font-family: 'JetBrains Mono', 'Pixelify Sans', monospace;
     font-size: clamp(1.05rem, 1.55vw, 1.25rem);
     line-height: 1.4;
     font-weight: 600;

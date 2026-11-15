@@ -1,5 +1,5 @@
 import { lsRaw, lsPut, lsGet, lsSet, esc } from './storage.js';
-import { SVG_ICONS, isLightMode, setLightMode } from './01-core-ui.js';
+import { SVG_ICONS, isLightMode, setLightMode, closeAllPopovers } from './01-core-ui.js';
 import { pw, ph, pRect, ctx, frameChance, shootingStars, frameScale, HABITATS, currentHabitatIdx } from './07-habitat-state.js';
 import { invalidateBackgroundCache } from './scene-state.js';
 import { registerWeatherPreviewRenderer } from './services.js';
@@ -436,7 +436,7 @@ import { registerWeatherPreviewRenderer } from './services.js';
             const saved = await fetchWeather(val);
             if (saved) {
                 input.value = '';
-                document.getElementById('weatherPopover').classList.remove('open');
+                closeAllPopovers(true);
             }
         });
 

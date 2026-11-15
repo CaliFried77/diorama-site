@@ -63,6 +63,7 @@ const colorValue = (token) => {
 const spaced = (v) => spacing[v] ?? (arbitrary(v) ?? null);
 
 function declaration(token) {
+  if (token === 'sr-only') return 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border-width:0';
   if (token === 'absolute' || token === 'relative' || token === 'fixed' || token === 'sticky' || token === 'static') return `position:${token}`;
   if (token === 'block' || token === 'inline' || token === 'inline-block' || token === 'flex' || token === 'inline-flex' || token === 'grid' || token === 'hidden') return `display:${token === 'hidden' ? 'none' : token}`;
   if (token === 'flex-1') return 'flex:1 1 0%';
@@ -105,12 +106,16 @@ function declaration(token) {
     }
   }
   if ((m = token.match(/^z-(-?\d+)$/))) return `z-index:${m[1]}`;
+  if ((m = token.match(/^(gap-x|gap-y)-(.+)$/))) {
+    const val = spaced(m[2]);
+    if (val) return `${m[1] === 'gap-x' ? 'column-gap' : 'row-gap'}:${val}`;
+  }
   if ((m = token.match(/^(-?)(m|mx|my|mt|mr|mb|ml|p|px|py|pt|pr|pb|pl|gap)-(.+)$/))) {
     const sign = m[1] ? '-' : ''; const key = m[2]; const val = (m[3] === 'auto' ? 'auto' : spaced(m[3])); if (!val) return null;
     const props = { m:['margin'], mx:['margin-left','margin-right'], my:['margin-top','margin-bottom'], mt:['margin-top'], mr:['margin-right'], mb:['margin-bottom'], ml:['margin-left'], p:['padding'], px:['padding-left','padding-right'], py:['padding-top','padding-bottom'], pt:['padding-top'], pr:['padding-right'], pb:['padding-bottom'], pl:['padding-left'], gap:['gap'] }[key];
     return props.map((p) => `${p}:${sign}${val}`).join(';');
   }
-  if ((m = token.match(/^space-y-(.+)$/))) { const val = spaced(m[1]); if (val) return `--space-y:${val}`; }
+  if ((m = token.match(/^space-y-(.+)$/))) { const val = spaced(m[1]); if (val) return ''; }
   if ((m = token.match(/^rounded(?:-(.+))?$/))) return `border-radius:${radii[m[1] ?? 'DEFAULT'] ?? arbitrary(m[1] ?? '') ?? null}`;
   if (token === 'border') return 'border-width:1px';
   if ((m = token.match(/^border-(\d+)$/))) return `border-width:${m[1]}px`;
@@ -208,7 +213,7 @@ for (const token of [...candidates].sort()) {
     const c = colorValue(base.slice(base.indexOf('-') + 1));
     if (c) rule = base.startsWith('from-') ? `--tw-gradient-from:${c};--tw-gradient-stops:var(--tw-gradient-from),var(--tw-gradient-to,transparent)` : `--tw-gradient-to:${c}`;
   }
-  if (rule !== null) {
+  if (rule !== null && rule !== '') {
     let wrapped = `${selector}{${rule}}`;
     if (variants.includes('sm')) wrapped = `@media(min-width:640px){${wrapped}}`;
     if (variants.includes('lg')) wrapped = `@media(min-width:1024px){${wrapped}}`;

@@ -14,11 +14,6 @@ import { refreshWeatherPreviewButtons, refreshDataManagerStats } from './service
             youtube: `<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="5" width="20" height="14" rx="4"/><polygon points="10 9 15 12 10 15 10 9" fill="currentColor"/></svg>`,
             perplexity: `<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2v20M4.93 4.93l14.14 14.14M2 12h20M4.93 19.07L19.07 4.93"/></svg>`,
             github: `<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0020 4.77 5.07 5.07 0 0019.91 1S18.73.65 16 2.48a13.38 13.38 0 00-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 005 4.77a5.44 5.44 0 00-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 009 18.13V22"/></svg>`,
-            mail: `<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="5" width="18" height="14" rx="2"/><polyline points="3 7 12 13 21 7"/></svg>`,
-            chat: `<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg>`,
-            spark: `<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 3l1.9 5.8a2 2 0 001.3 1.3L21 12l-5.8 1.9a2 2 0 00-1.3 1.3L12 21l-1.9-5.8a2 2 0 00-1.3-1.3L3 12l5.8-1.9a2 2 0 001.3-1.3L12 3z"/></svg>`,
-            globe: `<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><line x1="3" y1="12" x2="21" y2="12"/><path d="M12 3a15.3 15.3 0 014 9 15.3 15.3 0 01-4 9 15.3 15.3 0 01-4-9 15.3 15.3 0 014-9z"/></svg>`,
-            music: `<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>`,
             weatherClear: `<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>`,
             weatherCloud: `<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17.5 19H9a7 7 0 116.71-9h1.79a4.5 4.5 0 110 9z"/></svg>`,
             weatherRain: `<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 16.2A4.5 4.5 0 0017.5 8h-1.8A7 7 0 104 14.9"/><path d="M16 14v5M8 14v5M12 16v5" stroke-linecap="round"/></svg>`,
@@ -213,13 +208,30 @@ import { refreshWeatherPreviewButtons, refreshDataManagerStats } from './service
         const shortcutForm = document.getElementById('shortcutForm');
 
         let shortcutModalOpener = null;
-        function openShortcutModal(trigger) {
+        let editingShortcutIdx = null;
+        function openShortcutModal(trigger, editIdx = null) {
             shortcutModalOpener = trigger || document.activeElement;
+            editingShortcutIdx = Number.isInteger(editIdx) && editIdx >= 0 && editIdx < shortcuts.length ? editIdx : null;
+            const titleEl = document.getElementById('shortcutModalTitle');
+            const nameInput = document.getElementById('shortcutNameInput');
+            const urlInput = document.getElementById('shortcutUrlInput');
+            const submitBtn = shortcutForm.querySelector('button[type="submit"]');
+            if (editingShortcutIdx !== null) {
+                if (titleEl) titleEl.textContent = 'Kısayolu Düzenle';
+                if (submitBtn) submitBtn.textContent = 'Kaydet';
+                nameInput.value = shortcuts[editingShortcutIdx].name;
+                urlInput.value = shortcuts[editingShortcutIdx].url;
+            } else {
+                if (titleEl) titleEl.textContent = 'Yeni Kısayol Ekle';
+                if (submitBtn) submitBtn.textContent = 'Ekle';
+                shortcutForm.reset();
+            }
+            urlInput.setCustomValidity('');
             shortcutModal.classList.remove('hidden');
             shortcutModal.classList.add('flex');
             shortcutModal.setAttribute('aria-hidden', 'false');
             shortcutModal.inert = false;
-            requestAnimationFrame(() => document.getElementById('shortcutNameInput').focus());
+            requestAnimationFrame(() => nameInput.focus());
         }
 
         export function closeShortcutModal(restoreFocus = true) {
@@ -228,6 +240,7 @@ import { refreshWeatherPreviewButtons, refreshDataManagerStats } from './service
             shortcutModal.classList.remove('flex');
             shortcutModal.setAttribute('aria-hidden', 'true');
             shortcutModal.inert = true;
+            editingShortcutIdx = null;
             const target = shortcutModalOpener;
             shortcutModalOpener = null;
             if (restoreFocus && target && target.isConnected) target.focus();
@@ -263,6 +276,11 @@ import { refreshWeatherPreviewButtons, refreshDataManagerStats } from './service
                 label.className = 'font-pixel text-xs sm:text-[13px] font-medium text-white/95 group-hover:text-amber-200 tracking-wide truncate max-w-[120px] transition';
                 label.textContent = item.name;
                 link.appendChild(label);
+                link.title = `${item.name} (Düzenlemek için sağ tıkla)`;
+                link.addEventListener('contextmenu', (event) => {
+                    event.preventDefault();
+                    openShortcutModal(link, index);
+                });
                 const remove = document.createElement('button');
                 remove.type = 'button';
                 remove.setAttribute('aria-label', `${item.name} kısayolunu kaldır`);
@@ -309,7 +327,11 @@ import { refreshWeatherPreviewButtons, refreshDataManagerStats } from './service
             url = normalizeWebUrl(url);
             if (!url) { urlEl.setCustomValidity('Yalnızca geçerli HTTP veya HTTPS adresleri kullanılabilir'); urlEl.reportValidity(); return; }
             urlEl.setCustomValidity('');
-            shortcuts.push({ name, url, iconKey: 'globe' });
+            if (editingShortcutIdx !== null && editingShortcutIdx >= 0 && editingShortcutIdx < shortcuts.length) {
+                shortcuts[editingShortcutIdx] = { name, url, iconKey: 'globe' };
+            } else {
+                shortcuts.push({ name, url, iconKey: 'globe' });
+            }
             lsSet('diorama_shortcuts', shortcuts);
             renderShortcuts();
             shortcutForm.reset();
@@ -336,6 +358,10 @@ import { refreshWeatherPreviewButtons, refreshDataManagerStats } from './service
             entry.panel.inert = !open;
             entry.btn.setAttribute('aria-expanded', open ? 'true' : 'false');
             if (!open && restoreFocus && entry.panel.contains(document.activeElement)) entry.btn.focus();
+        }
+
+        export function closeAllPopovers(restoreFocus = false) {
+            popovers.forEach(p => setPopoverOpen(p, false, restoreFocus));
         }
 
         popovers.forEach((entry) => {

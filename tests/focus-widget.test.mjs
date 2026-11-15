@@ -27,6 +27,8 @@ test('focus timer has a habitat-aware top-center HUD that is responsive', () => 
   assert.match(js, /closeFocusPopover\(\)/);
   assert.match(css, /\.focus-stage-overlay\s*\{[^}]*left:\s*50%/s);
   assert.match(css, /@media \(max-width: 639px\)/);
+  assert.match(css, /\.focus-stage-overlay\s*\{[^}]*z-index:\s*25/s);
+  assert.match(html, /id="ambientVolumeSlider"/);
 });
 
 test('focus session restores from local storage and persists across page lifecycle events', () => {
