@@ -28,6 +28,7 @@ test('static and Worker response policies restrict executable content', () => {
   assert.match(headers, /Permissions-Policy: camera=\(\), microphone=\(\), geolocation=\(\)/);
   assert.doesNotMatch(headers, /rss2json\.com/i);
   assert.match(headers, /https:\/\/api\.open-meteo\.com/);
+  assert.ok(headers.includes('https://air-quality-api.open-meteo.com'));
   assert.match(worker, /'Content-Security-Policy'/);
   assert.match(worker, /default-src 'none'/);
   assert.match(worker, /'Strict-Transport-Security'/);
