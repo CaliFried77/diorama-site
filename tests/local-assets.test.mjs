@@ -115,8 +115,12 @@ test('repository ignores build output, local artifacts and environment secrets',
   }
 });
 
-test('search input does not steal focus on page load', () => {
-  const input = html.match(/<input\\s+id="searchInput"[\\s\\S]*?\\/>/i)?.[0] ?? '';
-  assert.ok(input, 'search input markup should exist');
-  assert.doesNotMatch(input, /\\bautofocus\\b/i);
+
+test('search input does not steal focus on page load' () => {
+  const inputIdIndex = html.indexOf('id="searchInput"');
+  assert.notEqual(inputIdIndex, -1, 'search input markup should exist');
+  const start = html.lastIndexOf('<input', inputIdIndex);
+  const end = html.indexOf('>', inputIdIndex);
+  assert.ok(start >= 0 && end > inputIdIndex, 'search input tag should be complete');
+  assert.equal(/\bautofocus\b/i.test(html.slice(start, end + 1)), false);
 });
