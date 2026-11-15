@@ -176,7 +176,7 @@
                     <span id="weatherCity" class="text-white/75 hidden sm:inline font-pixel">Yalova</span>
                 </button>
 
-                <div id="weatherPopover" role="region" aria-label="Hava durumu" aria-hidden="true" inert class="popover-panel editorial-modal rounded-3xl p-5 w-[22rem] absolute right-0 mt-2.5 z-50 max-h-[82vh] overflow-y-auto">
+                <div id="weatherPopover" role="region" aria-label="Hava durumu" aria-hidden="true" inert class="popover-panel editorial-modal rounded-3xl weather-popover absolute right-0 mt-2.5 z-50 overflow-y-auto">
                     <div class="flex items-center gap-4">
                         <div id="wxBigIcon" class="shrink-0 w-16 h-16 flex items-center justify-center"></div>
                         <div class="min-w-0">
@@ -188,14 +188,16 @@
                             <p id="weatherUpdatedText" class="text-[10px] text-white/45 mt-1" aria-live="polite">Hava verisi bekleniyor</p>
                         </div>
                     </div>
-                    <div id="wxStats" class="grid grid-cols-3 gap-1.5 mt-4"></div>
-                    <p class="text-xs text-white/60 mt-4 mb-1.5 font-pixel">Önümüzdeki saatler</p>
-                    <div id="wxHourly" class="flex gap-1 overflow-x-auto pb-1"></div>
-                    <p class="text-xs text-white/60 mt-3 mb-1.5 font-pixel">5 günlük tahmin</p>
-                    <div id="wxDaily" class="space-y-1"></div>
-                    <div class="mt-4 pt-3 border-t border-white/10">
-                        <p class="text-xs text-white/60 mb-1.5 font-pixel">Sahnede dene</p>
-                        <div id="wxPreview" class="flex gap-1.5"></div>
+                    <div id="wxAirQuality" class="wx-air-quality mt-4" aria-live="polite"></div>
+                    <div id="wxStats" class="wx-stats mt-3"></div>
+                    <div id="wxAstral" class="wx-astral mt-3"></div>
+                    <p class="wx-section-label mt-4">ÖNÜMÜZDEKİ SAATLER</p>
+                    <div id="wxHourly" class="wx-hourly mt-2"></div>
+                    <p class="wx-section-label mt-4">5 GÜNLÜK TAHMİN</p>
+                    <div id="wxDaily" class="wx-daily mt-2"></div>
+                    <div class="wx-preview-section mt-4">
+                        <p class="wx-section-label">SAHNEDE DENE</p>
+                        <div id="wxPreview" class="wx-preview-grid mt-2"></div>
                     </div>
                     <div class="mt-3 space-y-2">
                         <label class="flex items-center justify-between gap-3 text-xs text-white/80"><span class="font-pixel">Sahnede hava efektleri</span><input id="wxFxToggle" type="checkbox" aria-label="Sahnede hava efektlerini etkinleştir" class="accent-sky-300 w-4 h-4"></label>
@@ -258,7 +260,7 @@
                     </div>
 
                     <div class="focus-widget-actions">
-                        <button id="focusTogglePlay" type="button" class="focus-primary-btn font-pixel">BAŞLAT</button>
+                        <button id="focusTogglePlay" type="button" class="focus-primary-btn">Başlat</button>
                         <button id="focusResetBtn" type="button" title="Sıfırla" aria-label="Sayacı sıfırla" class="focus-reset-btn">
                             <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -309,6 +311,55 @@
                 </div>
             </div>
 
+            <!-- Personal calendar: local events, no account or external sync required. -->
+            <div class="relative">
+                <button id="calendarBtn" type="button" aria-label="Takvim" title="Takvim ve etkinlikler" aria-haspopup="true" aria-controls="calendarPopover" aria-expanded="false" class="optical-pill rounded-full px-3 py-2 flex items-center gap-2 text-xs font-medium text-white/90">
+                    <svg class="w-3.5 h-3.5 text-amber-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                        <rect x="3" y="5" width="18" height="16" rx="2"></rect>
+                        <path d="M16 3v4M8 3v4M3 10h18"></path>
+                        <path d="M8 14h.01M12 14h.01M16 14h.01M8 17h.01M12 17h.01"></path>
+                    </svg>
+                    <span class="hidden sm:inline font-pixel tracking-wide">Takvim</span>
+                </button>
+                <div id="calendarPopover" role="region" aria-label="Aylık takvim ve etkinlikler" aria-hidden="true" inert class="popover-panel editorial-modal rounded-3xl calendar-popover absolute right-0 mt-2.5 z-50">
+                    <div class="calendar-header">
+                        <div class="min-w-0">
+                            <p class="calendar-eyebrow">Diorama · Planlama</p>
+                            <h3 id="calendarMonthLabel" class="calendar-title">Takvim</h3>
+                            <p class="calendar-subtitle">Küçük planlar, güzel günler.</p>
+                        </div>
+                        <div class="calendar-nav">
+                            <button id="calendarPrevBtn" type="button" aria-label="Önceki ay" title="Önceki ay">‹</button>
+                            <button id="calendarTodayBtn" type="button">Bugün</button>
+                            <button id="calendarNextBtn" type="button" aria-label="Sonraki ay" title="Sonraki ay">›</button>
+                        </div>
+                    </div>
+                    <div class="calendar-weekdays" aria-hidden="true">
+                        <span>Pzt</span><span>Sal</span><span>Çar</span><span>Per</span><span>Cum</span><span>Cmt</span><span>Paz</span>
+                    </div>
+                    <div id="calendarGrid" class="calendar-grid" role="grid" aria-label="Ayın günleri"></div>
+                    <section class="calendar-day-panel" aria-label="Seçili günün etkinlikleri">
+                        <div class="calendar-day-heading">
+                            <div>
+                                <p class="calendar-eyebrow">SEÇİLİ GÜN</p>
+                                <h4 id="calendarSelectedDate">Bugün</h4>
+                            </div>
+                            <span id="calendarEventCount" class="calendar-event-count">0 etkinlik</span>
+                        </div>
+                        <div id="calendarEventList" class="calendar-event-list" aria-live="polite"></div>
+                        <form id="calendarEventForm" class="calendar-event-form">
+                            <label for="calendarEventTitle">Yeni etkinlik</label>
+                            <div class="calendar-event-input-row">
+                                <input id="calendarEventTitle" type="text" maxlength="100" required placeholder="Örn. Proje üzerinde çalış">
+                                <input id="calendarEventTime" type="time" aria-label="Etkinlik saati">
+                            </div>
+                            <button type="submit">Etkinliği ekle</button>
+                        </form>
+                    </section>
+                    <p class="calendar-footnote">Etkinlikler bu tarayıcıda saklanır ve uygulama yedeğine eklenir.</p>
+                </div>
+            </div>
+
             <!-- Editorial Journal (Notes & Tasks) -->
             <div class="relative">
                 <button id="notesBtn" aria-label="Defter" aria-haspopup="true" aria-controls="notesPopover" aria-expanded="false" class="optical-pill rounded-full px-3.5 py-2 flex items-center gap-2 text-xs font-medium text-white/95">
@@ -339,7 +390,7 @@
 
                     <!-- TAB 1: CLEAN EDITORIAL TASKS -->
                     <div id="tasksTabView" role="tabpanel" aria-labelledby="tasksTab" class="space-y-3">
-                        <form id="addTaskForm" class="flex gap-1.5">
+                        <form id="addTaskForm" class="notes-task-form">
                             <button type="button" id="priorityCycleBtn" aria-label="Görev önceliğini değiştir" title="Öncelik Seviyesi" class="px-2.5 rounded-xl bg-white/[0.06] border border-white/12 flex items-center justify-center">
                                 <span id="priorityDotIndicator" class="w-2 h-2 rounded-full bg-sky-400"></span>
                             </button>
@@ -411,7 +462,7 @@
                     </div>
 
                     <div class="space-y-2">
-                        <button id="exportAllDataBtn" type="button" class="w-full rounded-xl px-3 py-2.5 bg-white text-slate-950 hover:bg-white/90 text-xs font-semibold flex items-center justify-center gap-2 transition font-pixel">
+                        <button id="exportAllDataBtn" type="button" class="w-full rounded-xl px-3 py-2.5 bg-emerald-400/15 text-emerald-50 hover:bg-emerald-400/25 border border-emerald-200/20 text-xs font-semibold flex items-center justify-center gap-2 transition">
                             <span aria-hidden="true">↓</span> Tüm verileri yedekle (.json)
                         </button>
                         <div class="grid grid-cols-3 gap-1.5">
