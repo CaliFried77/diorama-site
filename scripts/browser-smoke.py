@@ -134,10 +134,7 @@ async def mock_external_request(route):
     if parsed.netloc == "api.open-meteo.com":
         await route.fulfill(status=200, content_type="application/json", body=json.dumps(weather_payload()))
         return
-    # Fonts are optional enhancements. Abort them to verify the local fallback stack.
-    if parsed.netloc in ("fonts.googleapis.com", "fonts.gstatic.com"):
-        await route.abort()
-        return
+    # Fonts are self-hosted; any external font request is blocked by this test route.
     if parsed.netloc not in ("127.0.0.1", "localhost"):
         await route.abort()
         return

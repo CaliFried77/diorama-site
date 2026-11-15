@@ -9,6 +9,8 @@ const headers = await readFile(resolve(root, '_headers'), 'utf8');
 const swTemplate = await readFile(resolve(root, 'sw.template.js'), 'utf8');
 const buildScript = await readFile(resolve(root, 'build.mjs'), 'utf8');
 const customNews = await readFile(resolve(root, 'netlify/functions/custom-news.mjs'), 'utf8');
+const main = await readFile(resolve(root, 'js/main.js'), 'utf8');
+const baseCss = await readFile(resolve(root, 'css/base.css'), 'utf8');
 const packageJson = JSON.parse(await readFile(resolve(root, 'package.json'), 'utf8'));
 const releaseVersion = packageJson.version;
 
@@ -46,6 +48,13 @@ const appCode = [
 ].join('\n');
 if (/rss2json\.com/i.test(appCode)) failures.push('Browser/server code still depends on the third-party RSS2JSON converter.');
 if (!headers.includes("connect-src 'self'")) failures.push('CSP must keep API requests same-origin.');
+
+if (/fonts\.googleapis\.com|fonts\.gstatic\.com/i.test([html, main, baseCss, headers].join('\n'))) failures.push('External Google Fonts dependency remains; fonts must be self-hosted.');
+if (!headers.includes("font-src 'self'") || !headers.includes("style-src 'self' 'unsafe-inline'")) failures.push('CSP must restrict font and stylesheet loads to the same origin.');
+for (const family of ['Inter', 'JetBrains Mono', 'Pixelify Sans', 'Silkscreen']) {
+  if (!baseCss.includes(`font-family: '${family}'`)) failures.push(`Missing local @font-face for ${family}.`);
+}
+
 
 if (failures.length) {
   console.error(failures.join('\n'));

@@ -49,9 +49,11 @@ test('service worker installs all local app-shell assets and claims the page', a
   assert.ok(worker.added.some((path) => path.endsWith('/config/habitat-catalog.js')));
   assert.ok(worker.added.some((path) => path.endsWith('/manifest.webmanifest')));
   assert.ok(worker.added.some((path) => path.endsWith('/icons/diorama-192.png')));
+  assert.ok(worker.added.some((path) => path.endsWith('/fonts/inter-regular.woff2')));
+  assert.ok(worker.added.some((path) => path.endsWith('/fonts/pixelify-sans-variable.woff2')));
   assert.ok(worker.added.every((path) => path.startsWith('https://diorama.test/')));
   assert.match(source, /cache:\s*'reload'/);
-  assert.match(source, /living-pixel-diorama-shell-1\.6\.4-[a-f0-9]{16}/);
+  assert.match(source, /living-pixel-diorama-shell-1\.6\.5-[a-f0-9]{16}/);
   assert.ok(worker.skipped);
 
   let activatePromise;
