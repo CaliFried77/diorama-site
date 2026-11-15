@@ -44,7 +44,7 @@ const blur = { none: '0', sm: '4px', DEFAULT: '8px', md: '12px', lg: '16px', xl:
 const cssEscape = (value) => value.replace(/([^a-zA-Z0-9_-])/g, '\\$1');
 const arbitrary = (value) => value.startsWith('[') && value.endsWith(']') ? value.slice(1, -1).replaceAll('_', ' ') : null;
 const readableFontSize = (value) => {
-  const match = /^(\\d+(?:\\.\\d+)?)px$/.exec(value.trim());
+  const match = /^(\d+(?:\.\d+)?)px$/.exec(value.trim());
   if (!match) return value;
   return `${Math.max(12, Math.round(Number(match[1]) * 1.1))}px`;
 };
