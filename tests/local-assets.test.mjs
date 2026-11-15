@@ -116,7 +116,7 @@ test('repository ignores build output, local artifacts and environment secrets',
 });
 
 
-test('search input does not steal focus on page load' () => {
+test('search input does not steal focus on page load', () => {
   const inputIdIndex = html.indexOf('id="searchInput"');
   assert.notEqual(inputIdIndex, -1, 'search input markup should exist');
   const start = html.lastIndexOf('<input', inputIdIndex);
