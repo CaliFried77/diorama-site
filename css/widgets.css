@@ -183,7 +183,7 @@
 .focus-reset-btn {
   display: grid;
   place-items: center;
-  min-height: 38px;
+  min-height: 44px;
   border: 1px solid rgba(255,255,255,.13);
   border-radius: 10px;
   color: rgba(255,255,255,.74);
@@ -263,7 +263,7 @@
 .focus-stage-copy { display: grid; min-width: 0; gap: 4px; }
 .focus-stage-kicker { display: flex; align-items: center; gap: 6px; color: rgba(186,230,253,.84); font-size: 0.75rem; letter-spacing: .05em; white-space: nowrap; }
 .focus-stage-habitat { overflow: hidden; color: rgba(255,255,255,.94); font-size: 0.75rem; text-overflow: ellipsis; white-space: nowrap; }
-.focus-stage-task { overflow: hidden; color: rgba(255,255,255,.55); font-size: 0.75rem; text-overflow: ellipsis; white-space: nowrap; max-width: 170px; }
+.focus-stage-task { overflow: hidden; color: rgba(255,255,255,.55); font-size: 0.75rem; text-overflow: ellipsis; white-space: nowrap; max-width: 10rem; }
 .focus-stage-meter { min-width: 0; text-align: center; }
 .focus-stage-time {
   color: #f0faff;
@@ -272,7 +272,7 @@
   text-shadow: 0 0 18px rgba(125,211,252,.38), 0 2px 0 rgba(0,0,0,.5);
   font-variant-numeric: tabular-nums;
 }
-.focus-stage-pixel-track { height: 7px; margin-top: 6px; }
+.focus-stage-pixel-track { height: 8px; margin-top: 6px; }
 .focus-stage-status { margin-top: 4px; color: rgba(186,230,253,.62); font-size: 0.75rem; letter-spacing: .05em; white-space: nowrap; }
 .focus-stage-actions { display: grid; gap: 5px; }
 .focus-stage-button,
