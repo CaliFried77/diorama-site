@@ -153,7 +153,7 @@ import { registerWeatherPreviewRenderer } from './services.js';
                         <span>GÜNÜN IŞIĞI</span>
                         <strong>${dayState}</strong>
                     </div>
-                    <div class="wx-solar-track \${isDay ? 'is-day' : 'is-night'}" role="img" aria-label="Gün doğumu ${hhmm(dy.sunrise[0])}, gün batımı ${hhmm(dy.sunset[0])}">
+                    <div class="wx-solar-track ${isDay ? 'is-day' : 'is-night'}" role="img" aria-label="Gün doğumu ${hhmm(dy.sunrise[0])}, gün batımı ${hhmm(dy.sunset[0])}">
                         <span class="wx-solar-glow" style="width:${skyPct}%"></span>
                         <span class="wx-solar-marker" style="left:${skyPct}%">${isDay ? '☀' : '☾'}</span>
                     </div>
