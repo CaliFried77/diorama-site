@@ -18,7 +18,7 @@ import { registerWeatherPreviewRenderer } from './services.js';
                 /* ============================================================================
            WEATHER ENGINE: canlı veri, piksel ikonlar, sahne efektleri
            ============================================================================ */
-        const WX = { ready: false, preview: null, live: null, data: null, cloud: 0, rain: 0, snow: 0, fog: 0, thunder: false,
+        const WX = { ready: false, preview: null, live: null, data: null, airQuality: null, cloud: 0, rain: 0, snow: 0, fog: 0, thunder: false,
                      wind: 0, wx: 0, isDay: true, sunP: .5, moonP: .5, moonPhase: 0, key: '', w: 0, h: 0,
                      clouds: [], drops: [], flakes: [], stars: [], streaks: [], flash: 0, bolt: null, boltT: 120 };
         let wxFxEnabled = lsRaw('diorama_wxfx') !== 'off';
@@ -102,6 +102,20 @@ import { registerWeatherPreviewRenderer } from './services.js';
         const DIRS = ['K', 'KD', 'D', 'GD', 'G', 'GB', 'B', 'KB'];
         const uvName = (u) => u < 3 ? 'Düşük' : u < 6 ? 'Orta' : u < 8 ? 'Yüksek' : u < 11 ? 'Çok yüksek' : 'Aşırı';
         const hhmm = (str) => str.slice(11, 16);
+        function airQualityDescriptor(value) {
+            if (value <= 20) return { label: 'İyi', tone: 'good', note: 'Hava koşulları elverişli' };
+            if (value <= 40) return { label: 'Fena değil', tone: 'fair', note: 'Çoğu kişi için kabul edilebilir' };
+            if (value <= 60) return { label: 'Orta', tone: 'moderate', note: 'Hassas kişiler dikkat etmeli' };
+            if (value <= 80) return { label: 'Kötü', tone: 'poor', note: 'Açık hava etkinliğini azalt' };
+            if (value <= 100) return { label: 'Çok kötü', tone: 'very-poor', note: 'Uzun süre dışarıda kalmamaya çalış' };
+            return { label: 'Çok yüksek', tone: 'extreme', note: 'Açık havada geçirilen süreyi sınırla' };
+        }
+
+        function validAirQualityCurrent(current) {
+            return !!(current && Number.isFinite(current.european_aqi)
+                && Number.isFinite(current.pm2_5) && Number.isFinite(current.pm10));
+        }
+
         function renderWeatherPanel() {
             const d = WX.data, c = d.current, dy = d.daily, hr = d.hourly;
             const kind = wxKind(c.weather_code), isDay = !!c.is_day;
@@ -109,30 +123,128 @@ import { registerWeatherPreviewRenderer } from './services.js';
             document.getElementById('wxBigTemp').textContent = `${Math.round(c.temperature_2m)}°`;
             document.getElementById('wxCondition').textContent = WX_TR[c.weather_code] || 'Bilinmiyor';
             document.getElementById('weatherDetailText').textContent = `Hissedilen ${Math.round(c.apparent_temperature)}° • En yüksek ${Math.round(dy.temperature_2m_max[0])}°, en düşük ${Math.round(dy.temperature_2m_min[0])}°`;
-            const stat = (l, v) => `<div class="rounded-xl bg-white/[0.05] border border-white/10 px-2.5 py-2"><p class="wx-stat-label text-[11px] text-white/60">${l}</p><p class="text-xs font-medium text-white mt-0.5">${esc(v)}</p></div>`;
-            const uv = dy.uv_index_max[0];
+
+            const stat = (label, value, icon) => `
+                <div class="wx-stat-card">
+                    <span class="wx-stat-icon" aria-hidden="true">${icon}</span>
+                    <span class="wx-stat-label">${label}</span>
+                    <strong class="wx-stat-value">${esc(value)}</strong>
+                </div>`;
             document.getElementById('wxStats').innerHTML = [
-                stat('Nem', `%${Math.round(c.relative_humidity_2m)}`),
-                stat('Rüzgar', `${Math.round(c.wind_speed_10m)} km/sa ${DIRS[Math.round(c.wind_direction_10m / 45) % 8]}`),
-                stat('Yağış ihtimali', `%${dy.precipitation_probability_max[0] ?? 0}`),
-                stat('UV', `${Math.round(uv)} • ${uvName(uv)}`),
-                stat('Bulut', `%${Math.round(c.cloud_cover)}`),
-                stat('Ay evresi', moonName(moonPhaseNow())),
-                stat('Gün doğumu', hhmm(dy.sunrise[0])), stat('Gün batımı', hhmm(dy.sunset[0])), stat('Yağış', `${c.precipitation} mm`)
+                stat('Nem', `%${Math.round(c.relative_humidity_2m)}`, '◌'),
+                stat('Rüzgar', `${Math.round(c.wind_speed_10m)} km/sa ${DIRS[Math.round(c.wind_direction_10m / 45) % 8]}`, '↗'),
+                stat('Yağış olasılığı', `%${dy.precipitation_probability_max[0] ?? 0}`, '⌁'),
+                stat('Bulut örtüsü', `%${Math.round(c.cloud_cover)}`, '☁')
             ].join('');
-            const srH = +hhmm(dy.sunrise[0]).slice(0, 2), ssH = +hhmm(dy.sunset[0]).slice(0, 2);
-            let i0 = hr.time.indexOf(c.time.slice(0, 13) + ':00'); if (i0 < 0) i0 = 0;
-            let h = '';
-            for (let i = i0; i < Math.min(i0 + 12, hr.time.length); i++) {
-                const hour = +hr.time[i].slice(11, 13), pr = hr.precipitation_probability[i] || 0;
-                h += `<div class="shrink-0 w-[3.4rem] rounded-xl bg-white/[0.05] border border-white/10 py-1.5 flex flex-col items-center gap-1"><span class="text-[11px] text-white/60">${i === i0 ? 'Şimdi' : String(hour).padStart(2, '0') + ':00'}</span>${pxIcon(wxKind(hr.weather_code[i]), hour >= srH && hour < ssH, 22)}<span class="text-xs font-medium text-white">${Math.round(hr.temperature_2m[i])}°</span><span class="text-[11px] ${pr >= 30 ? 'text-sky-300' : 'text-transparent'}">%${pr}</span></div>`;
+
+            const uv = Math.max(0, Number(dy.uv_index_max[0]) || 0);
+            const uvPct = Math.min(100, uv / 11 * 100);
+            const phase = Math.round(moonPhaseNow() * 8) % 8;
+            const moonGlyphs = ['🌑', '🌒', '🌓', '🌔', '🌕', '🌖', '🌗', '🌘'];
+            const live = WX.live;
+            const sunPct = live?.isDay ? Math.round(clamp01(live.sunP) * 100) : 0;
+            const dayState = isDay ? 'Güneş ufkun üzerinde' : 'Gece gökyüzü';
+            document.getElementById('wxAstral').innerHTML = `
+                <section class="wx-solar-card">
+                    <div class="wx-solar-heading">
+                        <span>GÜNÜN IŞIĞI</span>
+                        <strong>${dayState}</strong>
+                    </div>
+                    <div class="wx-solar-track" role="img" aria-label="Gün doğumu ${hhmm(dy.sunrise[0])}, gün batımı ${hhmm(dy.sunset[0])}">
+                        <span class="wx-solar-glow" style="width:${sunPct}%"></span>
+                        <span class="wx-solar-marker" style="left:${sunPct}%">${isDay ? '☀' : '☾'}</span>
+                    </div>
+                    <div class="wx-solar-times">
+                        <span><i>↗</i><small>GÜN DOĞUMU</small><strong>${hhmm(dy.sunrise[0])}</strong></span>
+                        <span><i>↘</i><small>GÜN BATIMI</small><strong>${hhmm(dy.sunset[0])}</strong></span>
+                    </div>
+                </section>
+                <div class="wx-celestial-grid">
+                    <section class="wx-uv-card">
+                        <div class="wx-mini-heading"><span>UV ENDEKSİ</span><span>☀</span></div>
+                        <div class="wx-mini-value"><strong>${Math.round(uv)}</strong><span>${uvName(uv)}</span></div>
+                        <div class="wx-uv-track"><span style="width:${uvPct}%"></span></div>
+                        <small>Günün en yüksek değeri</small>
+                    </section>
+                    <section class="wx-moon-card">
+                        <div class="wx-mini-heading"><span>AY EVRESİ</span><span>GÖKYÜZÜ</span></div>
+                        <div class="wx-moon-display"><span aria-hidden="true">${moonGlyphs[phase]}</span><strong>${moonName(moonPhaseNow())}</strong></div>
+                        <small>Ay döngüsündeki bugünkü konum</small>
+                    </section>
+                </div>`;
+
+            const airQuality = WX.airQuality;
+            const airBox = document.getElementById('wxAirQuality');
+            if (validAirQualityCurrent(airQuality)) {
+                const quality = airQualityDescriptor(airQuality.european_aqi);
+                airBox.innerHTML = `
+                    <section class="wx-air-card is-${quality.tone}">
+                        <div class="wx-air-main">
+                            <div class="wx-air-symbol" aria-hidden="true">✺</div>
+                            <div class="wx-air-copy">
+                                <span>HAVA KALİTESİ · AVRUPA AQI</span>
+                                <strong>${quality.label}</strong>
+                                <small>${quality.note}</small>
+                            </div>
+                            <div class="wx-air-score"><strong>${Math.round(airQuality.european_aqi)}</strong><small>AQI</small></div>
+                        </div>
+                        <div class="wx-air-pollutants">
+                            <span>PM2.5 <strong>${airQuality.pm2_5.toFixed(1)} <small>µg/m³</small></strong></span>
+                            <span>PM10 <strong>${airQuality.pm10.toFixed(1)} <small>µg/m³</small></strong></span>
+                        </div>
+                        <p class="wx-air-disclaimer">CAMS model tahmini · yaklaşık 11 km çözünürlük</p>
+                    </section>`;
+            } else {
+                airBox.innerHTML = `
+                    <section class="wx-air-card wx-air-unavailable">
+                        <div class="wx-air-main">
+                            <div class="wx-air-symbol" aria-hidden="true">✺</div>
+                            <div class="wx-air-copy">
+                                <span>HAVA KALİTESİ</span>
+                                <strong>Veri bekleniyor</strong>
+                                <small>Hava tahmini çalışmaya devam ediyor.</small>
+                            </div>
+                        </div>
+                    </section>`;
             }
-            document.getElementById('wxHourly').innerHTML = h;
-            const lo = Math.min(...dy.temperature_2m_min), hi = Math.max(...dy.temperature_2m_max);
-            document.getElementById('wxDaily').innerHTML = dy.time.map((t, i) => {
-                const name = i === 0 ? 'Bugün' : i === 1 ? 'Yarın' : new Date(t + 'T12:00:00Z').toLocaleDateString('tr-TR', { weekday: 'short', timeZone: 'UTC' });
-                const a = dy.temperature_2m_min[i], b = dy.temperature_2m_max[i], pr = dy.precipitation_probability_max[i] || 0;
-                return `<div class="flex items-center gap-2 text-xs text-white/85"><span class="w-12 shrink-0">${esc(name)}</span>${pxIcon(wxKind(dy.weather_code[i]), true, 20)}<span class="w-9 text-[11px] ${pr >= 30 ? 'text-sky-300' : 'text-white/45'}">%${pr}</span><span class="w-7 text-right text-white/60">${Math.round(a)}°</span><span class="relative flex-1 h-1.5 rounded-full bg-white/10"><span class="absolute h-full rounded-full bg-gradient-to-r from-sky-300 to-amber-300" style="left:${((a - lo) / (hi - lo || 1) * 100).toFixed(1)}%;width:${(Math.max(.08, (b - a) / (hi - lo || 1)) * 100).toFixed(1)}%"></span></span><span class="w-7">${Math.round(b)}°</span></div>`;
+
+            const srH = +hhmm(dy.sunrise[0]).slice(0, 2), ssH = +hhmm(dy.sunset[0]).slice(0, 2);
+            let i0 = hr.time.indexOf(c.time.slice(0, 13) + ':00');
+            if (i0 < 0) i0 = 0;
+            let hourlyMarkup = '';
+            for (let i = i0; i < Math.min(i0 + 12, hr.time.length); i++) {
+                const hour = +hr.time[i].slice(11, 13);
+                const probability = hr.precipitation_probability[i] || 0;
+                const label = i === i0 ? 'Şimdi' : `${String(hour).padStart(2, '0')}:00`;
+                hourlyMarkup += `
+                    <div class="wx-hour-card">
+                        <span class="wx-hour-label">${label}</span>
+                        ${pxIcon(wxKind(hr.weather_code[i]), hour >= srH && hour < ssH, 26)}
+                        <strong>${Math.round(hr.temperature_2m[i])}°</strong>
+                        <span class="wx-hour-rain ${probability >= 30 ? 'has-rain' : ''}">${probability >= 30 ? `%${probability}` : '—'}</span>
+                    </div>`;
+            }
+            document.getElementById('wxHourly').innerHTML = hourlyMarkup;
+
+            const low = Math.min(...dy.temperature_2m_min);
+            const high = Math.max(...dy.temperature_2m_max);
+            document.getElementById('wxDaily').innerHTML = dy.time.map((date, index) => {
+                const name = index === 0 ? 'Bugün' : index === 1 ? 'Yarın'
+                    : new Date(date + 'T12:00:00Z').toLocaleDateString('tr-TR', { weekday: 'short', timeZone: 'UTC' });
+                const min = dy.temperature_2m_min[index];
+                const max = dy.temperature_2m_max[index];
+                const probability = dy.precipitation_probability_max[index] || 0;
+                const left = ((min - low) / (high - low || 1) * 100).toFixed(1);
+                const width = (Math.max(.08, (max - min) / (high - low || 1)) * 100).toFixed(1);
+                return `
+                    <div class="wx-daily-row">
+                        <span class="wx-daily-name">${esc(name)}</span>
+                        ${pxIcon(wxKind(dy.weather_code[index]), true, 22)}
+                        <span class="wx-daily-rain ${probability >= 30 ? 'has-rain' : ''}">${probability >= 30 ? `%${probability}` : '—'}</span>
+                        <span class="wx-daily-min">${Math.round(min)}°</span>
+                        <span class="wx-daily-range"><i style="left:${left}%;width:${width}%"></i></span>
+                        <strong class="wx-daily-max">${Math.round(max)}°</strong>
+                    </div>`;
             }).join('');
         }
 
@@ -210,6 +322,7 @@ import { registerWeatherPreviewRenderer } from './services.js';
             const cache = lsGet(WEATHER_CACHE_KEY, null);
             if (!weatherCacheIsValid(cache)) return false;
             WX.data = cache.data;
+            WX.airQuality = validAirQualityCurrent(cache.airQuality) ? cache.airQuality : null;
             weatherCity.textContent = cache.city;
             applyWeather();
             const stamp = new Intl.DateTimeFormat('tr-TR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }).format(new Date(cache.fetchedAt));
@@ -269,13 +382,15 @@ import { registerWeatherPreviewRenderer } from './services.js';
                 if (!validWeatherPayload(weatherData)) throw new Error((weatherData && weatherData.reason) || 'Hava durumu verisi eksik veya geçersiz');
 
                 WX.data = weatherData;
+                WX.airQuality = null;
                 weatherCity.textContent = name || requestedCity;
                 applyWeather();
                 userCity = name || requestedCity;
                 lsPut('diorama_city', userCity);
                 const fetchedAt = Date.now();
-                lsSet(WEATHER_CACHE_KEY, { city: userCity, fetchedAt, data: WX.data });
+                lsSet(WEATHER_CACHE_KEY, { city: userCity, fetchedAt, data: WX.data, airQuality: WX.airQuality });
                 setWeatherStatus(`Güncellendi ${new Date(fetchedAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}`);
+                void fetchAirQuality(latitude, longitude, requestId);
                 return true;
             } catch (error) {
                 if (!isCurrentRequest()) return false;
@@ -295,6 +410,43 @@ import { registerWeatherPreviewRenderer } from './services.js';
             } finally {
                 clearTimeout(timeoutId);
                 if (isCurrentRequest()) weatherController = null;
+            }
+        }
+
+        async function fetchAirQuality(latitude, longitude, requestId) {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 6500);
+            try {
+                const params = new URLSearchParams({
+                    latitude: String(latitude),
+                    longitude: String(longitude),
+                    timezone: 'auto',
+                    current: 'european_aqi,pm2_5,pm10',
+                });
+                const response = await fetch(`https://air-quality-api.open-meteo.com/v1/air-quality?${params}`, {
+                    signal: controller.signal,
+                    cache: 'no-store',
+                    credentials: 'omit',
+                    referrerPolicy: 'no-referrer',
+                });
+                if (!response.ok) throw new Error(`Hava kalitesi servisi HTTP ${response.status}`);
+                const payload = await response.json();
+                if (!validAirQualityCurrent(payload?.current) || requestId !== weatherRequestSeq) return false;
+                WX.airQuality = payload.current;
+                const cache = lsGet(WEATHER_CACHE_KEY, null);
+                if (weatherCacheIsValid(cache) && cache.city === weatherCity.textContent) {
+                    lsSet(WEATHER_CACHE_KEY, { ...cache, airQuality: WX.airQuality });
+                }
+                renderWeatherPanel();
+                return true;
+            } catch {
+                if (requestId === weatherRequestSeq) {
+                    WX.airQuality = null;
+                    renderWeatherPanel();
+                }
+                return false;
+            } finally {
+                clearTimeout(timeoutId);
             }
         }
 
