@@ -22,6 +22,6 @@ test('air quality is optional and cannot block a successful weather forecast', (
 
 test('air quality panel discloses model forecast instead of implying a local sensor reading', () => {
   assert.match(weather, /CAMS model tahmini/);
-  assert.match(weather, /yaklaşık 11 km çözünürlük/);
+  assert.match(weather, /yaklaşık 11–45 km çözünürlük/);
   assert.match(docs, /not a measurement from a nearby physical sensor/);
 });
