@@ -51,7 +51,7 @@ GitHub Actions; Node.js modül/import kontrollerini, testleri, güvenlik denetim
 
 ## Tipografi ve okunabilirlik
 
-- Yardımcı metin, tarih, kaynak etiketi ve durum bilgileri 12px altına düşmemeli.
+- Yardımcı metin, tarih, kaynak etiketi ve durum bilgileri 13px altına düşmemeli.
 - Küçük etiketler büyütüldüğünde dar ekranlarda taşma, üst üste binme ve kesilme kontrol edilmeli.
 - Başlık, gövde metni ve meta bilgi arasındaki görsel hiyerarşi korunmalı.
 
