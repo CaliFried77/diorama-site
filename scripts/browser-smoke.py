@@ -149,14 +149,34 @@ async def assert_app_smoke(browser_type, name: str, base_url: str):
     await context.route("**/*", mock_external_request)
     page = await context.new_page()
     page_errors: list[str] = []
+    console_errors: list[str] = []
+    failed_requests: list[str] = []
     page.on("pageerror", lambda error: page_errors.append(str(error)))
+    page.on("console", lambda message: console_errors.append(message.text) if message.type == "error" else None)
+    page.on("requestfailed", lambda request: failed_requests.append(f"{request.url}: {request.failure}"))
 
     await page.goto(base_url, wait_until="domcontentloaded", timeout=30000)
     await page.locator("#heroClock").wait_for(state="visible", timeout=15000)
     await page.evaluate("document.fonts.ready")
     local_fonts = await page.evaluate("({inter: document.fonts.check('16px Inter'), pixelify: document.fonts.check('16px \"Pixelify Sans\"'), silkscreen: document.fonts.check('16px Silkscreen')})")
     assert all(local_fonts.values()), f"{name}: a local font did not load: {local_fonts}"
-    await page.locator("#newsCategories .news-cat-btn").nth(2).wait_for(state="attached", timeout=10000)
+    category_locator = page.locator("#newsCategories .news-cat-btn")
+    category_deadline = asyncio.get_running_loop().time() + 10
+    while asyncio.get_running_loop().time() < category_deadline and await category_locator.count() < 3:
+        await page.wait_for_timeout(100)
+    category_count = await category_locator.count()
+    if category_count < 3:
+        diagnostics = await page.evaluate("""() => ({
+            readyState: document.readyState,
+            categoryHTML: document.querySelector('#newsCategories')?.innerHTML || null,
+            scripts: [...document.querySelectorAll('script[type="module"]')].map(script => script.src),
+            bodyClasses: document.body.className
+        })""")
+        raise AssertionError(
+            f"{name}: news category tabs did not initialize; count={category_count}; "
+            f"diagnostics={json.dumps(diagnostics, ensure_ascii=False)}; "
+            f"pageErrors={page_errors}; consoleErrors={console_errors}; failedRequests={failed_requests}"
+        )
     weather_locator = page.locator("#weatherTemp")
     weather_deadline = asyncio.get_running_loop().time() + 15
     weather_text = ""
