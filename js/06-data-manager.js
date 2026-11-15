@@ -222,13 +222,13 @@ import { NEWS_CATEGORY_IDS } from '../config/news-feeds.js';
                     const cleanEvents = calendarEvents.map((item, index) => {
                         if (!isPlainRecord(item) || typeof item.id !== 'string' || !/^cal-[a-z0-9-]{8,72}$/i.test(item.id)
                             || seenIds.has(item.id) || typeof item.title !== 'string' || !item.title.trim() || item.title.length > 100
-                            || typeof item.date !== 'string' || !/^\\d{4}-\\d{2}-\\d{2}$/.test(item.date)) {
+                            || typeof item.date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(item.date)) {
                             throw new Error(`${index + 1}. takvim etkinliği doğrulanamadı.`);
                         }
                         const eventDate = new Date(`${item.date}T12:00:00`);
                         const dateKey = `${eventDate.getFullYear()}-${String(eventDate.getMonth() + 1).padStart(2, '0')}-${String(eventDate.getDate()).padStart(2, '0')}`;
                         if (!Number.isFinite(eventDate.getTime()) || dateKey !== item.date) throw new Error(`${index + 1}. etkinliğin tarihi geçersiz.`);
-                        if (item.time !== undefined && item.time !== '' && (typeof item.time !== 'string' || !/^(?:[01]\\d|2[0-3]):[0-5]\\d$/.test(item.time))) {
+                        if (item.time !== undefined && item.time !== '' && (typeof item.time !== 'string' || !/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(item.time))) {
                             throw new Error(`${index + 1}. etkinliğin saati geçersiz.`);
                         }
                         seenIds.add(item.id);
