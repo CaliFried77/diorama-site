@@ -12,7 +12,7 @@ npm run build
 npm run deploy:dry-run
 ```
 
-GitHub Actions; Node.js modül/import kontrollerini, testleri, güvenlik denetimini, migration dalında Wrangler dry-run paketlemesini ve Chromium/Firefox tarayıcı testlerini çalıştırır. Başarısız bir adım varsa dağıtım yapılmamalıdır.
+GitHub Actions; Node.js modül/import kontrollerini, testleri, güvenlik denetimini, migration dalında Wrangler dry-run paketlemesini ve Chromium tarayıcı testlerini çalıştırır. Başarısız bir adım varsa dağıtım yapılmamalıdır.
 
 ## Tarayıcı ve işlev kontrolleri
 
