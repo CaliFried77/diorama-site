@@ -7,7 +7,7 @@ const html = await read('../index.html');
 const main = await read('../js/main.js');
 const css = await read('../css/base.css');
 const headers = await read('../_headers');
-const netlify = await read('../netlify.toml');
+const worker = await read('../cloudflare/worker.mjs');
 const build = await read('../build.mjs');
 const packageJson = JSON.parse(await read('../package.json'));
 const notices = await read('../THIRD_PARTY_NOTICES.md');
@@ -20,7 +20,7 @@ const fontFiles = [
 ];
 
  test('release version and software license are explicit', () => {
-  assert.equal(packageJson.version, '1.6.6');
+  assert.equal(packageJson.version, '2.0.0-dev.1');
   assert.match(mit, /^MIT License/);
   assert.match(mit, /Copyright \(c\) 2026 Living Pixel Diorama contributors/);
   assert.match(notices, /not\*\* replace the separate licenses/i);
@@ -44,11 +44,11 @@ ${css}`, /fonts\.googleapis\.com|fonts\.gstatic\.com/i);
 });
 
 test('CSP allows only same-origin font and stylesheet resources', () => {
-  for (const policy of [headers, netlify]) {
-    assert.match(policy, /style-src 'self' 'unsafe-inline'/);
-    assert.match(policy, /font-src 'self'/);
-    assert.doesNotMatch(policy, /fonts\.googleapis\.com|fonts\.gstatic\.com/i);
-  }
+  assert.match(headers, /style-src 'self' 'unsafe-inline'/);
+  assert.match(headers, /font-src 'self'/);
+  assert.doesNotMatch(headers, /fonts\.googleapis\.com|fonts\.gstatic\.com/i);
+  assert.match(worker, /default-src 'none'/);
+  assert.match(worker, /'Content-Security-Policy'/);
 });
 
 test('build copies local fonts so the generated app shell can precache them', async () => {
