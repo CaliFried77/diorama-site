@@ -58,16 +58,17 @@ test('build copies extension catalogs and Cloudflare response headers while Wran
 });
 
 test('generated typography uses a more readable scale and a 12px minimum for tiny labels', () => {
-  assert.ok(utilities.includes('.text-xs{font-size:.8125rem;line-height:1.125rem}'));
-  assert.ok(utilities.includes('.text-sm{font-size:.9375rem;line-height:1.375rem}'));
-  assert.ok(utilities.includes('.text-base{font-size:1.0625rem;line-height:1.625rem}'));
-  assert.ok(utilities.includes('.text-\\\\[10px\\\\]{font-size:12px}'));
-  assert.ok(utilities.includes('.text-\\\\[15px\\\\]{font-size:17px}'));
+  assert.match(await readFile(new URL('../css/base.css', import.meta.url), 'utf8'), /font-size: clamp\\(16\\.5px, calc\\(15\\.5px \\+ \\.18vw\\), 18px\\)/);
+  assert.ok(utilities.includes('.text-xs{font-size:.75rem;line-height:1rem}'));
+  assert.ok(utilities.includes('.text-sm{font-size:.875rem;line-height:1.25rem}'));
+  assert.ok(utilities.includes('.text-base{font-size:1rem;line-height:1.5rem}'));
+  assert.ok(utilities.includes('.text-\\[10px\\]{font-size:12px}'));
+  assert.ok(utilities.includes('.text-\\[15px\\]{font-size:17px}'));
 });
 
 test('hand-authored component styles keep readable UI text at 12px or larger', () => {
   for (const [name, css] of [['news.css', newsCss], ['widgets.css', widgetsCss], ['responsive.css', responsiveCss]]) {
-    assert.doesNotMatch(css, /(?:font-size|font):\\s*(?:[0-9]|1[01])px\\b/, `${name} contains text smaller than 12px`);
+    assert.doesNotMatch(css, /(?:font-size|font):\s*(?:[0-9]|1[01])px\b/, `${name} contains text smaller than 12px`);
   }
 });
 
