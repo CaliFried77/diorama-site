@@ -51,7 +51,9 @@ test('fixed widget labels use pixel type while dynamic news content stays regula
 test('fixed weather and workspace labels use pixel type while search and user-entered focus text stay readable', () => {
   assert.match(html, /id="focusStatusSub"[^>]*font-pixel/);
   assert.match(html, /Sahnede dene<\/p>/);
-  assert.match(weatherJs, /wx-stat-label text-\[11px\] text-white\/60/);
+  assert.match(weatherJs, /wxAirQuality/);
+  assert.match(weatherJs, /wx-solar-card/);
+  assert.match(weatherJs, /wx-hour-card/);
   assert.match(css, /\.wx-stat-label/);
   assert.match(html, /id="searchInput"[\s\S]*?class="[^"]*focus:outline-none tracking-wide"/);
   assert.doesNotMatch(html.match(/<span id="pinnedFocusText"[^>]*>/)?.[0] ?? '', /font-pixel/);
