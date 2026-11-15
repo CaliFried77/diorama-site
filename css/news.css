@@ -215,7 +215,7 @@
 .news-source-status.status-cached { color: #93c5fd; }
 .news-source-status.status-limited, .news-source-status.status-failed { color: #fca5a5; }
 .news-source-status.status-stale, .news-source-status.status-offline { color: #fcd34d; }
-.news-source-remove { padding: 6px 8px; color: rgba(255, 190, 190, .78); font-size: 0.8125rem; border-radius: 7px; }
+.news-source-remove { min-height: 36px; padding: 6px 8px; color: rgba(255, 190, 190, .78); font-size: 0.8125rem; border-radius: 7px; }
 .news-source-remove:hover { color: #fecaca; background: rgba(244, 63, 94, .1); }
 .news-add-source-form { display: grid; gap: 10px; margin-top: 13px; padding-top: 12px; border-top: 1px solid rgba(255, 255, 255, .09); }
 .news-add-heading { margin-bottom: 0; }
@@ -235,7 +235,7 @@
 .news-add-source-form input::placeholder { color: rgba(255, 255, 255, .38); }
 .news-add-footer { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .news-add-footer p { min-width: 0; margin: 0; color: rgba(255, 255, 255, .74); font-size: 0.8125rem; line-height: 1.4; }
-.news-add-source-btn { flex: 0 0 auto; padding: 9px 13px; color: #0f172a; background: #e0f2fe; border-radius: 9px; font-size: 0.8125rem; font-weight: 650; }
+.news-add-source-btn { flex: 0 0 auto; min-height: 40px; padding: 9px 13px; color: #0f172a; background: #e0f2fe; border-radius: 9px; font-size: 0.8125rem; font-weight: 650; }
 .news-add-source-btn:hover { background: #bae6fd; }
 
 .news-list-meta { padding: 0 3px 8px; color: rgba(255, 255, 255, .68); font-size: 0.8125rem; }
@@ -282,7 +282,7 @@
 .news-card-actions { display: flex; flex-direction: column; align-items: center; justify-content: space-between; gap: 9px; min-height: 64px; }
 .news-read-status { padding: 4px 7px; color: rgba(255, 255, 255, .48); background: rgba(255, 255, 255, .055); border-radius: 999px; font: 0.8125rem 'JetBrains Mono', monospace; white-space: nowrap; }
 .news-card:not(.is-read) .news-read-status { color: #86efac; background: rgba(134, 239, 172, .09); }
-.news-save-btn { display: grid; place-items: center; width: 36px; height: 36px; color: rgba(255, 255, 255, .5); border-radius: 9px; }
+.news-save-btn { display: grid; place-items: center; width: 40px; height: 40px; color: rgba(255, 255, 255, .5); border-radius: 9px; }
 .news-save-btn:hover, .news-save-btn.is-saved { color: #7dd3fc; background: rgba(56, 189, 248, .12); }
 .news-save-btn svg { width: 18px; height: 18px; }
 .news-save-btn.is-saved svg { fill: currentColor; }
