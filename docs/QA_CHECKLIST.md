@@ -11,7 +11,7 @@ npm run security
 npm run build
 ```
 
-GitHub Actions bu adımları her push ve pull request üzerinde çalıştırır. Ardından Playwright ile Chromium, Firefox ve WebKit motorlarında temel etkileşim, responsive genişlik ve Service Worker çevrimdışı kabuk testleri çalışır; ekran görüntüleri workflow artifact olarak saklanır. Başarısız bir adım varsa yayın paketi kullanılmamalıdır. Fiziksel iOS Safari/Android cihaz denemesi ve Lighthouse değerlendirmesi ayrıca yapılmalıdır.
+GitHub Actions bu adımları her push ve pull request üzerinde çalıştırır. Ardından Playwright ile Chromium ve Firefox motorlarında temel etkileşim, responsive genişlik ve Service Worker çevrimdışı kabuk testleri çalışır; ekran görüntüleri workflow artifact olarak saklanır. Başarısız bir adım varsa yayın paketi kullanılmamalıdır. Fiziksel iOS Safari/Android cihaz denemesi ve Lighthouse değerlendirmesi ayrıca yapılmalıdır.
 
 ## Tarayıcı uyumluluğu
 

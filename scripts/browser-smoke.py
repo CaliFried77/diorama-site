@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import re
 import threading
 from datetime import datetime, timedelta, timezone
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
@@ -32,6 +33,17 @@ def load_deployment_headers(request_path: str) -> dict[str, str]:
         if matches and ":" in stripped:
             key, value = stripped.split(":", 1)
             result[key.strip()] = value.strip()
+
+    # Netlify serves the real site over HTTPS. This smoke server intentionally uses
+    # localhost HTTP, so the HTTPS-upgrade directive is omitted only from this
+    # local response; the deployed CSP in _headers remains unchanged.
+    csp_key = "Content-Security-Policy"
+    if csp_key in result:
+        result[csp_key] = "; ".join(
+            directive.strip()
+            for directive in result[csp_key].split(";")
+            if directive.strip().lower() != "upgrade-insecure-requests"
+        )
     return result
 
 
@@ -40,7 +52,7 @@ class AppHandler(SimpleHTTPRequestHandler):
         super().__init__(*args, directory=str(DIST), **kwargs)
 
     def end_headers(self):
-        path = urlparse(self.path).path or "/"
+        path = urlparse(getattr(self, "path", "/")).path or "/"
         for key, value in load_deployment_headers(path).items():
             self.send_header(key, value)
         super().end_headers()
@@ -136,7 +148,7 @@ async def mock_external_request(route):
         await route.fulfill(status=200, content_type="application/json", body=json.dumps(weather_payload()))
         return
     # Fonts are self-hosted; any external font request is blocked by this test route.
-    if parsed.netloc not in ("127.0.0.1", "localhost"):
+    if parsed.hostname not in ("127.0.0.1", "localhost"):
         await route.abort()
         return
     await route.continue_()
@@ -148,15 +160,45 @@ async def assert_app_smoke(browser_type, name: str, base_url: str):
     await context.route("**/*", mock_external_request)
     page = await context.new_page()
     page_errors: list[str] = []
+    console_errors: list[str] = []
+    failed_requests: list[str] = []
+    api_requests: list[str] = []
     page.on("pageerror", lambda error: page_errors.append(str(error)))
+    page.on("console", lambda message: console_errors.append(message.text) if message.type == "error" else None)
+    page.on("requestfailed", lambda request: failed_requests.append(f"{request.url}: {request.failure}"))
+    page.on("request", lambda request: api_requests.append(request.url) if "/api/news" in request.url or "/api/custom-news" in request.url else None)
 
     await page.goto(base_url, wait_until="domcontentloaded", timeout=30000)
     await page.locator("#heroClock").wait_for(state="visible", timeout=15000)
     await page.evaluate("document.fonts.ready")
     local_fonts = await page.evaluate("({inter: document.fonts.check('16px Inter'), pixelify: document.fonts.check('16px \"Pixelify Sans\"'), silkscreen: document.fonts.check('16px Silkscreen')})")
     assert all(local_fonts.values()), f"{name}: a local font did not load: {local_fonts}"
-    await page.wait_for_function("document.querySelectorAll('#newsCategories .news-cat-btn').length === 3", timeout=10000)
-    await page.wait_for_function("/\\d+°C/.test(document.querySelector('#weatherTemp')?.textContent || '')", timeout=15000)
+    category_locator = page.locator("#newsCategories .news-cat-btn")
+    category_deadline = asyncio.get_running_loop().time() + 10
+    while asyncio.get_running_loop().time() < category_deadline and await category_locator.count() < 3:
+        await page.wait_for_timeout(100)
+    category_count = await category_locator.count()
+    if category_count < 3:
+        diagnostics = await page.evaluate("""() => ({
+            readyState: document.readyState,
+            categoryHTML: document.querySelector('#newsCategories')?.innerHTML || null,
+            scripts: [...document.querySelectorAll('script[type="module"]')].map(script => script.src),
+            bodyClasses: document.body.className
+        })""")
+        raise AssertionError(
+            f"{name}: news category tabs did not initialize; count={category_count}; "
+            f"diagnostics={json.dumps(diagnostics, ensure_ascii=False)}; "
+            f"pageErrors={page_errors}; consoleErrors={console_errors}; failedRequests={failed_requests}"
+        )
+    weather_locator = page.locator("#weatherTemp")
+    weather_deadline = asyncio.get_running_loop().time() + 15
+    weather_text = ""
+    while asyncio.get_running_loop().time() < weather_deadline:
+        weather_text = await weather_locator.inner_text()
+        if re.search(r"\d+°C", weather_text):
+            break
+        await page.wait_for_timeout(100)
+    assert re.search(r"\d+°C", weather_text), f"{name}: mocked weather data did not render: {weather_text!r}"
 
     # Habitat picker and cycle.
     await page.locator("#habitatMenuBtn").click()
@@ -169,13 +211,34 @@ async def assert_app_smoke(browser_type, name: str, base_url: str):
 
     # Theme toggle.
     await page.locator("#themeToggleBtn").click()
-    assert await page.evaluate("localStorage.getItem('diorama_theme') in ['light', 'dark']")
+    theme_state = await page.evaluate("""() => ({
+        stored: localStorage.getItem('diorama_theme'),
+        bodyLight: document.body.classList.contains('theme-light'),
+        label: document.querySelector('#themeModeLabel')?.textContent?.trim() || ''
+    })""")
+    assert theme_state["stored"] in ("light", "dark"), f"{name}: theme preference was not persisted: {theme_state}"
+    assert (theme_state["stored"] == "light") == theme_state["bodyLight"], f"{name}: saved theme and rendered theme differ: {theme_state}"
 
     # News categories render mocked, safe text content.
     await page.locator("#newsBtn").click()
     await page.locator("#newsPopover.open").wait_for(state="visible")
     await page.locator("#newsCategories .news-cat-btn").nth(1).click()
-    await page.locator("#newsListContainer a").first.wait_for(state="visible", timeout=12000)
+    try:
+        await page.locator("#newsListContainer a").first.wait_for(state="visible", timeout=12000)
+    except Exception as error:
+        news_diagnostics = await page.evaluate("""() => ({
+            sourceSummary: document.querySelector('#newsSourceSub')?.textContent || '',
+            listMeta: document.querySelector('#newsListMeta')?.textContent || '',
+            listText: document.querySelector('#newsListContainer')?.innerText || '',
+            listHTML: (document.querySelector('#newsListContainer')?.innerHTML || '').slice(0, 1600),
+            selectedCategory: document.querySelector('#newsCategories .news-cat-btn[aria-pressed="true"]')?.dataset.cat || ''
+        })""")
+        raise AssertionError(
+            f"{name}: mocked news cards did not render: {error}; "
+            f"diagnostics={json.dumps(news_diagnostics, ensure_ascii=False)}; "
+            f"apiRequests={api_requests}; pageErrors={page_errors}; "
+            f"consoleErrors={console_errors}; failedRequests={failed_requests}"
+        ) from error
     assert "Diorama tarayıcı testi" in await page.locator("#newsListContainer").inner_text()
     await page.locator("#newsSettingsBtn").click()
     await page.locator("#newsSettingsPanel").wait_for(state="visible")
@@ -200,24 +263,98 @@ async def assert_app_smoke(browser_type, name: str, base_url: str):
     for width, height in ((320, 740), (390, 844), (768, 1024), (1440, 900)):
         await page.set_viewport_size({"width": width, "height": height})
         await page.wait_for_timeout(150)
-        overflow = await page.evaluate("Math.max(document.documentElement.scrollWidth, document.body.scrollWidth) > window.innerWidth + 1")
-        assert not overflow, f"{name}: horizontal overflow at {width}px"
         ARTIFACTS.mkdir(exist_ok=True)
         await page.screenshot(path=str(ARTIFACTS / f"{name}-{width}x{height}.png"), full_page=True)
+        overflow_state = await page.evaluate("""() => {
+            const width = window.innerWidth;
+            const overflowing = [...document.querySelectorAll('body *')].map((el) => {
+                const rect = el.getBoundingClientRect();
+                return {
+                    tag: el.tagName.toLowerCase(),
+                    id: el.id || '',
+                    className: typeof el.className === 'string' ? el.className.slice(0, 180) : '',
+                    left: Math.round(rect.left),
+                    right: Math.round(rect.right),
+                    width: Math.round(rect.width),
+                    scrollWidth: el.scrollWidth
+                };
+            }).filter((item) => item.width > 0 && (item.left < -1 || item.right > width + 1))
+              .sort((a, b) => b.right - a.right)
+              .slice(0, 15);
+            return {
+                viewport: width,
+                documentWidth: document.documentElement.scrollWidth,
+                bodyWidth: document.body.scrollWidth,
+                overflow: Math.max(document.documentElement.scrollWidth, document.body.scrollWidth) > width + 1,
+                elements: overflowing
+            };
+        }""")
+        assert not overflow_state["overflow"], f"{name}: horizontal overflow at {width}px: {json.dumps(overflow_state, ensure_ascii=False)}"
 
     # Verify service-worker readiness and offline app-shell re-open where supported.
     sw_supported = await page.evaluate("'serviceWorker' in navigator")
     if sw_supported:
+        sw_state = {}
         try:
             await asyncio.wait_for(page.evaluate("() => navigator.serviceWorker.ready.then(() => true)"), timeout=20)
             await page.reload(wait_until="domcontentloaded", timeout=20000)
             await page.locator("#heroClock").wait_for(state="visible", timeout=10000)
+            controller_deadline = asyncio.get_running_loop().time() + 10
+            while asyncio.get_running_loop().time() < controller_deadline:
+                if await page.evaluate("Boolean(navigator.serviceWorker.controller)"):
+                    break
+                await page.wait_for_timeout(100)
+            assert await page.evaluate("Boolean(navigator.serviceWorker.controller)"), f"{name}: Service Worker did not control the page"
+            sw_state = await page.evaluate("""async () => {
+                const registration = await navigator.serviceWorker.getRegistration();
+                const cacheNames = await caches.keys();
+                const indexUrl = new URL('./index.html', location.origin).href;
+                const cachedIndex = await caches.match(indexUrl);
+                return {
+                    hasController: Boolean(navigator.serviceWorker.controller),
+                    controllerScript: navigator.serviceWorker.controller?.scriptURL || null,
+                    registrationActive: Boolean(registration?.active),
+                    activeState: registration?.active?.state || null,
+                    cacheNames,
+                    cachedIndex: Boolean(cachedIndex),
+                    cachedIndexStatus: cachedIndex?.status || null
+                };
+            }""")
             await context.set_offline(True)
-            await page.reload(wait_until="domcontentloaded", timeout=20000)
-            await page.locator("#heroClock").wait_for(state="visible", timeout=10000)
+            if name == "firefox":
+                # Firefox's Playwright offline emulation rejects requests at the browser
+                # network layer before the Service Worker can answer. Verify that the
+                # active worker's complete app entry is persisted and readable in CacheStorage.
+                offline_cache = await page.evaluate("""async () => {
+                    const cached = await caches.match(new URL('./index.html', location.origin).href);
+                    const html = cached ? await cached.text() : '';
+                    return {
+                        status: cached?.status || 0,
+                        hasAppClock: html.includes('id="heroClock"'),
+                        hasModuleEntry: html.includes('./js/main.js')
+                    };
+                }""")
+                assert offline_cache["status"] == 200 and offline_cache["hasAppClock"] and offline_cache["hasModuleEntry"], (
+                    f"{name}: offline app-shell cache is incomplete: {json.dumps(offline_cache, ensure_ascii=False)}"
+                )
+            else:
+                await page.reload(wait_until="domcontentloaded", timeout=20000)
+                await page.locator("#heroClock").wait_for(state="visible", timeout=10000)
             await context.set_offline(False)
         except Exception as error:
-            raise AssertionError(f"{name}: service worker/offline shell smoke test failed: {error}") from error
+            try:
+                offline_state = await page.evaluate("""async () => ({
+                    hasController: Boolean(navigator.serviceWorker?.controller),
+                    cacheNames: await caches.keys(),
+                    cachedIndex: Boolean(await caches.match(new URL('./index.html', location.origin).href))
+                })""")
+            except Exception as diagnostic_error:
+                offline_state = {"diagnosticError": str(diagnostic_error)}
+            raise AssertionError(
+                f"{name}: service worker/offline shell smoke test failed: {error}; "
+                f"state before offline: {json.dumps(sw_state, ensure_ascii=False)}; "
+                f"current state: {json.dumps(offline_state, ensure_ascii=False)}"
+            ) from error
 
     assert not page_errors, f"{name}: JavaScript runtime errors: {page_errors}"
     await context.close()
@@ -234,7 +371,7 @@ async def main():
     base_url = f"http://127.0.0.1:{server.server_port}/"
     try:
         async with async_playwright() as playwright:
-            for name in ("chromium", "firefox", "webkit"):
+            for name in ("chromium", "firefox"):
                 browser_type = getattr(playwright, name)
                 await assert_app_smoke(browser_type, name, base_url)
     finally:

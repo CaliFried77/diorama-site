@@ -22,7 +22,7 @@ npm run build
 npm run dev
 ```
 
-Tarayıcı smoke testleri için `python -m pip install -r requirements-browser.txt` ve `python -m playwright install chromium firefox webkit` komutlarından sonra `npm run test:browser` çalıştırılabilir.
+Tarayıcı smoke testleri için `python -m pip install -r requirements-browser.txt` ve `python -m playwright install chromium firefox` komutlarından sonra `npm run test:browser` çalıştırılabilir.
 
 ## Yayın sonrası hızlı API kontrolü
 
