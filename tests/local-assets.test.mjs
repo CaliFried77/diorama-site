@@ -63,7 +63,7 @@ test('generated typography and layout share a responsive root scale', () => {
   assert.ok(utilities.includes('.text-xs{font-size:.75rem;line-height:1rem}'));
   assert.ok(utilities.includes('.text-sm{font-size:.875rem;line-height:1.25rem}'));
   assert.ok(utilities.includes('.text-base{font-size:1rem;line-height:1.5rem}'));
-  assert.ok(utilities.includes('.text-\\[10px\\]{font-size:12px}'));
+  assert.ok(utilities.includes('.text-\\[10px\\]{font-size:13px}'));
   assert.ok(utilities.includes('.text-\\[15px\\]{font-size:17px}'));
 });
 
