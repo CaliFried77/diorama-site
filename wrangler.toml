@@ -12,7 +12,7 @@ not_found_handling = "single-page-application"
 
 [[ratelimits]]
 name = "NEWS_RATE_LIMITER"
-namespace_id = 1101
+namespace_id = "1101"
 
 [ratelimits.simple]
 limit = 40
@@ -20,7 +20,7 @@ period = 60
 
 [[ratelimits]]
 name = "CUSTOM_NEWS_RATE_LIMITER"
-namespace_id = 1102
+namespace_id = "1102"
 
 [ratelimits.simple]
 limit = 40
