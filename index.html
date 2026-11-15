@@ -80,13 +80,13 @@
             <!-- Curated Live News & Agenda (Gündem) -->
             <div class="relative">
                 <button id="newsBtn" type="button" title="Güncel Gündem Başlıkları" aria-haspopup="true" aria-controls="newsPopover" aria-expanded="false" class="optical-pill rounded-full px-3.5 py-2 flex items-center gap-2 text-xs font-medium text-white/95">
-                    <svg class="w-3.5 h-3.5 text-amber-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <svg class="w-3.5 h-3.5 text-sky-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
                     </svg>
                     <span class="hidden sm:inline font-pixel tracking-wide">Gündem</span>
                 </button>
 
-                <div id="newsPopover" role="region" aria-label="Gündem ve haberler" aria-hidden="true" inert class="popover-panel editorial-modal rounded-3xl p-4 sm:p-5 absolute right-0 mt-2.5 z-50 max-h-[84vh] overflow-y-auto news-popover">
+                <div id="newsPopover" role="region" aria-label="Gündem ve haberler" aria-hidden="true" inert class="popover-panel editorial-modal rounded-3xl news-popover">
                     <div class="news-masthead">
                         <div class="min-w-0">
                             <p class="news-eyebrow">Diorama · Güncel</p>
@@ -104,7 +104,7 @@
                     </div>
 
                     <div class="news-section-heading"><span>Akışa göz at</span><span class="news-section-rule" aria-hidden="true"></span></div>
-                    <div id="newsCategories" class="flex gap-1 p-1 rounded-xl bg-black/30 border border-white/10 mb-3 overflow-x-auto" role="group" aria-label="Haber kategorileri"></div>
+                    <div id="newsCategories" class="news-categories" role="group" aria-label="Haber kategorileri"></div>
 
                     <div class="news-search-row">
                         <label class="news-search-wrap">
