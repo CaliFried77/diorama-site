@@ -36,6 +36,15 @@ test('Atom parser supports namespaced fields and alternate links', () => {
   assert.equal(item.description, 'Atom özeti');
 });
 
+test('RSS parser strips HTML tags encoded as XML entities in feed descriptions', () => {
+  const encodedHtml = `<rss><channel><item>
+<title>Başlık</title><link>https://example.org/encoded-html</link>
+<description>&lt;span&gt;TÜBİTAK açıklaması&lt;/span&gt; &lt;div&gt;Ek bilgi&lt;/div&gt;</description>
+</item></channel></rss>`;
+  const [item] = parseRssXml(encodedHtml);
+  assert.equal(item.description, 'TÜBİTAK açıklaması Ek bilgi');
+});
+
 test('RSS parser enforces UTF-8 byte-size and article-count limits', () => {
   assert.throws(() => parseRssXml('x'.repeat(1_000_001)), /boyutu aşıyor/);
   const oversizedUtf8 = 'ş'.repeat(600_000);
