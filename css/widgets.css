@@ -459,6 +459,8 @@
 .wx-hour-card {
   display: grid;
   flex: 0 0 94px;
+  width: 94px;
+  height: 94px;
   aspect-ratio: 1 / 1;
   grid-template-rows: auto 1fr auto auto;
   justify-items: center;
@@ -516,7 +518,7 @@
 
 /* Local calendar — a compact editorial month with event markers and tactile day selection. */
 .calendar-popover {
-  width: min(430px, calc(100vw - 28px));
+  width: min(450px, calc(100vw - 28px));
   max-height: min(84vh, 780px);
   padding: 1.25rem !important;
   overflow-x: hidden;
@@ -530,8 +532,8 @@
 .calendar-nav button {
   display: grid;
   place-items: center;
-  min-width: 34px;
-  min-height: 34px;
+  min-width: 40px;
+  min-height: 40px;
   padding: 5px 8px;
   border: 1px solid rgba(255,255,255,.12);
   border-radius: 9px;
@@ -540,7 +542,7 @@
   font-size: .8rem;
 }
 .calendar-nav button:hover { background: rgba(255,255,255,.12); }
-.calendar-nav #calendarTodayBtn { min-width: 48px; font-size: .7rem; }
+.calendar-nav #calendarTodayBtn { min-width: 56px; font-size: .75rem; }
 .calendar-weekdays, .calendar-grid { display: grid; grid-template-columns: repeat(7,minmax(0,1fr)); gap: 5px; }
 .calendar-weekdays { margin-bottom: 6px; }
 .calendar-weekdays span { padding: 5px 0; color: rgba(255,255,255,.56); text-align: center; font: .72rem 'JetBrains Mono',monospace; }
@@ -550,8 +552,8 @@
   justify-items: center;
   align-items: center;
   min-width: 0;
-  min-height: 42px;
-  padding: 5px 2px 4px;
+  min-height: 46px;
+  padding: 6px 2px 5px;
   border: 1px solid rgba(255,255,255,.055);
   border-radius: 10px;
   color: rgba(255,255,255,.86);
@@ -570,12 +572,12 @@
 .calendar-day-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 9px; }
 .calendar-day-heading h4 { color: rgba(255,255,255,.94); font-size: .92rem; text-transform: capitalize; }
 .calendar-event-count { color: rgba(186,230,253,.78); font: .75rem 'JetBrains Mono',monospace; }
-.calendar-event-list { display: grid; gap: 6px; max-height: 160px; overflow-y: auto; }
+.calendar-event-list { display: grid; gap: 6px; max-height: 210px; overflow-y: auto; }
 .calendar-empty { padding: 5px 0 8px; color: rgba(255,255,255,.58); font-size: .8rem; }
-.calendar-event-row { display: grid; grid-template-columns: 52px minmax(0,1fr) 30px; align-items: center; gap: 7px; min-width: 0; padding: 7px 8px; border: 1px solid rgba(255,255,255,.07); border-radius: 9px; background: rgba(0,0,0,.12); }
+.calendar-event-row { display: grid; grid-template-columns: 58px minmax(0,1fr) 36px; align-items: center; gap: 7px; min-width: 0; padding: 7px 8px; border: 1px solid rgba(255,255,255,.07); border-radius: 9px; background: rgba(0,0,0,.12); }
 .calendar-event-time { color: #7dd3fc; font: .75rem 'JetBrains Mono',monospace; }
 .calendar-event-name { overflow-wrap: anywhere; color: rgba(255,255,255,.9); font-size: .82rem; }
-.calendar-event-remove { width: 30px; height: 30px; border-radius: 8px; color: rgba(255,255,255,.42); font-size: 1.15rem; }
+.calendar-event-remove { width: 36px; height: 36px; border-radius: 8px; color: rgba(255,255,255,.42); font-size: 1.15rem; }
 .calendar-event-remove:hover { color: #fecdd3; background: rgba(244,63,94,.1); }
 .calendar-event-form { display: grid; gap: 7px; margin-top: 11px; padding-top: 11px; border-top: 1px solid rgba(255,255,255,.08); }
 .calendar-event-form > label { color: rgba(255,255,255,.72); font: .75rem 'JetBrains Mono',monospace; letter-spacing: .045em; }
@@ -603,6 +605,8 @@
 .notes-task-form #priorityCycleBtn { width: 36px; min-width: 36px; min-height: 40px; padding: 0; }
 .notes-task-form input { min-width: 0; width: 100%; min-height: 40px; padding: 8px 10px; font-size: .78rem; }
 .notes-task-form button[type="submit"] { width: 52px; min-width: 0; min-height: 40px; padding: 7px 5px; white-space: nowrap; font-family: 'Inter', sans-serif; font-size: .75rem; font-weight: 600; }
+#notesPopover #addTaskForm { max-width: 100%; overflow: hidden; }
+#notesPopover #addTaskForm input { display: block; min-width: 0; max-width: 100%; }
 #notesPopover { width: min(420px, calc(100vw - 1rem)); max-height: min(82vh,760px); overflow-x: hidden; overflow-y: auto; }
 #notesTabView, #tasksTabView { min-width: 0; }
 #notesTabView form input, #notesTabView form textarea { min-width: 0; width: 100%; font-size: .82rem; }
@@ -612,6 +616,20 @@
 #dataManagerPopover button { min-height: 38px; }
 #dataManagerPopover #exportAllDataBtn { min-height: 44px; color: #dff5ff; border: 1px solid rgba(125,211,252,.28); background: linear-gradient(135deg,rgba(20,45,68,.92),rgba(27,63,77,.9)); font-family: 'Pixelify Sans','Inter',sans-serif; font-size: .75rem; font-weight: 550; }
 #dataManagerPopover #exportAllDataBtn:hover { background: linear-gradient(135deg,rgba(32,72,101,.98),rgba(31,79,92,.98)); }
+#dataManagerPopover .data-export-scope,
+#dataManagerPopover #clearTasksDataBtn,
+#dataManagerPopover #clearNotesDataBtn,
+#dataManagerPopover #resetShortcutsDataBtn {
+  min-height: 46px;
+  padding: 8px 6px;
+  font-size: .72rem;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+#dataManagerPopover #clearAllAppDataBtn {
+  min-height: 42px;
+  font-size: .75rem;
+}
 
 .habitat-control-pill { min-height: 40px; padding-top: 0 !important; padding-bottom: 0 !important; }
 #habitatMenuBtn { min-height: 38px; padding-top: .35rem; padding-bottom: .35rem; }
