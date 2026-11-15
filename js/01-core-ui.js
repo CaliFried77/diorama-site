@@ -58,6 +58,16 @@ import { refreshWeatherPreviewButtons, refreshDataManagerStats } from './service
             el.style.setProperty('--mouse-y', '-200px');
         }
         document.addEventListener('pointermove', (e) => {
+            if (document.body.classList.contains('zen-active')) {
+                const targetElement = e.target instanceof Element ? e.target : null;
+                const openSurface = targetElement?.closest('.popover-panel.open, #shortcutModal[aria-hidden="false"]');
+                if (e.clientY <= 76 || openSurface) {
+                    document.body.classList.add('zen-revealed');
+                } else if (e.clientY > 112) {
+                    document.body.classList.remove('zen-revealed');
+                }
+            }
+
             const target = e.target instanceof Element ? e.target.closest('.optical-glass') : null;
             if (target !== activeGlassPointer) {
                 clearGlassPointer(activeGlassPointer);
@@ -82,6 +92,8 @@ import { refreshWeatherPreviewButtons, refreshDataManagerStats } from './service
         const zenEyeIcon = document.getElementById('zenEyeIcon');
         export function toggleZenMode() {
             const active = document.body.classList.toggle('zen-active');
+            document.body.classList.remove('zen-revealed');
+            if (active) closeAllPopovers();
             zenModeBtn.setAttribute('aria-pressed', active ? 'true' : 'false');
             zenEyeIcon.innerHTML = active
                 ? `<path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>`
