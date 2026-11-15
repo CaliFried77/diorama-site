@@ -40,7 +40,7 @@ test('generated local utilities cover representative layout, color, responsive a
 });
 
 test('build copies extension catalogs and Cloudflare response headers while Wrangler config stays at the source root', () => {
-  assert.match(build, /configDir/);
+  assert.match(build, /const directories = \['js', 'config', 'server', 'cloudflare'\]/);
   assert.match(build, /_headers/);
   assert.match(build, /modulePreloads/);
   assert.match(build, /createHash/);
