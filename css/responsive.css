@@ -75,7 +75,7 @@
         }
         @media (max-width: 360px) {
             .header-controls-right > div > button { padding-left: .5rem; padding-right: .5rem; }
-            #focusBtnLabel { font-size: 11px; }
+            #focusBtnLabel { font-size: 13px; }
             .main-content { padding-left: .6rem; padding-right: .6rem; }
         }
         @media (max-height: 620px) and (min-width: 640px) {
@@ -94,7 +94,7 @@
             #priorityCycleBtn, #clearDoneTasksBtn, #headlineNextBtn {
                 min-height: 40px;
             }
-            .del-shortcut-btn { width: 30px !important; height: 30px !important; font-size: 12px !important; }
+            .del-shortcut-btn { width: 30px !important; height: 30px !important; font-size: 14px !important; }
             .del-task-btn, #stickyNotesGrid button { min-width: 36px; min-height: 36px; }
         }
         @media (prefers-reduced-motion: reduce) {
