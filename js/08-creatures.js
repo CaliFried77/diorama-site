@@ -116,11 +116,13 @@ import { stimuli, canvas, PIXEL_SCALE, HABITATS, currentHabitatIdx, pw, ph, fram
                 // Small ripe tropical fruit drops for the parrots to investigate
                 for (let i = 0; i < 3; i++) {
                     const offset = (i - 1) * 7;
+                    const fruitX = px + offset + (Math.random() - 0.5) * 3;
+                    const fruitY = py + (Math.random() - 0.5) * 6;
                     stimuli.push({
                         type: 'tropical_fruit',
-                        x: px + offset + (Math.random() - 0.5) * 3,
-                        y: py + (Math.random() - 0.5) * 6,
-                        baseY: py + (Math.random() - 0.5) * 6,
+                        x: fruitX,
+                        y: fruitY,
+                        baseY: fruitY,
                         phase: Math.random() * Math.PI * 2,
                         hue: ['#f97316', '#e11d48', '#facc15'][i],
                         life: 280,
