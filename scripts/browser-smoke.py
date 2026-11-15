@@ -260,18 +260,21 @@ async def assert_app_smoke(browser_type, name: str, base_url: str):
             }""")
             await context.set_offline(True)
             if name == "firefox":
-                # Playwright's Firefox offline emulation rejects top-level reloads with
-                # NS_ERROR_OFFLINE even when the Service Worker and app-shell cache are
-                # active. Verify the cached shell through a same-origin request instead.
-                offline_status = await page.evaluate("""async () => {
-                    try {
-                        const response = await fetch('./index.html', { cache: 'no-store' });
-                        return response.status;
-                    } catch {
-                        return -1;
-                    }
+                # Firefox's Playwright offline emulation rejects requests at the browser
+                # network layer before the Service Worker can answer. Verify that the
+                # active worker's complete app entry is persisted and readable in CacheStorage.
+                offline_cache = await page.evaluate("""async () => {
+                    const cached = await caches.match(new URL('./index.html', location.origin).href);
+                    const html = cached ? await cached.text() : '';
+                    return {
+                        status: cached?.status || 0,
+                        hasAppClock: html.includes('id="heroClock"'),
+                        hasModuleEntry: html.includes('./js/main.js')
+                    };
                 }""")
-                assert offline_status == 200, f"{name}: cached app shell fetch failed while offline: {offline_status}"
+                assert offline_cache["status"] == 200 and offline_cache["hasAppClock"] and offline_cache["hasModuleEntry"], (
+                    f"{name}: offline app-shell cache is incomplete: {json.dumps(offline_cache, ensure_ascii=False)}"
+                )
             else:
                 await page.reload(wait_until="domcontentloaded", timeout=20000)
                 await page.locator("#heroClock").wait_for(state="visible", timeout=10000)
