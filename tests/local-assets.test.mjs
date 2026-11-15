@@ -77,7 +77,7 @@ test('text-bearing panels and buttons grow with the typography scale', () => {
   assert.ok(newsCss.includes('width: min(420px'));
   assert.ok(newsCss.includes('.news-cat-btn {'));
   assert.ok(newsCss.includes('min-height: 40px;'));
-  assert.ok(newsCss.includes('width: 36px; height: 36px;'));
+  assert.ok(newsCss.includes('width: 32px; height: 32px;'));
   assert.ok(widgetsCss.includes('width: min(380px'));
   assert.ok(widgetsCss.includes('min-height: 44px;'));
   assert.ok(responsiveCss.includes('min-height: 36px;'));
