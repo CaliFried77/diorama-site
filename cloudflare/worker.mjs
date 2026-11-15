@@ -11,12 +11,14 @@ const customNewsHandler = createCustomNewsHandler({
 });
 
 const SECURITY_HEADERS = {
-  'Content-Security-Policy': "default-src 'none'; base-uri 'none'; frame-ancestors 'none'",
+  'Content-Security-Policy': "default-src 'none'; base-uri 'none'; object-src 'none'; form-action 'none'; frame-ancestors 'none'",
+  'Strict-Transport-Security': 'max-age=31536000',
   'X-Content-Type-Options': 'nosniff',
   'Referrer-Policy': 'strict-origin-when-cross-origin',
   'X-Frame-Options': 'DENY',
   'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
   'Cross-Origin-Opener-Policy': 'same-origin',
+  'Cross-Origin-Resource-Policy': 'same-origin',
 };
 
 function jsonError(message, status, extraHeaders = {}) {
