@@ -52,7 +52,7 @@ test('CSP allows only same-origin font and stylesheet resources', () => {
 });
 
 test('build copies local fonts so the generated app shell can precache them', async () => {
-  assert.match(build, /cp\(resolve\(root, 'fonts'\), resolve\(dist, 'fonts'\)/);
+  assert.match(build, /for \(const directory of \['css', 'js', 'config', 'icons', 'fonts', 'licenses'\]\)/);
   for (const name of fontFiles) {
     const source = await readFile(new URL(`../fonts/${name}`, import.meta.url));
     const built = await readFile(new URL(`../dist/fonts/${name}`, import.meta.url));
