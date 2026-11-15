@@ -162,9 +162,11 @@ async def assert_app_smoke(browser_type, name: str, base_url: str):
     page_errors: list[str] = []
     console_errors: list[str] = []
     failed_requests: list[str] = []
+    api_requests: list[str] = []
     page.on("pageerror", lambda error: page_errors.append(str(error)))
     page.on("console", lambda message: console_errors.append(message.text) if message.type == "error" else None)
     page.on("requestfailed", lambda request: failed_requests.append(f"{request.url}: {request.failure}"))
+    page.on("request", lambda request: api_requests.append(request.url) if "/api/news" in request.url or "/api/custom-news" in request.url else None)
 
     await page.goto(base_url, wait_until="domcontentloaded", timeout=30000)
     await page.locator("#heroClock").wait_for(state="visible", timeout=15000)
@@ -221,7 +223,22 @@ async def assert_app_smoke(browser_type, name: str, base_url: str):
     await page.locator("#newsBtn").click()
     await page.locator("#newsPopover.open").wait_for(state="visible")
     await page.locator("#newsCategories .news-cat-btn").nth(1).click()
-    await page.locator("#newsListContainer a").first.wait_for(state="visible", timeout=12000)
+    try:
+        await page.locator("#newsListContainer a").first.wait_for(state="visible", timeout=12000)
+    except Exception as error:
+        news_diagnostics = await page.evaluate("""() => ({
+            sourceSummary: document.querySelector('#newsSourceSub')?.textContent || '',
+            listMeta: document.querySelector('#newsListMeta')?.textContent || '',
+            listText: document.querySelector('#newsListContainer')?.innerText || '',
+            listHTML: (document.querySelector('#newsListContainer')?.innerHTML || '').slice(0, 1600),
+            selectedCategory: document.querySelector('#newsCategories .news-cat-btn[aria-pressed="true"]')?.dataset.cat || ''
+        })""")
+        raise AssertionError(
+            f"{name}: mocked news cards did not render: {error}; "
+            f"diagnostics={json.dumps(news_diagnostics, ensure_ascii=False)}; "
+            f"apiRequests={api_requests}; pageErrors={page_errors}; "
+            f"consoleErrors={console_errors}; failedRequests={failed_requests}"
+        ) from error
     assert "Diorama tarayıcı testi" in await page.locator("#newsListContainer").inner_text()
     await page.locator("#newsSettingsBtn").click()
     await page.locator("#newsSettingsPanel").wait_for(state="visible")
