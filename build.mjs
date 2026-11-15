@@ -66,7 +66,7 @@ await cp(resolve(root, 'js'), resolve(dist, 'js'), { recursive: true });
 await cp(resolve(root, 'config'), resolve(dist, 'config'), { recursive: true });
 await cp(resolve(root, 'sw.js'), resolve(dist, 'sw.js'));
 await cp(resolve(root, '_headers'), resolve(dist, '_headers'));
-for (const cssFile of ['base.css', 'utilities.css', 'responsive.css', 'news.css']) {
+for (const cssFile of ['base.css', 'utilities.css', 'responsive.css', 'news.css', 'widgets.css']) {
   const target = resolve(dist, 'css', cssFile);
   const source = await readFile(target, 'utf8');
   await writeFile(target, minifyCss(source));

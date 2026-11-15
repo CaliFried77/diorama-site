@@ -37,7 +37,7 @@ test('build copies extension catalogs and deployable response headers while host
 test('service worker precaches local shell assets and leaves external live services to the network', () => {
   assert.match(main, /serviceWorker\.register/);
   assert.match(sw, /\!url\.origin === self\.location\.origin|url\.origin !== self\.location\.origin/);
-  for (const asset of ['./index.html', './css/utilities.css', './js/main.js', './js/10-glass-renderer.js']) {
+  for (const asset of ['./index.html', './css/utilities.css', './css/widgets.css', './js/main.js', './js/focus-timer-state.js', './js/10-glass-renderer.js']) {
     assert.ok(sw.includes(asset), `Offline shell missing ${asset}`);
   }
 });

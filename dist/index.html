@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="./css/utilities.css">
     <link rel="stylesheet" href="./css/responsive.css">
     <link rel="stylesheet" href="./css/news.css">
+    <link rel="stylesheet" href="./css/widgets.css">
 </head>
 <body class="h-screen w-full relative flex flex-col justify-between items-center">
 
@@ -174,21 +175,21 @@
                         </div>
                     </div>
                     <div id="wxStats" class="grid grid-cols-3 gap-1.5 mt-4"></div>
-                    <p class="text-xs text-white/60 mt-4 mb-1.5">Önümüzdeki saatler</p>
+                    <p class="text-xs text-white/60 mt-4 mb-1.5 font-pixel">Önümüzdeki saatler</p>
                     <div id="wxHourly" class="flex gap-1 overflow-x-auto pb-1"></div>
-                    <p class="text-xs text-white/60 mt-3 mb-1.5">5 günlük tahmin</p>
+                    <p class="text-xs text-white/60 mt-3 mb-1.5 font-pixel">5 günlük tahmin</p>
                     <div id="wxDaily" class="space-y-1"></div>
                     <div class="mt-4 pt-3 border-t border-white/10">
-                        <p class="text-xs text-white/60 mb-1.5">Sahnede dene</p>
+                        <p class="text-xs text-white/60 mb-1.5 font-pixel">Sahnede dene</p>
                         <div id="wxPreview" class="flex gap-1.5"></div>
                     </div>
                     <div class="mt-3 space-y-2">
-                        <label class="flex items-center justify-between gap-3 text-xs text-white/80"><span>Sahnede hava efektleri</span><input id="wxFxToggle" type="checkbox" aria-label="Sahnede hava efektlerini etkinleştir" class="accent-sky-300 w-4 h-4"></label>
-                        <label class="flex items-center justify-between gap-3 text-xs text-white/80"><span>Gündüz/gece temasını güneşe göre ayarla</span><input id="wxAutoTheme" type="checkbox" aria-label="Gündüz ve gece temasını güneşe göre otomatik ayarla" class="accent-sky-300 w-4 h-4"></label>
+                        <label class="flex items-center justify-between gap-3 text-xs text-white/80"><span class="font-pixel">Sahnede hava efektleri</span><input id="wxFxToggle" type="checkbox" aria-label="Sahnede hava efektlerini etkinleştir" class="accent-sky-300 w-4 h-4"></label>
+                        <label class="flex items-center justify-between gap-3 text-xs text-white/80"><span class="font-pixel">Gündüz/gece temasını güneşe göre ayarla</span><input id="wxAutoTheme" type="checkbox" aria-label="Gündüz ve gece temasını güneşe göre otomatik ayarla" class="accent-sky-300 w-4 h-4"></label>
                     </div>
                     <form id="weatherForm" class="flex gap-1.5 mt-4">
                         <input id="cityInput" type="text" maxlength="80" autocomplete="off" aria-label="Hava durumu için şehir" placeholder="Şehir (Örn: İstanbul)" class="w-full bg-white/[0.07] border border-white/15 rounded-xl px-3 py-1.5 text-xs text-white placeholder-white/55 focus:outline-none focus:border-white/40" />
-                        <button type="submit" class="px-3 py-1.5 rounded-xl bg-white/15 hover:bg-white/25 text-xs font-medium text-white transition">Kaydet</button>
+                        <button type="submit" class="px-3 py-1.5 rounded-xl bg-white/15 hover:bg-white/25 text-xs font-medium text-white transition font-pixel">Kaydet</button>
                     </form>
                     <p class="text-[10px] text-white/40 mt-2">Hava verisi: <a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer" class="underline underline-offset-2 hover:text-white/70">Open-Meteo</a></p>
                 </div>
@@ -201,56 +202,66 @@
                         <circle cx="12" cy="12" r="9"></circle>
                         <polyline points="12 7 12 12 15 15"></polyline>
                     </svg>
-                    <span id="focusBtnLabel" class="font-mono tracking-tight">25:00</span>
+                    <span id="focusBtnLabel" class="font-pixel tracking-tight">25:00</span>
                     <span id="soundActiveDot" class="hidden w-1.5 h-1.5 rounded-full bg-sky-400 animate-pulse"></span>
                 </button>
 
                 <!-- Bug-Free Audited Focus Studio Popover -->
-                <div id="focusPopover" role="region" aria-label="Odak ve ambiyans" aria-hidden="true" inert class="popover-panel editorial-modal rounded-3xl p-5 w-80 absolute right-0 mt-2.5 z-50">
-                    <div class="flex items-center justify-between mb-3.5">
-                        <div>
-                            <h3 class="text-xs font-semibold text-white/90">Odak & Ambiyans</h3>
-                            <p id="focusStatusSub" class="text-xs text-white/60 mt-0.5">Zamanlayıcı hazır</p>
+                <div id="focusPopover" role="region" aria-label="Odak ve ambiyans" aria-hidden="true" inert class="popover-panel editorial-modal rounded-3xl p-4 w-80 absolute right-0 mt-2.5 z-50 focus-popover">
+                    <div class="focus-widget-heading">
+                        <div class="min-w-0">
+                            <h3 class="text-xs font-semibold text-white/90 font-pixel">Odak & Ambiyans</h3>
+                            <p id="focusStatusSub" class="text-xs text-white/60 mt-0.5 font-pixel">Zamanlayıcı hazır</p>
                         </div>
-                        <span id="focusSessionBadge" class="px-2.5 py-0.5 rounded-full text-[11px] font-mono uppercase tracking-wider bg-white/10 text-white/80 border border-white/15">25 DK</span>
+                        <span id="focusSessionBadge" class="focus-duration-badge font-pixel">25 DK</span>
                     </div>
 
-                    <!-- Duration Selector -->
-                    <div class="grid grid-cols-4 gap-1 p-1 rounded-xl bg-black/30 border border-white/10 mb-4" role="group" aria-label="Odak süresi seçimi">
-                        <button type="button" data-mins="10" aria-pressed="false" class="focus-preset-btn py-1.5 rounded-lg text-xs font-medium text-white/55 hover:text-white transition">10dk</button>
-                        <button type="button" data-mins="25" aria-pressed="true" class="focus-preset-btn py-1.5 rounded-lg text-xs font-medium bg-white/15 text-white transition">25dk</button>
-                        <button type="button" data-mins="45" aria-pressed="false" class="focus-preset-btn py-1.5 rounded-lg text-xs font-medium text-white/55 hover:text-white transition">45dk</button>
-                        <button type="button" data-mins="60" aria-pressed="false" class="focus-preset-btn py-1.5 rounded-lg text-xs font-medium text-white/55 hover:text-white transition">60dk</button>
+                    <div class="focus-clock-machine" aria-label="Odak sayacı">
+                        <div class="focus-clock-machine-head">
+                            <span class="focus-machine-led" aria-hidden="true"></span>
+                            <span class="font-pixel">HABİTAT SAYACI</span>
+                            <span class="focus-machine-current font-pixel">CANLI</span>
+                        </div>
+                        <div id="focusBigTime" class="focus-clock-digits" aria-live="off">25:00</div>
+                        <div class="focus-pixel-track" role="progressbar" aria-label="Odak oturumu ilerlemesi" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                            <span id="focusRingCircle"></span>
+                        </div>
                     </div>
 
-                    <!-- Circular SVG Ring -->
-                    <div class="relative flex items-center justify-center my-2">
-                        <svg class="w-36 h-36 -rotate-90" viewBox="0 0 120 120">
-                            <circle cx="60" cy="60" r="50" fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="4.5" />
-                            <circle id="focusRingCircle" cx="60" cy="60" r="50" fill="none" stroke="rgba(255,255,255,0.85)" stroke-width="4.5" stroke-linecap="round" stroke-dasharray="314.16" stroke-dashoffset="0" class="transition-all duration-300" />
-                        </svg>
-                        <div class="absolute flex flex-col items-center">
-                            <span id="focusBigTime" class="text-3xl font-mono font-light tracking-tight text-white">25:00</span>
-                            <div class="flex items-center gap-2 mt-2.5">
-                                <button id="focusTogglePlay" type="button" class="px-4 py-1 rounded-full bg-white text-slate-950 hover:bg-white/90 text-xs font-semibold transition">Başlat</button>
-                                <button id="focusResetBtn" type="button" title="Sıfırla" class="p-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white/75 transition">
-                                    <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                                    </svg>
-                                </button>
-                            </div>
+                    <div class="focus-duration-picker">
+                        <div class="focus-duration-label font-pixel">SÜRE SEÇ</div>
+                        <div class="focus-duration-grid" role="group" aria-label="Odak süresi seçimi">
+                            <button type="button" data-mins="10" aria-pressed="false" class="focus-preset-btn font-pixel">10 DK</button>
+                            <button type="button" data-mins="25" aria-pressed="true" class="focus-preset-btn is-selected font-pixel">25 DK</button>
+                            <button type="button" data-mins="45" aria-pressed="false" class="focus-preset-btn font-pixel">45 DK</button>
+                            <button type="button" data-mins="60" aria-pressed="false" class="focus-preset-btn font-pixel">60 DK</button>
                         </div>
+                        <div class="focus-custom-duration">
+                            <label for="focusCustomMinutes" class="font-pixel">ÖZEL SÜRE</label>
+                            <input id="focusCustomMinutes" type="number" min="1" max="180" step="1" inputmode="numeric" placeholder="1–180 dk" aria-label="Özel odak süresi dakika">
+                            <button id="focusApplyCustomBtn" type="button" class="font-pixel">UYGULA</button>
+                        </div>
+                    </div>
+
+                    <div class="focus-widget-actions">
+                        <button id="focusTogglePlay" type="button" class="focus-primary-btn font-pixel">BAŞLAT</button>
+                        <button id="focusResetBtn" type="button" title="Sıfırla" aria-label="Sayacı sıfırla" class="focus-reset-btn">
+                            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                            </svg>
+                        </button>
                     </div>
 
                     <!-- Intention Input -->
-                    <div class="mt-3">
-                        <input id="focusTaskInput" type="text" aria-label="Odak oturumu konusu" placeholder="Bu oturumun odak konusu..." class="w-full bg-white/[0.06] border border-white/12 rounded-xl px-3 py-2 text-xs text-white placeholder-white/55 focus:outline-none focus:border-white/35" />
+                    <div class="focus-task-field">
+                        <label for="focusTaskInput" class="font-pixel">BU OTURUMUN HEDEFİ</label>
+                        <input id="focusTaskInput" type="text" maxlength="180" aria-label="Odak oturumu konusu" placeholder="Ne üzerinde çalışacaksın?" />
                     </div>
 
                     <!-- Clean Vector Soundscape Mixer -->
                     <div class="mt-4 pt-3.5 border-t border-white/10">
                         <div class="flex items-center justify-between mb-2.5">
-                            <span class="text-xs font-medium text-white/65">Üretken Doğa Ambiyansı</span>
+                            <span class="text-xs font-medium text-white/65 font-pixel">Üretken Doğa Ambiyansı</span>
                             <span id="ambientStatusText" class="text-[11px] font-mono text-white/60">Sessiz</span>
                         </div>
                         <div class="grid grid-cols-3 gap-1.5">
@@ -259,20 +270,20 @@
                                     <path d="M20 16.2A4.5 4.5 0 0017.5 8h-1.8A7 7 0 104 14.9"></path>
                                     <path d="M16 14v6M8 14v6M12 16v6" stroke-linecap="round"></path>
                                 </svg>
-                                <span>Yağmur</span>
+                                <span class="font-pixel">Yağmur</span>
                             </button>
                             <button type="button" data-sound="water" aria-pressed="false" class="sound-btn py-2 px-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.10] border border-white/10 flex flex-col items-center gap-1.5 text-xs text-white/70 transition">
                                 <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
                                     <path d="M2 12c2-2.5 4-2.5 6 0s4 2.5 6 0 4-2.5 6 0" stroke-linecap="round"></path>
                                     <path d="M2 17c2-2.5 4-2.5 6 0s4 2.5 6 0 4-2.5 6 0" stroke-linecap="round"></path>
                                 </svg>
-                                <span>Su Altı</span>
+                                <span class="font-pixel">Su Altı</span>
                             </button>
                             <button type="button" data-sound="wind" aria-pressed="false" class="sound-btn py-2 px-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.10] border border-white/10 flex flex-col items-center gap-1.5 text-xs text-white/70 transition">
                                 <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
                                     <path d="M9.59 4.59A2 2 0 1111 8H2m10.59 11.41A2 2 0 1014 16H2m15.73-8.27A2.5 2.5 0 1119.5 12H2" stroke-linecap="round"></path>
                                 </svg>
-                                <span>Rüzgar</span>
+                                <span class="font-pixel">Rüzgar</span>
                             </button>
                         </div>
                     </div>
@@ -293,12 +304,12 @@
                 <div id="notesPopover" role="region" aria-label="Kişisel defter" aria-hidden="true" inert class="popover-panel editorial-modal rounded-3xl p-5 w-[340px] sm:w-[390px] absolute right-0 mt-2.5 z-50">
                     <div class="flex items-center justify-between mb-3.5">
                         <div>
-                            <h3 class="text-xs font-semibold text-white/90">Kişisel Defter</h3>
-                            <p id="taskProgressText" aria-live="polite" class="text-xs text-white/60 mt-0.5">Günlük akış ve hızlı notlar</p>
+                            <h3 class="text-xs font-semibold text-white/90 font-pixel">Kişisel Defter</h3>
+                            <p id="taskProgressText" aria-live="polite" class="text-xs text-white/60 mt-0.5 font-pixel">Günlük akış ve hızlı notlar</p>
                         </div>
                         <div class="flex p-0.5 rounded-xl bg-black/35 border border-white/10" role="tablist" aria-label="Defter bölümleri">
-                            <button type="button" data-tab="tasks" id="tasksTab" role="tab" aria-controls="tasksTabView" aria-selected="true" tabindex="0" class="workspace-tab-btn px-3 py-1 rounded-lg text-xs font-medium bg-white/15 text-white transition">Görevler</button>
-                            <button type="button" data-tab="notes" id="notesTab" role="tab" aria-controls="notesTabView" aria-selected="false" tabindex="-1" class="workspace-tab-btn px-3 py-1 rounded-lg text-xs font-medium text-white/55 hover:text-white transition">Notlar</button>
+                            <button type="button" data-tab="tasks" id="tasksTab" role="tab" aria-controls="tasksTabView" aria-selected="true" tabindex="0" class="workspace-tab-btn px-3 py-1 rounded-lg text-xs font-medium bg-white/15 text-white transition font-pixel">Görevler</button>
+                            <button type="button" data-tab="notes" id="notesTab" role="tab" aria-controls="notesTabView" aria-selected="false" tabindex="-1" class="workspace-tab-btn px-3 py-1 rounded-lg text-xs font-medium text-white/55 hover:text-white transition font-pixel">Notlar</button>
                         </div>
                     </div>
 
@@ -314,14 +325,14 @@
                                 <span id="priorityDotIndicator" class="w-2 h-2 rounded-full bg-sky-400"></span>
                             </button>
                             <input id="newTaskInput" type="text" aria-label="Yeni görev" placeholder="Yeni bir satır ekle..." class="flex-1 bg-white/[0.06] border border-white/12 rounded-xl px-3 py-2 text-xs text-white placeholder-white/55 focus:outline-none focus:border-white/35" />
-                            <button type="submit" class="px-3.5 py-2 rounded-xl bg-white text-slate-950 hover:bg-white/90 text-xs font-medium transition">Ekle</button>
+                            <button type="submit" class="px-3.5 py-2 rounded-xl bg-white text-slate-950 hover:bg-white/90 text-xs font-medium transition font-pixel">Ekle</button>
                         </form>
 
                         <div id="tasksListContainer" aria-live="polite" aria-relevant="additions removals text" class="max-h-60 overflow-y-auto space-y-1.5 pr-1"></div>
 
                         <div class="flex justify-between items-center pt-2.5 border-t border-white/10 text-xs text-white/60">
                             <span id="remainingTasksLabel" aria-live="polite" class="font-mono">0 kayıt</span>
-                            <button id="clearDoneTasksBtn" type="button" class="hover:text-white transition">Tamamlananları Sil</button>
+                            <button id="clearDoneTasksBtn" type="button" class="hover:text-white transition font-pixel">Tamamlananları Sil</button>
                         </div>
                     </div>
 
@@ -331,7 +342,7 @@
                             <input id="noteTitleInput" type="text" aria-label="Not başlığı" placeholder="Başlık (isteğe bağlı)..." class="bg-transparent text-xs font-medium text-white placeholder-white/55 focus:outline-none w-full" />
                             <textarea id="noteBodyInput" rows="2" aria-label="Not içeriği" placeholder="Düşünce, alıntı veya bağlantı kaydet..." class="w-full bg-transparent text-xs text-white/80 placeholder-white/55 focus:outline-none resize-none leading-relaxed"></textarea>
                             <div class="flex justify-end pt-1 border-t border-white/[0.06]">
-                                <button type="submit" class="px-3 py-1 rounded-lg bg-white/15 hover:bg-white/25 text-xs font-medium text-white transition">Deftere Kaydet</button>
+                                <button type="submit" class="px-3 py-1 rounded-lg bg-white/15 hover:bg-white/25 text-xs font-medium text-white transition font-pixel">Deftere Kaydet</button>
                             </div>
                         </form>
 
@@ -360,51 +371,51 @@
                     <div class="grid grid-cols-3 gap-2 mb-3">
                         <div class="rounded-xl bg-white/[0.05] border border-white/10 p-2">
                             <div id="dataTaskCount" class="font-mono text-lg text-white">0</div>
-                            <div class="text-[10px] text-white/55">Görev</div>
+                            <div class="text-[10px] text-white/55 font-pixel">Görev</div>
                         </div>
                         <div class="rounded-xl bg-white/[0.05] border border-white/10 p-2">
                             <div id="dataNoteCount" class="font-mono text-lg text-white">0</div>
-                            <div class="text-[10px] text-white/55">Not</div>
+                            <div class="text-[10px] text-white/55 font-pixel">Not</div>
                         </div>
                         <div class="rounded-xl bg-white/[0.05] border border-white/10 p-2">
                             <div id="dataShortcutCount" class="font-mono text-lg text-white">0</div>
-                            <div class="text-[10px] text-white/55">Kısayol</div>
+                            <div class="text-[10px] text-white/55 font-pixel">Kısayol</div>
                         </div>
                     </div>
 
                     <div class="rounded-xl bg-white/[0.04] border border-white/10 px-3 py-2 mb-3">
                         <div class="flex items-center justify-between gap-2 text-xs">
-                            <span class="text-white/65">Uygulama verisi</span>
+                            <span class="text-white/65 font-pixel">Uygulama verisi</span>
                             <strong id="dataStorageSize" class="font-mono text-white/90">Hesaplanıyor…</strong>
                         </div>
                         <p class="text-[10px] text-white/40 mt-1">Bu değer, bu uygulamanın tarayıcıda tuttuğu yaklaşık veri boyutudur.</p>
                     </div>
 
                     <div class="space-y-2">
-                        <button id="exportAllDataBtn" type="button" class="w-full rounded-xl px-3 py-2.5 bg-white text-slate-950 hover:bg-white/90 text-xs font-semibold flex items-center justify-center gap-2 transition">
+                        <button id="exportAllDataBtn" type="button" class="w-full rounded-xl px-3 py-2.5 bg-white text-slate-950 hover:bg-white/90 text-xs font-semibold flex items-center justify-center gap-2 transition font-pixel">
                             <span aria-hidden="true">↓</span> Tüm verileri yedekle (.json)
                         </button>
                         <div class="grid grid-cols-3 gap-1.5">
-                            <button type="button" data-export-scope="tasks" class="data-export-scope rounded-xl px-2 py-2 bg-white/[0.07] hover:bg-white/[0.13] border border-white/10 text-[10px] text-white/80 transition">Görevleri indir</button>
-                            <button type="button" data-export-scope="notes" class="data-export-scope rounded-xl px-2 py-2 bg-white/[0.07] hover:bg-white/[0.13] border border-white/10 text-[10px] text-white/80 transition">Notları indir</button>
-                            <button type="button" data-export-scope="shortcuts" class="data-export-scope rounded-xl px-2 py-2 bg-white/[0.07] hover:bg-white/[0.13] border border-white/10 text-[10px] text-white/80 transition">Kısayolları indir</button>
+                            <button type="button" data-export-scope="tasks" class="data-export-scope rounded-xl px-2 py-2 bg-white/[0.07] hover:bg-white/[0.13] border border-white/10 text-[10px] text-white/80 transition font-pixel">Görevleri indir</button>
+                            <button type="button" data-export-scope="notes" class="data-export-scope rounded-xl px-2 py-2 bg-white/[0.07] hover:bg-white/[0.13] border border-white/10 text-[10px] text-white/80 transition font-pixel">Notları indir</button>
+                            <button type="button" data-export-scope="shortcuts" class="data-export-scope rounded-xl px-2 py-2 bg-white/[0.07] hover:bg-white/[0.13] border border-white/10 text-[10px] text-white/80 transition font-pixel">Kısayolları indir</button>
                         </div>
                     </div>
 
                     <div class="mt-4 pt-3 border-t border-white/10">
-                        <label for="importDataFile" class="block text-xs font-medium text-white/85 mb-1.5">Yedekten geri yükle</label>
+                        <label for="importDataFile" class="block text-xs font-medium text-white/85 mb-1.5 font-pixel">Yedekten geri yükle</label>
                         <input id="importDataFile" type="file" accept=".json,application/json" class="block w-full text-[11px] text-white/65 file:mr-2 file:rounded-lg file:border-0 file:bg-white/15 file:px-3 file:py-2 file:text-[11px] file:font-medium file:text-white hover:file:bg-white/25" />
                         <p class="text-[10px] text-white/45 mt-1.5">Yedek dosyası doğrulanır. Yalnızca dosyada bulunan veri grupları değiştirilir.</p>
                     </div>
 
                     <div class="mt-4 pt-3 border-t border-white/10">
-                        <h4 class="text-xs font-medium text-white/85 mb-2">Verileri ayrı yönet</h4>
+                        <h4 class="text-xs font-medium text-white/85 mb-2 font-pixel">Verileri ayrı yönet</h4>
                         <div class="grid grid-cols-3 gap-1.5">
-                            <button id="clearTasksDataBtn" type="button" class="rounded-xl px-2 py-2 bg-white/[0.05] hover:bg-rose-500/15 border border-white/10 text-[10px] text-white/75 transition">Görevleri sil</button>
-                            <button id="clearNotesDataBtn" type="button" class="rounded-xl px-2 py-2 bg-white/[0.05] hover:bg-rose-500/15 border border-white/10 text-[10px] text-white/75 transition">Notları sil</button>
-                            <button id="resetShortcutsDataBtn" type="button" class="rounded-xl px-2 py-2 bg-white/[0.05] hover:bg-rose-500/15 border border-white/10 text-[10px] text-white/75 transition">Kısayolları sıfırla</button>
+                            <button id="clearTasksDataBtn" type="button" class="rounded-xl px-2 py-2 bg-white/[0.05] hover:bg-rose-500/15 border border-white/10 text-[10px] text-white/75 transition font-pixel">Görevleri sil</button>
+                            <button id="clearNotesDataBtn" type="button" class="rounded-xl px-2 py-2 bg-white/[0.05] hover:bg-rose-500/15 border border-white/10 text-[10px] text-white/75 transition font-pixel">Notları sil</button>
+                            <button id="resetShortcutsDataBtn" type="button" class="rounded-xl px-2 py-2 bg-white/[0.05] hover:bg-rose-500/15 border border-white/10 text-[10px] text-white/75 transition font-pixel">Kısayolları sıfırla</button>
                         </div>
-                        <button id="clearAllAppDataBtn" type="button" class="w-full mt-2 rounded-xl px-3 py-2 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-300/15 text-[10px] text-rose-100/80 transition">Tüm uygulama verilerini sil…</button>
+                        <button id="clearAllAppDataBtn" type="button" class="w-full mt-2 rounded-xl px-3 py-2 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-300/15 text-[10px] text-rose-100/80 transition font-pixel">Tüm uygulama verilerini sil…</button>
                     </div>
 
                     <p id="dataManagerStatus" role="status" aria-live="polite" class="text-[11px] text-white/65 mt-3 min-h-8">Verilerin bu tarayıcıda saklanır. Düzenli yedek almanı öneririm.</p>
@@ -412,6 +423,26 @@
             </div>
         </div>
     </header>
+
+    <!-- Floating pixel-art focus HUD appears only during a focus session. -->
+    <section id="focusStageOverlay" class="focus-stage-overlay" aria-label="Aktif odak sayacı" aria-hidden="true" hidden>
+        <div class="focus-stage-shell">
+            <div class="focus-stage-copy">
+                <div class="focus-stage-kicker font-pixel"><span class="focus-stage-live-dot"></span> ODAK MODU <span id="focusStageDuration">25 DK</span></div>
+                <div id="focusStageHabitat" class="focus-stage-habitat font-pixel">Yaşayan Habitat</div>
+                <div id="focusStageTask" class="focus-stage-task">KENDİ RİTMİNDE İLERLE</div>
+            </div>
+            <div class="focus-stage-meter">
+                <div id="focusStageTime" class="focus-stage-time">25:00</div>
+                <div class="focus-stage-pixel-track" aria-hidden="true"><span id="focusStageProgress"></span></div>
+                <div id="focusStageStatus" class="focus-stage-status font-pixel">HABİTATINDA ODAKLANIYORSUN</div>
+            </div>
+            <div class="focus-stage-actions">
+                <button id="focusStageToggle" type="button" class="focus-stage-button font-pixel">DURAKLAT</button>
+                <button id="focusStageReset" type="button" class="focus-stage-reset font-pixel" title="Oturumu bitir ve sayacı sıfırla">BITIR</button>
+            </div>
+        </div>
+    </section>
 
     <!-- =========================================================
          CENTERPIECE: PIXEL ART CLOCK, GREETING, OPTICAL LIQUID GLASS SEARCH & TEXT DOCK
@@ -421,7 +452,7 @@
         <!-- Active Focus Intention Pill -->
         <div id="pinnedFocusBanner" class="hidden mb-3 optical-pill rounded-full px-3.5 py-1 text-xs text-white/90 flex items-center gap-2 pointer-events-auto">
             <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-            <span id="pinnedFocusText" class="font-pixel tracking-wide"></span>
+            <span id="pinnedFocusText" class="tracking-wide"></span>
         </div>
 
         <!-- 16-Bit Pixel Art Time & Date -->
@@ -451,7 +482,7 @@
                     aria-label="Arama veya web adresi"
                     autocomplete="off"
                     placeholder="Google'da ara veya bir adres yaz..."
-                    class="w-full bg-transparent text-sm sm:text-[15px] text-white placeholder-white/65 focus:outline-none font-pixel tracking-wide"
+                    class="w-full bg-transparent text-sm sm:text-[15px] text-white placeholder-white/65 focus:outline-none tracking-wide"
                 />
                 <button type="submit" aria-label="Ara" class="w-8 h-8 rounded-2xl bg-white/[0.14] hover:bg-white/[0.26] border border-white/20 flex items-center justify-center text-white transition shrink-0">
                     <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

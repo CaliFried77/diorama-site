@@ -109,7 +109,7 @@ import { registerWeatherPreviewRenderer } from './services.js';
             document.getElementById('wxBigTemp').textContent = `${Math.round(c.temperature_2m)}°`;
             document.getElementById('wxCondition').textContent = WX_TR[c.weather_code] || 'Bilinmiyor';
             document.getElementById('weatherDetailText').textContent = `Hissedilen ${Math.round(c.apparent_temperature)}° • En yüksek ${Math.round(dy.temperature_2m_max[0])}°, en düşük ${Math.round(dy.temperature_2m_min[0])}°`;
-            const stat = (l, v) => `<div class="rounded-xl bg-white/[0.05] border border-white/10 px-2.5 py-2"><p class="text-[11px] text-white/60">${l}</p><p class="text-xs font-medium text-white mt-0.5">${esc(v)}</p></div>`;
+            const stat = (l, v) => `<div class="rounded-xl bg-white/[0.05] border border-white/10 px-2.5 py-2"><p class="wx-stat-label text-[11px] text-white/60">${l}</p><p class="text-xs font-medium text-white mt-0.5">${esc(v)}</p></div>`;
             const uv = dy.uv_index_max[0];
             document.getElementById('wxStats').innerHTML = [
                 stat('Nem', `%${Math.round(c.relative_humidity_2m)}`),

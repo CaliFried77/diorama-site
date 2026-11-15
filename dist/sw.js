@@ -3,7 +3,7 @@
  * one successful online visit. News and weather remain live network services.
  */
 const CACHE_PREFIX = 'living-pixel-diorama-shell-';
-const CACHE_NAME = `${CACHE_PREFIX}1.6.2`;
+const CACHE_NAME = `${CACHE_PREFIX}1.6.3`;
 const APP_SHELL = [
   './',
   './index.html',
@@ -11,6 +11,7 @@ const APP_SHELL = [
   './css/utilities.css',
   './css/responsive.css',
   './css/news.css',
+  './css/widgets.css',
   './config/habitat-catalog.js',
   './config/news-feeds.js',
   './js/main.js',
@@ -22,6 +23,7 @@ const APP_SHELL = [
   './js/news-utils.js',
   './js/03-weather.js',
   './js/04-focus-audio.js',
+  './js/focus-timer-state.js',
   './js/05-workspace.js',
   './js/06-data-manager.js',
   './js/07-habitat-state.js',

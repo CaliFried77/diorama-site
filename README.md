@@ -87,3 +87,11 @@ The build output is written to `dist/`. Upload the contents of that folder to st
 ## Release QA checklist
 
 Before deploying a release, follow [`docs/QA_CHECKLIST.md`](docs/QA_CHECKLIST.md) for cross-browser, responsive, performance, offline, security-header and visual-regression checks. The optional browser suite can be run locally after installing `requirements-browser.txt` and the Playwright browsers with `python -m playwright install chromium firefox webkit`, then `npm run build && python scripts/browser-smoke.py`. Automated tests do not replace manual checks on physical devices or Lighthouse reviews.
+
+
+## v1.6.3 interface update
+
+- News panel uses a compact single-column feed and a fully scrollable panel; category controls stay on one desktop row and become a complete three-column set on mobile.
+- Focus timer is habitat-aware, supports custom durations from 1 to 180 minutes and resumes correctly after refresh using a persisted deadline.
+- Active focus sessions move into a floating pixel-art HUD at the top center. Fixed widget labels use pixel typography; live headlines and user content remain in the regular reading font.
+- Fixed widget labels use Pixelify/Silkscreen styling where appropriate; entered search terms, task names, focus goals and live news headlines remain in the regular reading font.

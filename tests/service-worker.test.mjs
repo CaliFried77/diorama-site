@@ -41,7 +41,9 @@ test('service worker installs all local app-shell assets and claims the page', a
   await installPromise;
   assert.ok(worker.added.includes('./css/utilities.css'));
   assert.ok(worker.added.includes('./css/news.css'));
+  assert.ok(worker.added.includes('./css/widgets.css'));
   assert.ok(worker.added.includes('./js/10-glass-renderer.js'));
+  assert.ok(worker.added.includes('./js/focus-timer-state.js'));
   assert.ok(worker.added.includes('./js/performance-monitor.js'));
   assert.ok(worker.added.includes('./config/news-feeds.js'));
   assert.ok(worker.added.includes('./config/habitat-catalog.js'));
