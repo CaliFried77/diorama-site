@@ -203,10 +203,10 @@ async def assert_app_smoke(browser_type, name: str, base_url: str):
     # Habitat picker and cycle.
     await page.locator("#habitatMenuBtn").click()
     await page.locator("#habitatPopover.open").wait_for(state="visible")
-    assert await page.locator("#habitatListContainer button").count() == 6
-    await page.locator("#habitatListContainer button").nth(2).click()
+    assert await page.locator("#habitatListContainer button").count() == 7
+    await page.locator("#habitatListContainer button").nth(6).click()
     selected_habitat = await page.locator("#habitatNameLabel").inner_text()
-    assert selected_habitat, f"{name}: habitat selection failed"
+    assert "Yağmur Ormanı" in selected_habitat, f"{name}: rainforest habitat selection failed: {selected_habitat!r}"
     await page.locator("#habitatCycleBtn").click()
 
     # Theme toggle.
