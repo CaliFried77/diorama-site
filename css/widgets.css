@@ -30,7 +30,7 @@
   border: 1px solid rgba(125, 211, 252, .24);
   border-radius: 8px;
   background: rgba(56, 189, 248, .09);
-  font-size: 9px;
+  font-size: 12px;
 }
 .focus-clock-machine {
   position: relative;
@@ -58,7 +58,7 @@
   align-items: center;
   gap: 7px;
   color: rgba(255,255,255,.54);
-  font-size: 8px;
+  font-size: 12px;
   letter-spacing: .08em;
 }
 .focus-machine-led,
@@ -107,7 +107,7 @@
   display: block;
   margin-bottom: 6px;
   color: rgba(255,255,255,.56);
-  font-size: 8px;
+  font-size: 12px;
   letter-spacing: .06em;
 }
 .focus-duration-grid {
@@ -126,7 +126,7 @@
   border: 1px solid transparent;
   border-radius: 7px;
   color: rgba(255,255,255,.56);
-  font-size: 8px;
+  font-size: 12px;
   white-space: nowrap;
   transition: background .18s ease, color .18s ease, border-color .18s ease;
 }
@@ -143,7 +143,7 @@
   gap: 7px;
   margin-top: 8px;
 }
-.focus-custom-duration label { color: rgba(255,255,255,.48); font-size: 8px; white-space: nowrap; }
+.focus-custom-duration label { color: rgba(255,255,255,.48); font-size: 12px; white-space: nowrap; }
 .focus-custom-duration input {
   width: 100%;
   min-width: 0;
@@ -153,7 +153,7 @@
   border-radius: 8px;
   background: rgba(255,255,255,.045);
   outline: none;
-  font: 10px var(--font-mono, monospace);
+  font: 12px var(--font-mono, monospace);
 }
 .focus-custom-duration input:focus { border-color: rgba(125,211,252,.48); }
 .focus-custom-duration input::placeholder { color: rgba(255,255,255,.34); }
@@ -164,7 +164,7 @@
   border-radius: 8px;
   color: #dff5ff;
   background: rgba(56,189,248,.12);
-  font-size: 8px;
+  font-size: 12px;
   white-space: nowrap;
 }
 .focus-custom-duration button:hover { background: rgba(56,189,248,.2); }
@@ -176,7 +176,7 @@
   color: #07121c;
   background: linear-gradient(180deg, #f0f9ff, #cbeeff);
   box-shadow: 0 4px 14px rgba(56,189,248,.12), inset 0 1px rgba(255,255,255,.8);
-  font-size: 9px;
+  font-size: 12px;
   letter-spacing: .035em;
 }
 .focus-primary-btn:hover { background: #fff; }
@@ -200,7 +200,7 @@
   border-radius: 9px;
   background: rgba(255,255,255,.045);
   outline: none;
-  font-size: 10px;
+  font-size: 12px;
 }
 .focus-task-field input:focus { border-color: rgba(125,211,252,.42); }
 .focus-task-field input::placeholder { color: rgba(255,255,255,.4); }
@@ -217,7 +217,7 @@
 }
 .focus-volume-row label {
   color: rgba(255, 255, 255, .58);
-  font-size: 9px;
+  font-size: 12px;
   letter-spacing: .04em;
   white-space: nowrap;
 }
@@ -261,9 +261,9 @@
   to { opacity: 1; transform: translateY(0) scale(1); filter: brightness(1); }
 }
 .focus-stage-copy { display: grid; min-width: 0; gap: 4px; }
-.focus-stage-kicker { display: flex; align-items: center; gap: 6px; color: rgba(186,230,253,.84); font-size: 8px; letter-spacing: .05em; white-space: nowrap; }
-.focus-stage-habitat { overflow: hidden; color: rgba(255,255,255,.94); font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
-.focus-stage-task { overflow: hidden; color: rgba(255,255,255,.55); font-size: 8px; text-overflow: ellipsis; white-space: nowrap; max-width: 170px; }
+.focus-stage-kicker { display: flex; align-items: center; gap: 6px; color: rgba(186,230,253,.84); font-size: 12px; letter-spacing: .05em; white-space: nowrap; }
+.focus-stage-habitat { overflow: hidden; color: rgba(255,255,255,.94); font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+.focus-stage-task { overflow: hidden; color: rgba(255,255,255,.55); font-size: 12px; text-overflow: ellipsis; white-space: nowrap; max-width: 170px; }
 .focus-stage-meter { min-width: 0; text-align: center; }
 .focus-stage-time {
   color: #f0faff;
@@ -273,7 +273,7 @@
   font-variant-numeric: tabular-nums;
 }
 .focus-stage-pixel-track { height: 7px; margin-top: 6px; }
-.focus-stage-status { margin-top: 4px; color: rgba(186,230,253,.62); font-size: 7px; letter-spacing: .05em; white-space: nowrap; }
+.focus-stage-status { margin-top: 4px; color: rgba(186,230,253,.62); font-size: 12px; letter-spacing: .05em; white-space: nowrap; }
 .focus-stage-actions { display: grid; gap: 5px; }
 .focus-stage-button,
 .focus-stage-reset {
@@ -283,7 +283,7 @@
   border-radius: 7px;
   color: #dff5ff;
   background: rgba(56,189,248,.12);
-  font-size: 8px;
+  font-size: 12px;
   white-space: nowrap;
 }
 .focus-stage-button:hover { background: rgba(56,189,248,.22); }
@@ -310,7 +310,7 @@
   .focus-stage-copy { gap: 3px; }
   .focus-stage-task { max-width: 42vw; }
   .focus-stage-meter { grid-column: 1; grid-row: 2; display: grid; grid-template-columns: auto minmax(0,1fr); align-items: center; gap: 8px; text-align: left; }
-  .focus-stage-time { font-size: 21px; }
+  .focus-stage-time { font-size: 22px; }
   .focus-stage-pixel-track { margin: 0; }
   .focus-stage-status { display: none; }
   .focus-stage-actions { grid-column: 2; grid-row: 1 / span 2; }
