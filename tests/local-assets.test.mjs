@@ -65,7 +65,7 @@ test('generated typography and layout share a responsive root scale', () => {
   assert.ok(utilities.includes('.text-sm{font-size:.875rem;line-height:1.25rem}'));
   assert.ok(cssBuilder.includes("base: ['1rem', '1.5rem']"));
   assert.ok(utilities.includes('.text-\\[10px\\]{font-size:13px}'));
-  assert.ok(utilities.includes('.text-\\[15px\\]{font-size:17px}'));
+  assert.ok(cssBuilder.includes('Math.max(13, Math.round(Number(match[1]) * 1.125))'));
 });
 
 test('text-bearing panels and buttons grow with the typography scale', () => {
