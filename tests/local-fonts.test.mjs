@@ -20,7 +20,7 @@ const fontFiles = [
 ];
 
  test('release version and software license are explicit', () => {
-  assert.equal(packageJson.version, '1.6.5');
+  assert.equal(packageJson.version, '1.6.6');
   assert.match(mit, /^MIT License/);
   assert.match(mit, /Copyright \(c\) 2026 Living Pixel Diorama contributors/);
   assert.match(notices, /not\*\* replace the separate licenses/i);

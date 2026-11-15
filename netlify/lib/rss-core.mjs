@@ -151,7 +151,7 @@ function requestPinnedHttps(url, address, { timeoutMs = REQUEST_TIMEOUT_MS, maxB
       headers: {
         Accept: 'application/rss+xml, application/atom+xml, application/xml, text/xml;q=0.9, */*;q=0.5',
         'Accept-Encoding': 'identity',
-        'User-Agent': 'DioramaRSS/1.6.1 (+https feed reader)',
+        'User-Agent': 'DioramaRSS/1.6.6 (+https feed reader)',
       },
     }, (response) => {
       const status = response.statusCode || 0;

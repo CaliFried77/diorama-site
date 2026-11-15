@@ -17,19 +17,22 @@ DIST = ROOT / "dist"
 ARTIFACTS = ROOT / "browser-artifacts"
 
 
-def load_deployment_headers() -> dict[str, str]:
+def load_deployment_headers(request_path: str) -> dict[str, str]:
+    """Apply the matching Netlify _headers blocks for one request path."""
     result: dict[str, str] = {}
+    current_pattern: str | None = None
     for line in (ROOT / "_headers").read_text(encoding="utf-8").splitlines():
-        stripped = line.strip()
-        if not stripped or stripped.startswith("/*") or stripped.startswith("/") or stripped.startswith("#"):
+        if not line.strip() or line.lstrip().startswith("#"):
             continue
-        if ":" in stripped:
+        if not line[0].isspace():
+            current_pattern = line.strip()
+            continue
+        stripped = line.strip()
+        matches = current_pattern == "/*" or current_pattern == request_path
+        if matches and ":" in stripped:
             key, value = stripped.split(":", 1)
             result[key.strip()] = value.strip()
     return result
-
-
-HEADERS = load_deployment_headers()
 
 
 class AppHandler(SimpleHTTPRequestHandler):
@@ -37,11 +40,9 @@ class AppHandler(SimpleHTTPRequestHandler):
         super().__init__(*args, directory=str(DIST), **kwargs)
 
     def end_headers(self):
-        for key, value in HEADERS.items():
+        path = urlparse(self.path).path or "/"
+        for key, value in load_deployment_headers(path).items():
             self.send_header(key, value)
-        path = urlparse(self.path).path
-        if path in ("/", "/index.html", "/sw.js"):
-            self.send_header("Cache-Control", "no-cache")
         super().end_headers()
 
     def log_message(self, *_args):
@@ -151,6 +152,9 @@ async def assert_app_smoke(browser_type, name: str, base_url: str):
 
     await page.goto(base_url, wait_until="domcontentloaded", timeout=30000)
     await page.locator("#heroClock").wait_for(state="visible", timeout=15000)
+    await page.evaluate("document.fonts.ready")
+    local_fonts = await page.evaluate("({inter: document.fonts.check('16px Inter'), pixelify: document.fonts.check('16px \"Pixelify Sans\"'), silkscreen: document.fonts.check('16px Silkscreen')})")
+    assert all(local_fonts.values()), f"{name}: a local font did not load: {local_fonts}"
     await page.wait_for_function("document.querySelectorAll('#newsCategories .news-cat-btn').length === 3", timeout=10000)
     await page.wait_for_function("/\\d+°C/.test(document.querySelector('#weatherTemp')?.textContent || '')", timeout=15000)
 
@@ -190,6 +194,7 @@ async def assert_app_smoke(browser_type, name: str, base_url: str):
     await page.locator("#dataManagerBtn").click()
     await page.locator("#dataManagerPopover.open").wait_for(state="visible")
     assert await page.locator("#exportAllDataBtn").count() == 1
+    assert await page.locator("#licenseLinks a").count() == 2
 
     # Responsive layouts: no horizontal document overflow.
     for width, height in ((320, 740), (390, 844), (768, 1024), (1440, 900)):

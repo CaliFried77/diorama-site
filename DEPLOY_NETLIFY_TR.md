@@ -1,15 +1,14 @@
-# Diorama v1.6.1 — Netlify yayına alma
+# Diorama v1.6.6 — Netlify yayınlama ve kontrol
 
-Bu sürüm haberleri aynı origin üzerindeki iki Netlify Function üzerinden sunar. Bu nedenle yalnızca `dist/` klasörünü sürükleyip bırakmak yeterli değildir; tam proje kökü Netlify'a verilmelidir.
+Diorama, Netlify Functions kullandığı için yalnızca statik `dist/` klasörünü yüklemek yeterli değildir. Git deposunun tamamını Netlify'ye bağlayın. `netlify.toml` build ve publish ayarlarını zaten içerir.
 
-## Netlify arayüzüyle
+## GitHub üzerinden otomatik yayın
 
-1. Bu ZIP dosyasını bilgisayarında aç.
-2. Proje klasörünü GitHub/GitLab gibi bir Git deposuna gönder.
-3. Netlify'de **Add new site → Import an existing project** ile depoyu bağla.
-4. Base directory proje kökü, build command `npm run build`, publish directory `dist` olmalı. `netlify.toml` bu ayarları zaten tanımlar.
-5. Node sürümü `.nvmrc` ve `netlify.toml` içinde 22 olarak ayarlanmıştır.
-6. İlk deploy tamamlandığında `/api/news?category=gundem` ve POST `/api/custom-news` fonksiyon uç noktaları aynı domainde kullanılabilir.
+1. v1.6.6 proje dosyalarını GitHub deposunun kök dizinine yükleyin. Gizli `.github/` klasörünü de commit edin.
+2. Netlify projesinde **Project configuration → Build & deploy → Continuous deployment** alanında doğru GitHub deposunun ve production branch olarak `main` dalının seçili olduğunu doğrulayın.
+3. Build command `npm run build`, publish directory `dist`, Node.js sürümü `22` olmalı.
+4. GitHub Actions sekmesinde `Diorama quality gate` çalışmasının başarılı olduğunu kontrol edin.
+5. Netlify deploy tamamlandıktan sonra siteyi normal ve gizli pencerede açın; haber API'si, fontlar ve veri panelindeki lisans bağlantılarını kontrol edin.
 
 ## Yerel geliştirme
 
@@ -23,11 +22,10 @@ npm run build
 npm run dev
 ```
 
-`npm run dev`, Netlify CLI'ı `npx` ile çağırır ve statik uygulama ile Functions uç noktalarını aynı yerel origin altında sunar.
+Tarayıcı smoke testleri için `python -m pip install -r requirements-browser.txt` ve `python -m playwright install chromium firefox webkit` komutlarından sonra `npm run test:browser` çalıştırılabilir.
 
-## Önemli
+## Yayın sonrası hızlı API kontrolü
 
-- Bu pakette hem kaynak kodu hem `dist/` üretim çıktısı bulunur.
-- `netlify.toml`, `netlify/functions/` ve `netlify/lib/` dizinlerini silme veya yalnızca `dist/` klasörünü deploy etme; aksi halde RSS API çalışmaz.
-- Gerçek yayıncı RSS akışlarının erişilebilirliği, yayın ortamında deploy sonrası doğrulanmalıdır. Tek bir kaynak çalışmazsa diğer kaynaklar bağımsız sonuç döndürür.
-- Özel RSS kaynakları yalnızca HTTPS ve herkese açık IPv4 hedeflerine yönlendirilebilir. Yanıtlar ortak CDN önbelleğine alınmaz.
+- Haber API'si: `GET /api/news?category=gundem` (200 JSON ve kaynak durumları beklenir).
+- Özel RSS API'si yalnızca `POST /api/custom-news` kabul eder. `GET` ile adres çubuğundan açılması sağlık testi değildir.
+- Build çıktısı `dist/` içine app-shell, fontlar, MIT lisansı ve font OFL bildirimlerini koyar. `dist/` repoya eklenmez; build sırasında üretilir.

@@ -53,7 +53,7 @@ self.addEventListener('fetch', (event) => {
   // Static resources are network-first and cached for offline fallback.
   // Revalidation prevents a previous worker from serving an old module graph
   // alongside a newly deployed HTML entrypoint during an update.
-  if (/\.(?:css|js|html|svg|png|ico|webmanifest|woff2?)$/.test(url.pathname) || url.pathname.endsWith('/')) {
+  if (/\.(?:css|js|html|svg|png|ico|webmanifest|woff2?|md|txt)$/.test(url.pathname) || url.pathname.endsWith('/LICENSE') || url.pathname.endsWith('/')) {
     event.respondWith((async () => {
       const cache = await caches.open(CACHE_NAME);
       try {

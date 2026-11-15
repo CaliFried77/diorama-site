@@ -50,7 +50,7 @@ export function normalizePublicRssUrl(value) {
   }
 }
 
-export function normalizeArticleUrl(value, fallback = '') {
+function normalizeArticleUrl(value, fallback = '') {
   const url = normalizeWebUrl(typeof value === 'string' ? value : '', { addHttps: false });
   if (url) return url;
   return normalizeWebUrl(fallback, { addHttps: false }) || '';

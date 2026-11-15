@@ -63,9 +63,6 @@ for (const [categoryId, category] of Object.entries(NEWS_CATEGORIES)) {
   }
 }
 
-export function getNewsCategory(id) {
-  return NEWS_CATEGORIES[id] ?? null;
-}
 
 export function getEnabledNewsSources(id) {
   return (NEWS_CATEGORIES[id]?.sources ?? []).filter((source) => source.enabled);

@@ -71,6 +71,11 @@ await cp(resolve(root, 'js'), resolve(dist, 'js'), { recursive: true });
 await cp(resolve(root, 'config'), resolve(dist, 'config'), { recursive: true });
 await cp(resolve(root, 'icons'), resolve(dist, 'icons'), { recursive: true });
 await cp(resolve(root, 'fonts'), resolve(dist, 'fonts'), { recursive: true });
+// Font software is redistributed with the web app, so ship each upstream OFL notice
+// beside the font files and make the app's MIT notice available in the published site.
+await cp(resolve(root, 'licenses'), resolve(dist, 'licenses'), { recursive: true });
+await cp(resolve(root, 'LICENSE'), resolve(dist, 'LICENSE'));
+await cp(resolve(root, 'THIRD_PARTY_NOTICES.md'), resolve(dist, 'THIRD_PARTY_NOTICES.md'));
 await cp(resolve(root, 'manifest.webmanifest'), resolve(dist, 'manifest.webmanifest'));
 await cp(resolve(root, '_headers'), resolve(dist, '_headers'));
 for (const cssFile of ['base.css', 'utilities.css', 'responsive.css', 'news.css', 'widgets.css']) {

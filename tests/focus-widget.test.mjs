@@ -34,7 +34,7 @@ test('focus session restores from local storage and persists across page lifecyc
   assert.match(js, /localStorage\.setItem\(FOCUS_STORAGE_KEY/);
   assert.match(js, /window\.addEventListener\('pagehide'/);
   assert.match(js, /document\.addEventListener\('visibilitychange'/);
-  assert.match(sw, /CACHE_PREFIX = 'living-pixel-diorama-shell-'[\s\S]*?living-pixel-diorama-shell-1\.6\.5-[a-f0-9]{16}/);
+  assert.match(sw, /CACHE_PREFIX = 'living-pixel-diorama-shell-'[\s\S]*?living-pixel-diorama-shell-1\.6\.6-[a-f0-9]{16}/);
   assert.match(sw, /\"\.\/js\/focus-timer-state\.js\"/);
   assert.match(sw, /\.\/css\/widgets\.css/);
 });

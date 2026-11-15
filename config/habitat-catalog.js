@@ -118,7 +118,6 @@ export const HABITATS = [
 ];
 
 export const HABITAT_IDS = new Set(HABITATS.map((habitat) => habitat.id));
-export const getHabitatById = (id) => HABITATS.find((habitat) => habitat.id === id) ?? null;
 
 const sceneProfileIds = new Set(HABITAT_SCENE_PROFILES);
 const creatureProfileIds = new Set(HABITAT_CREATURE_PROFILES);

@@ -1,6 +1,6 @@
 # Living Pixel Diorama — Native ES Module Architecture
 
-Current release: **v1.6.5** (MIT application source; third-party fonts retain their own OFL 1.1 notices).
+Current release: **v1.6.6** (MIT application source; third-party fonts retain their own OFL 1.1 notices).
 
 This iteration converts the previous ordered classic-script layout into browser-native ES modules with explicit imports and exports.
 
@@ -80,8 +80,8 @@ The build output is written to `dist/`. Upload the contents of that folder to st
 - `npm run security` checks the deployment CSP, inline handlers, dynamic-code execution sinks, generated Service Worker strategy and removal of the RSS2JSON dependency.
 - `npm run test:news` runs the dedicated RSS parser, SSRF policy and API contract tests.
 - `netlify.toml` configures the serverless function directory and same-origin `/api/news` and `/api/custom-news` routes; the RSS backend therefore requires a Netlify Functions-capable deployment. A static-only host must provide an equivalent backend adapter.
-- The application source code is licensed under MIT (`LICENSE`). Bundled font files are third-party assets and remain under their individual SIL Open Font License 1.1 notices in `licenses/fonts/`; see `THIRD_PARTY_NOTICES.md`.
-- `.github/workflows/quality.yml` runs checks, tests, static security audit, build and Chromium/Firefox/WebKit browser smoke tests on pushes and pull requests. The browser job uploads viewport screenshots as artifacts. `.gitignore` excludes `dist/`, `node_modules/` and local artifacts; if `dist/` was already committed, remove it from the Git index once with `git rm -r --cached dist/` and commit that change.
+- The application source code is licensed under MIT (`LICENSE`). Bundled font files are third-party assets and remain under their individual SIL Open Font License 1.1 notices in `licenses/fonts/`; see `THIRD_PARTY_NOTICES.md`. The build copies all these legal notices into `dist/`, and the Data Manager exposes links to them.
+- `.github/workflows/quality.yml` runs checks, tests, static security audit, build and Chromium/Firefox/WebKit browser smoke tests on pushes and pull requests. The browser job uploads viewport screenshots as artifacts. Make sure the hidden `.github/` directory is committed; GitHub does not run the workflow if that directory is omitted. `.gitignore` excludes `dist/`, `node_modules/` and local artifacts; if `dist/` was already committed, remove it from the Git index once with `git rm -r --cached dist/` and commit that change.
 - `_headers` is copied into `dist/` for static hosts that support it. `netlify.toml` stays at the source root for Netlify build deployments and is not copied into the ready-to-upload `dist/` package. Apply equivalent headers when using another host.
 - `?debug=perf` enables a small local FPS/render-cost diagnostic overlay. Heap metrics appear only where the browser exposes them.
 - `config/news-feeds.js` controls news categories and built-in multi-source feeds; user-added feeds and preferences are stored locally; version 1.6.1 replaces the browser-side RSS2JSON converter with the first-party same-origin Netlify API. Built-in feeds are fetched in one category request and cached at Netlify's CDN; custom feeds use a bounded HTTPS fetcher that rejects private/reserved IP destinations and manually validates redirects. The app uses BBC Türkçe, TRT Haber, Anadolu Ajansı, DW Türkçe, NTV, CNN Türk, Webrazzi, Webtekno, Technopat, ShiftDelete, DonanımHaber, Evrim Ağacı, TÜBİTAK and Arkeofili. Users can enable/disable sources, add public HTTPS RSS feeds, search headlines, filter unread/saved items and keep local read/bookmark state. See `docs/ADDING_NEWS_SOURCES.md`.
@@ -90,7 +90,7 @@ The build output is written to `dist/`. Upload the contents of that folder to st
 
 ## Release QA checklist
 
-Before deploying a release, follow [`docs/QA_CHECKLIST.md`](docs/QA_CHECKLIST.md) for cross-browser, responsive, performance, offline, security-header and visual-regression checks. See [`MIGRATION_1.6.5_TR.md`](MIGRATION_1.6.5_TR.md) for the GitHub/Netlify upload notes for the MIT and self-hosted-font release. The optional browser suite can be run locally after installing `requirements-browser.txt` and the Playwright browsers with `python -m playwright install chromium firefox webkit`, then `npm run build && python scripts/browser-smoke.py`. Automated tests do not replace manual checks on physical devices or Lighthouse reviews.
+Before deploying a release, follow [`docs/QA_CHECKLIST.md`](docs/QA_CHECKLIST.md) for cross-browser, responsive, performance, offline, security-header and visual-regression checks. See [`MIGRATION_1.6.6_TR.md`](MIGRATION_1.6.6_TR.md) for the GitHub/Netlify upload notes and the important hidden `.github/` folder check. The optional browser suite can be run locally after installing `requirements-browser.txt` and the Playwright browsers with `python -m playwright install chromium firefox webkit`, then `npm run build && python scripts/browser-smoke.py`. Automated tests do not replace manual checks on physical devices or Lighthouse reviews.
 
 
 ## v1.6.3 interface update
@@ -103,12 +103,12 @@ Before deploying a release, follow [`docs/QA_CHECKLIST.md`](docs/QA_CHECKLIST.md
 
 ## v1.6.4 project review follow-up (historical)
 
-- The package already contains `.github/workflows/quality.yml` and `.gitignore`; they are retained.
+- The source package included `.github/workflows/quality.yml` and `.gitignore`, but the workflow directory was absent from the connected GitHub repository after upload. v1.6.6 restores the workflow and calls out the hidden-folder upload step.
 - The scene math is separated into pure, deterministic helpers; resize now scales live entity coordinates rather than rebuilding the habitat.
 - The habitat name is announced via a polite live region and the active habitat menu item exposes `aria-current`.
 - The custom RSS proxy rejects browser requests with a mismatched `Origin` and cross-site Fetch Metadata when no Origin is supplied. The IP rate limit and SSRF checks remain the primary server-side abuse controls; this is not user authentication.
 - News metadata and small labels have been made more legible.
-- An open-source license is intentionally not selected by the project maintainer yet. No license should be assumed; choose one before inviting external contributions.
+- At the time of the v1.6.4 review, the maintainer had not yet selected an open-source license. MIT was selected and added in v1.6.5.
 
 
 ## v1.6.5 licensing and self-hosted fonts
@@ -118,3 +118,12 @@ Before deploying a release, follow [`docs/QA_CHECKLIST.md`](docs/QA_CHECKLIST.md
 - Google Fonts preconnects and the asynchronous Google Fonts injection were removed. CSP now permits font and stylesheet resources only from the same origin (inline styles remain allowed for the existing UI).
 - The build copies local font assets into `dist/`; the generated content-hashed Service Worker app shell includes them automatically for offline use.
 - Full font license texts and upstream notices are stored under `licenses/fonts/` and summarized in `THIRD_PARTY_NOTICES.md`.
+
+
+## v1.6.6 distribution and quality follow-up
+
+- The GitHub repository was verified at v1.6.5; key source files matched the uploaded v1.6.5 package, but the hidden `.github/workflows/quality.yml` directory was missing from the repository. The workflow is included again in this release.
+- The build now copies `LICENSE`, `THIRD_PARTY_NOTICES.md` and the four font OFL files into `dist/`, so the public site distributes the legal notices alongside the font binaries.
+- The Data Manager links to the MIT and font notices; the Service Worker can retrieve those notices offline.
+- `npm run test:browser` runs the Playwright smoke suite after browser installation. CI installs Chromium, Firefox and WebKit and runs the same browser checks.
+- Netlify deployment instructions now describe the source-repository workflow, Node 22, `npm run build` and `dist` publish directory.

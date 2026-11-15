@@ -7,6 +7,12 @@ const utilities = await readFile(new URL('../css/utilities.css', import.meta.url
 const sw = await readFile(new URL('../dist/sw.js', import.meta.url), 'utf8');
 const builtHtml = await readFile(new URL('../dist/index.html', import.meta.url), 'utf8');
 const main = await readFile(new URL('../js/main.js', import.meta.url), 'utf8');
+const sourceLicense = await readFile(new URL('../LICENSE', import.meta.url), 'utf8');
+const sourceNotices = await readFile(new URL('../THIRD_PARTY_NOTICES.md', import.meta.url), 'utf8');
+const workflow = await readFile(new URL('../.github/workflows/quality.yml', import.meta.url), 'utf8');
+const gitignore = await readFile(new URL('../.gitignore', import.meta.url), 'utf8');
+const distLicense = await readFile(new URL('../dist/LICENSE', import.meta.url), 'utf8');
+const distNotices = await readFile(new URL('../dist/THIRD_PARTY_NOTICES.md', import.meta.url), 'utf8');
 const build = await readFile(new URL('../build.mjs', import.meta.url), 'utf8');
 const manifest = JSON.parse(await readFile(new URL('../dist/manifest.webmanifest', import.meta.url), 'utf8'));
 
@@ -64,4 +70,44 @@ test('web app manifest declares installable portrait-safe app icons and Turkish 
   assert.equal(manifest.display, 'standalone');
   assert.ok(manifest.icons.some((icon) => icon.sizes === '192x192'));
   assert.ok(manifest.icons.some((icon) => icon.sizes === '512x512' && icon.purpose.includes('maskable')));
+});
+
+
+test('the published site includes app and font licenses and exposes them from the Data Manager', async () => {
+  assert.equal(distLicense, sourceLicense);
+  assert.equal(distNotices, sourceNotices);
+  for (const file of ['Inter-OFL.txt', 'JetBrainsMono-OFL.txt', 'PixelifySans-OFL.txt', 'Silkscreen-OFL.txt']) {
+    const source = await readFile(new URL(`../licenses/fonts/${file}`, import.meta.url));
+    const published = await readFile(new URL(`../dist/licenses/fonts/${file}`, import.meta.url));
+    assert.deepEqual(published, source, `published license differs: ${file}`);
+  }
+  assert.match(html, /id="licenseLinks"/);
+  assert.match(html, /href="\.\/LICENSE"/);
+  assert.match(html, /href="\.\/THIRD_PARTY_NOTICES\.md"/);
+});
+
+test('Service Worker can serve cached license notices while offline', () => {
+  assert.match(sw, /md\|txt/);
+  assert.match(sw, /endsWith\('\/LICENSE'\)/);
+  for (const file of ['./LICENSE', './THIRD_PARTY_NOTICES.md', './licenses/fonts/Inter-OFL.txt']) {
+    assert.ok(sw.includes(file), `offline app shell missing ${file}`);
+  }
+});
+
+
+test('GitHub quality workflow is present and covers CI plus real-browser smoke tests', () => {
+  assert.match(workflow, /on:\s+[\s\S]*push:/);
+  assert.match(workflow, /pull_request:/);
+  assert.match(workflow, /npm run check/);
+  assert.match(workflow, /npm test/);
+  assert.match(workflow, /npm run security/);
+  assert.match(workflow, /playwright install --with-deps chromium firefox webkit/);
+  assert.match(workflow, /npm run test:browser/);
+  assert.match(workflow, /permissions:\s+contents: read/);
+});
+
+test('repository ignores build output, local artifacts and environment secrets', () => {
+  for (const entry of ['dist/', 'node_modules/', '.netlify/', 'browser-artifacts/', '.env', '.env.*', '!.env.example']) {
+    assert.ok(gitignore.split(/\r?\n/).includes(entry), `missing .gitignore entry: ${entry}`);
+  }
 });

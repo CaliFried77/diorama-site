@@ -1,3 +1,5 @@
+> Tarihsel sürüm: Bu yönerge v1.6.5 ilk lisans/font aktarımı içindir. En güncel işlem adımları için `MIGRATION_1.6.6_TR.md` dosyasını kullanın.
+
 # Diorama v1.6.5 — GitHub / Netlify geçişi
 
 1. ZIP dosyasını çıkar.
