@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import re
 import threading
 from datetime import datetime, timedelta, timezone
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
@@ -155,8 +156,16 @@ async def assert_app_smoke(browser_type, name: str, base_url: str):
     await page.evaluate("document.fonts.ready")
     local_fonts = await page.evaluate("({inter: document.fonts.check('16px Inter'), pixelify: document.fonts.check('16px \"Pixelify Sans\"'), silkscreen: document.fonts.check('16px Silkscreen')})")
     assert all(local_fonts.values()), f"{name}: a local font did not load: {local_fonts}"
-    await page.wait_for_function("document.querySelectorAll('#newsCategories .news-cat-btn').length === 3", timeout=10000)
-    await page.wait_for_function("/\\d+°C/.test(document.querySelector('#weatherTemp')?.textContent || '')", timeout=15000)
+    await page.locator("#newsCategories .news-cat-btn").nth(2).wait_for(state="attached", timeout=10000)
+    weather_locator = page.locator("#weatherTemp")
+    weather_deadline = asyncio.get_running_loop().time() + 15
+    weather_text = ""
+    while asyncio.get_running_loop().time() < weather_deadline:
+        weather_text = await weather_locator.inner_text()
+        if re.search(r"\\d+°C", weather_text):
+            break
+        await page.wait_for_timeout(100)
+    assert re.search(r"\\d+°C", weather_text), f"{name}: mocked weather data did not render: {weather_text!r}"
 
     # Habitat picker and cycle.
     await page.locator("#habitatMenuBtn").click()
@@ -242,7 +251,12 @@ async def assert_app_smoke(browser_type, name: str, base_url: str):
             await asyncio.wait_for(page.evaluate("() => navigator.serviceWorker.ready.then(() => true)"), timeout=20)
             await page.reload(wait_until="domcontentloaded", timeout=20000)
             await page.locator("#heroClock").wait_for(state="visible", timeout=10000)
-            await page.wait_for_function("navigator.serviceWorker.controller !== null", timeout=10000)
+            controller_deadline = asyncio.get_running_loop().time() + 10
+            while asyncio.get_running_loop().time() < controller_deadline:
+                if await page.evaluate("Boolean(navigator.serviceWorker.controller)"):
+                    break
+                await page.wait_for_timeout(100)
+            assert await page.evaluate("Boolean(navigator.serviceWorker.controller)"), f"{name}: Service Worker did not control the page"
             sw_state = await page.evaluate("""async () => {
                 const registration = await navigator.serviceWorker.getRegistration();
                 const cacheNames = await caches.keys();
