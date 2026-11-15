@@ -23,12 +23,12 @@ function decodeXmlEntities(value) {
 }
 
 function plainText(value, limit) {
-  const unwrapped = String(value ?? '').replace(/<!\\[CDATA\\[([\\s\\S]*?)\\]\\]>/g, '$1');
+  const unwrapped = String(value ?? '').replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1');
   return decodeXmlEntities(unwrapped)
-    .replace(/<(script|style)\\b[^>]*>[\\s\\S]*?<\\/\\1>/gi, ' ')
+    .replace(/<(script|style)\b[^>]*>[\s\S]*?<\/\1>/gi, ' ')
     .replace(/<[^>]*>/g, ' ')
-    .replace(/[\\u0000-\\u0008\\u000b\\u000c\\u000e-\\u001f\\u007f]/g, ' ')
-    .replace(/\\s+/g, ' ')
+    .replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, ' ')
+    .replace(/\s+/g, ' ')
     .trim()
     .slice(0, limit);
 }
