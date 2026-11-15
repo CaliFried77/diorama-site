@@ -1,0 +1,245 @@
+#!/usr/bin/env python3
+"""Cross-browser smoke tests for the built Diorama app (Playwright required)."""
+from __future__ import annotations
+
+import asyncio
+import json
+import threading
+from datetime import datetime, timedelta, timezone
+from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
+from pathlib import Path
+from urllib.parse import urlparse
+
+from playwright.async_api import async_playwright
+
+ROOT = Path(__file__).resolve().parents[1]
+DIST = ROOT / "dist"
+ARTIFACTS = ROOT / "browser-artifacts"
+
+
+def load_deployment_headers() -> dict[str, str]:
+    result: dict[str, str] = {}
+    for line in (ROOT / "_headers").read_text(encoding="utf-8").splitlines():
+        stripped = line.strip()
+        if not stripped or stripped.startswith("/*") or stripped.startswith("/") or stripped.startswith("#"):
+            continue
+        if ":" in stripped:
+            key, value = stripped.split(":", 1)
+            result[key.strip()] = value.strip()
+    return result
+
+
+HEADERS = load_deployment_headers()
+
+
+class AppHandler(SimpleHTTPRequestHandler):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, directory=str(DIST), **kwargs)
+
+    def end_headers(self):
+        for key, value in HEADERS.items():
+            self.send_header(key, value)
+        path = urlparse(self.path).path
+        if path in ("/", "/index.html", "/sw.js"):
+            self.send_header("Cache-Control", "no-cache")
+        super().end_headers()
+
+    def log_message(self, *_args):
+        pass
+
+
+def weather_payload() -> dict:
+    now = datetime.now(timezone.utc).replace(minute=0, second=0, microsecond=0)
+    days = [(now + timedelta(days=i)).date().isoformat() for i in range(5)]
+    hourly_times = [(now + timedelta(hours=i)).strftime("%Y-%m-%dT%H:00") for i in range(48)]
+    return {
+        "current": {
+            "time": now.strftime("%Y-%m-%dT%H:%M"),
+            "temperature_2m": 18.0,
+            "apparent_temperature": 17.0,
+            "relative_humidity_2m": 58.0,
+            "weather_code": 2,
+            "wind_speed_10m": 9.0,
+            "wind_direction_10m": 230.0,
+            "is_day": 1,
+            "cloud_cover": 35.0,
+            "precipitation": 0.0,
+        },
+        "hourly": {
+            "time": hourly_times,
+            "temperature_2m": [18.0 - (i % 8) * 0.3 for i in range(48)],
+            "weather_code": [2 for _ in range(48)],
+            "precipitation_probability": [10 for _ in range(48)],
+        },
+        "daily": {
+            "time": days,
+            "weather_code": [2, 1, 3, 2, 1],
+            "temperature_2m_max": [21.0, 22.0, 19.0, 20.0, 21.0],
+            "temperature_2m_min": [12.0, 13.0, 11.0, 12.0, 13.0],
+            "sunrise": [f"{day}T06:30" for day in days],
+            "sunset": [f"{day}T18:00" for day in days],
+            "uv_index_max": [3.0, 4.0, 2.0, 3.0, 4.0],
+            "precipitation_probability_max": [10.0, 5.0, 40.0, 20.0, 10.0],
+        },
+    }
+
+
+async def mock_external_request(route):
+    url = route.request.url
+    parsed = urlparse(url)
+    if parsed.path == "/api/news":
+        from urllib.parse import parse_qs
+        query = parse_qs(parsed.query)
+        source_ids = [item for item in query.get("sources", [""])[0].split(",") if item]
+        article = {
+            "title": "Diorama tarayıcı testi — örnek haber",
+            "link": "https://example.test/diorama-smoke-article",
+            "publishedAt": datetime.now(timezone.utc).isoformat(),
+            "description": "Yerel API taklit yanıtı",
+        }
+        payload = {
+            "status": "ok",
+            "category": query.get("category", ["gundem"])[0],
+            "generatedAt": datetime.now(timezone.utc).isoformat(),
+            "sourceCount": len(source_ids),
+            "successCount": len(source_ids),
+            "results": [{"sourceId": source_id, "status": "ok", "items": [article]} for source_id in source_ids],
+        }
+        await route.fulfill(status=200, content_type="application/json", body=json.dumps(payload))
+        return
+    if parsed.path == "/api/custom-news":
+        payload = {
+            "status": "ok",
+            "fetchedAt": datetime.now(timezone.utc).isoformat(),
+            "items": [{
+                "title": "Diorama özel RSS testi — örnek haber",
+                "link": "https://example.test/diorama-custom-smoke-article",
+                "publishedAt": datetime.now(timezone.utc).isoformat(),
+                "description": "Özel RSS API taklit yanıtı",
+            }],
+        }
+        await route.fulfill(status=200, content_type="application/json", body=json.dumps(payload))
+        return
+    if parsed.netloc == "api.rss2json.com":
+        await route.abort()
+        return
+    if parsed.netloc == "geocoding-api.open-meteo.com":
+        await route.fulfill(status=200, content_type="application/json", body=json.dumps({
+            "results": [{
+                "name": "Yalova", "latitude": 40.65, "longitude": 29.28,
+                "country": "Türkiye", "timezone": "Europe/Istanbul",
+            }],
+        }))
+        return
+    if parsed.netloc == "api.open-meteo.com":
+        await route.fulfill(status=200, content_type="application/json", body=json.dumps(weather_payload()))
+        return
+    # Fonts are optional enhancements. Abort them to verify the local fallback stack.
+    if parsed.netloc in ("fonts.googleapis.com", "fonts.gstatic.com"):
+        await route.abort()
+        return
+    if parsed.netloc not in ("127.0.0.1", "localhost"):
+        await route.abort()
+        return
+    await route.continue_()
+
+
+async def assert_app_smoke(browser_type, name: str, base_url: str):
+    browser = await browser_type.launch(headless=True)
+    context = await browser.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=1)
+    await context.route("**/*", mock_external_request)
+    page = await context.new_page()
+    page_errors: list[str] = []
+    page.on("pageerror", lambda error: page_errors.append(str(error)))
+
+    await page.goto(base_url, wait_until="domcontentloaded", timeout=30000)
+    await page.locator("#heroClock").wait_for(state="visible", timeout=15000)
+    await page.wait_for_function("document.querySelectorAll('#newsCategories .news-cat-btn').length === 3", timeout=10000)
+    await page.wait_for_function("/\\d+°C/.test(document.querySelector('#weatherTemp')?.textContent || '')", timeout=15000)
+
+    # Habitat picker and cycle.
+    await page.locator("#habitatMenuBtn").click()
+    await page.locator("#habitatPopover.open").wait_for(state="visible")
+    assert await page.locator("#habitatListContainer button").count() == 6
+    await page.locator("#habitatListContainer button").nth(2).click()
+    selected_habitat = await page.locator("#habitatNameLabel").inner_text()
+    assert selected_habitat, f"{name}: habitat selection failed"
+    await page.locator("#habitatCycleBtn").click()
+
+    # Theme toggle.
+    await page.locator("#themeToggleBtn").click()
+    assert await page.evaluate("localStorage.getItem('diorama_theme') in ['light', 'dark']")
+
+    # News categories render mocked, safe text content.
+    await page.locator("#newsBtn").click()
+    await page.locator("#newsPopover.open").wait_for(state="visible")
+    await page.locator("#newsCategories .news-cat-btn").nth(1).click()
+    await page.locator("#newsListContainer a").first.wait_for(state="visible", timeout=12000)
+    assert "Diorama tarayıcı testi" in await page.locator("#newsListContainer").inner_text()
+    await page.locator("#newsSettingsBtn").click()
+    await page.locator("#newsSettingsPanel").wait_for(state="visible")
+    await page.locator("#newsSourceNameInput").fill("Özel Smoke RSS")
+    await page.locator("#newsSourceRssInput").fill("https://feeds.example.org/smoke.xml")
+    await page.locator("#addNewsSourceForm button[type=submit]").click()
+    await page.get_by_text("Özel Smoke RSS kaynağı eklendi.").wait_for(state="visible", timeout=5000)
+    await page.locator("#newsListContainer").get_by_text("Diorama özel RSS testi").wait_for(state="visible", timeout=12000)
+
+    # Task creation and data manager panel.
+    await page.locator("#notesBtn").click()
+    await page.locator("#notesPopover.open").wait_for(state="visible")
+    await page.locator("#newTaskInput").fill("Tarayıcı smoke testi görevi")
+    await page.locator("#addTaskForm button[type=submit]").click()
+    assert "Tarayıcı smoke testi görevi" in await page.locator("#tasksListContainer").inner_text()
+    await page.locator("#dataManagerBtn").click()
+    await page.locator("#dataManagerPopover.open").wait_for(state="visible")
+    assert await page.locator("#exportAllDataBtn").count() == 1
+
+    # Responsive layouts: no horizontal document overflow.
+    for width, height in ((320, 740), (390, 844), (768, 1024), (1440, 900)):
+        await page.set_viewport_size({"width": width, "height": height})
+        await page.wait_for_timeout(150)
+        overflow = await page.evaluate("Math.max(document.documentElement.scrollWidth, document.body.scrollWidth) > window.innerWidth + 1")
+        assert not overflow, f"{name}: horizontal overflow at {width}px"
+        ARTIFACTS.mkdir(exist_ok=True)
+        await page.screenshot(path=str(ARTIFACTS / f"{name}-{width}x{height}.png"), full_page=True)
+
+    # Verify service-worker readiness and offline app-shell re-open where supported.
+    sw_supported = await page.evaluate("'serviceWorker' in navigator")
+    if sw_supported:
+        try:
+            await asyncio.wait_for(page.evaluate("() => navigator.serviceWorker.ready.then(() => true)"), timeout=20)
+            await page.reload(wait_until="domcontentloaded", timeout=20000)
+            await page.locator("#heroClock").wait_for(state="visible", timeout=10000)
+            await context.set_offline(True)
+            await page.reload(wait_until="domcontentloaded", timeout=20000)
+            await page.locator("#heroClock").wait_for(state="visible", timeout=10000)
+            await context.set_offline(False)
+        except Exception as error:
+            raise AssertionError(f"{name}: service worker/offline shell smoke test failed: {error}") from error
+
+    assert not page_errors, f"{name}: JavaScript runtime errors: {page_errors}"
+    await context.close()
+    await browser.close()
+    print(f"PASS {name}: startup, habitat, theme, news, tasks, responsive widths, and offline shell")
+
+
+async def main():
+    if not (DIST / "index.html").is_file():
+        raise SystemExit("dist/ is missing. Run `npm run build` first.")
+    server = ThreadingHTTPServer(("127.0.0.1", 0), AppHandler)
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    base_url = f"http://127.0.0.1:{server.server_port}/"
+    try:
+        async with async_playwright() as playwright:
+            for name in ("chromium", "firefox", "webkit"):
+                browser_type = getattr(playwright, name)
+                await assert_app_smoke(browser_type, name, base_url)
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=2)
+
+
+if __name__ == "__main__":
+    asyncio.run(main())

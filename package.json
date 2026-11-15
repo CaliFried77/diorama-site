@@ -1,0 +1,17 @@
+{
+  "name": "living-pixel-diorama",
+  "version": "1.6.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check": "node scripts/build-css.mjs && node scripts/check.mjs",
+    "test": "node scripts/build-css.mjs && node --test tests/*.test.mjs",
+    "security": "node scripts/security-audit.mjs",
+    "build": "node scripts/build-css.mjs && node build.mjs",
+    "dev": "npx netlify-cli dev",
+    "test:news": "node --test tests/rss-api.test.mjs tests/news-system.test.mjs tests/news-backup.test.mjs"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
