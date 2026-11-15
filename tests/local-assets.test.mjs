@@ -54,6 +54,14 @@ test('build copies extension catalogs and Cloudflare response headers while Wran
   assert.equal(packageJson.scripts['deploy:dry-run'], 'npm run build && npx --yes wrangler@4.162.0 deploy --dry-run');
 });
 
+test('generated typography uses a more readable scale and a 12px minimum for tiny labels', () => {
+  assert.ok(utilities.includes('.text-xs{font-size:.8125rem;line-height:1.125rem}'));
+  assert.ok(utilities.includes('.text-sm{font-size:.9375rem;line-height:1.375rem}'));
+  assert.ok(utilities.includes('.text-base{font-size:1.0625rem;line-height:1.625rem}'));
+  assert.ok(utilities.includes('.text-\\\\[10px\\\\]{font-size:12px}'));
+  assert.ok(utilities.includes('.text-\\\\[15px\\\\]{font-size:17px}'));
+});
+
 test('service worker precaches local shell assets and leaves external live services to the network', () => {
   assert.match(main, /serviceWorker\.register/);
   assert.match(sw, /\!url\.origin === self\.location\.origin|url\.origin !== self\.location\.origin/);
