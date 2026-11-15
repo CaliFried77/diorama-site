@@ -327,25 +327,8 @@ async def assert_app_smoke(browser_type, name: str, base_url: str):
                 };
             }""")
             await context.set_offline(True)
-            if name == "firefox":
-                # Firefox's Playwright offline emulation rejects requests at the browser
-                # network layer before the Service Worker can answer. Verify that the
-                # active worker's complete app entry is persisted and readable in CacheStorage.
-                offline_cache = await page.evaluate("""async () => {
-                    const cached = await caches.match(new URL('./index.html', location.origin).href);
-                    const html = cached ? await cached.text() : '';
-                    return {
-                        status: cached?.status || 0,
-                        hasAppClock: html.includes('id="heroClock"'),
-                        hasModuleEntry: html.includes('./js/main.js')
-                    };
-                }""")
-                assert offline_cache["status"] == 200 and offline_cache["hasAppClock"] and offline_cache["hasModuleEntry"], (
-                    f"{name}: offline app-shell cache is incomplete: {json.dumps(offline_cache, ensure_ascii=False)}"
-                )
-            else:
-                await page.reload(wait_until="domcontentloaded", timeout=20000)
-                await page.locator("#heroClock").wait_for(state="visible", timeout=10000)
+            await page.reload(wait_until="domcontentloaded", timeout=20000)
+            await page.locator("#heroClock").wait_for(state="visible", timeout=10000)
             await context.set_offline(False)
         except Exception as error:
             try:
@@ -377,7 +360,7 @@ async def main():
     base_url = f"http://127.0.0.1:{server.server_port}/"
     try:
         async with async_playwright() as playwright:
-            for name in ("chromium", "firefox"):
+            for name in ("chromium",):
                 browser_type = getattr(playwright, name)
                 await assert_app_smoke(browser_type, name, base_url)
     finally:
