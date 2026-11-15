@@ -14,6 +14,7 @@ const gitignore = await readFile(new URL('../.gitignore', import.meta.url), 'utf
 const distLicense = await readFile(new URL('../dist/LICENSE', import.meta.url), 'utf8');
 const distNotices = await readFile(new URL('../dist/THIRD_PARTY_NOTICES.md', import.meta.url), 'utf8');
 const build = await readFile(new URL('../build.mjs', import.meta.url), 'utf8');
+const wrangler = await readFile(new URL('../wrangler.toml', import.meta.url), 'utf8');
 const manifest = JSON.parse(await readFile(new URL('../dist/manifest.webmanifest', import.meta.url), 'utf8'));
 const packageJson = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'));
 
@@ -46,6 +47,11 @@ test('build copies extension catalogs and Cloudflare response headers while Wran
   assert.match(build, /modulePreloads/);
   assert.match(build, /createHash/);
   assert.doesNotMatch(build, /cp\(resolve\(root, 'wrangler\.toml'/);
+  assert.match(wrangler, /main = "cloudflare\/worker\.mjs"/);
+  assert.match(wrangler, /directory = "\.\/dist"/);
+  assert.equal(packageJson.scripts.dev, 'npx --yes wrangler@4.162.0 dev');
+  assert.equal(packageJson.scripts.deploy, 'npm run build && npx --yes wrangler@4.162.0 deploy');
+  assert.equal(packageJson.scripts['deploy:dry-run'], 'npm run build && npx --yes wrangler@4.162.0 deploy --dry-run');
 });
 
 test('service worker precaches local shell assets and leaves external live services to the network', () => {
