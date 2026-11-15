@@ -37,5 +37,5 @@ test('news cards use a two-line compact title and an explicit source action', ()
   assert.match(css, /\.news-card-details/);
   assert.match(css, /\.news-open-source/);
   assert.match(css, /min-height: 40px/);
-  assert.match(css, /grid-template-columns: minmax(0,1fr) 36px/);
+  assert.ok(css.includes('grid-template-columns: minmax(0,1fr) 36px'));
 });
