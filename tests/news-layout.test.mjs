@@ -19,8 +19,8 @@ test('news panel shares Diorama glass, has a readable width and scrolls as one p
   assert.match(html, /id="weatherPopover"[^>]*class="[^"]*editorial-modal/);
   assert.match(html, /id="newsPopover"[^>]*class="[^"]*editorial-modal/);
   const v163 = css.slice(css.indexOf('/* v1.6.3'));
-  assert.match(v163, /#newsPopover\.news-popover\s*\{[^}]*width:\s*min\(350px,/s);
-  assert.match(v163, /#newsPopover\.news-popover\s*\{[^}]*max-height:\s*min\(68vh,/s);
+  assert.match(v163, /#newsPopover\.news-popover\s*\{[^}]*width:\s*min\(420px,/s);
+  assert.match(v163, /#newsPopover\.news-popover\s*\{[^}]*max-height:\s*min\(78vh,/s);
   assert.match(v163, /#newsPopover\.news-popover\s*\{[^}]*overflow-y:\s*auto/s);
   assert.match(v163, /\.news-list-container\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)/s);
   assert.match(v163, /\.news-list-container\s*\{[^}]*max-height:\s*none/s);
@@ -40,8 +40,8 @@ test('mobile news panel stays inset and within the viewport', () => {
   const mobile = css.slice(css.lastIndexOf('@media (max-width: 639px)'));
   assert.match(css, /#newsPopover\.news-popover\s*\{[^}]*position:\s*fixed\s*!important/s);
   assert.match(mobile, /right:\s*\.5rem\s*!important/);
-  assert.match(mobile, /width:\s*min\(355px,/);
-  assert.match(mobile, /max-height:\s*min\(68dvh,/);
+  assert.match(mobile, /width:\s*min\(420px,/);
+  assert.match(mobile, /max-height:\s*min\(78dvh,/);
 });
 
 test('headline titles remain regular reading typography instead of pixel font', () => {
