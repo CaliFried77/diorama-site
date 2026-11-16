@@ -184,7 +184,7 @@ test('rainforest habitat connects its layered canopy, flora, parrot flock and ed
   assert.ok(creatureModule.includes("export { PixelParrot } from './creature-parrot.js';"));
   assert.ok(creatureParrotModule.includes('export class PixelParrot'));
   assert.ok(creatureParrotModule.includes('this.palette'));
-  assert.ok(creatureParrotModule.includes('const tailLen = 19'));
+  assert.ok(creatureParrotModule.includes('const tailLen = 23'));
   assert.ok(creatureParrotModule.includes('p.beakUpper'));
 });
 
