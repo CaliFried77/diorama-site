@@ -11,7 +11,7 @@ import { calculateFrameChance, calculateFrameSmoothing, scaleSceneCollections } 
 // BÖLÜM BAŞI: CANVAS, KARE ZAMANLAMASI VE ÇİZİM YARDIMCILARI
 // ============================================================================
 
-export const canvas = document.getElementById('habitatCanvas');
+        export const canvas = document.getElementById('habitatCanvas');
         export const ctx = canvas.getContext('2d', { alpha: false });
 
         export const PIXEL_SCALE = 3; // Crisp 3x3 pixel art resolution
@@ -79,7 +79,7 @@ export const canvas = document.getElementById('habitatCanvas');
 // BÖLÜM BAŞI: AKTİF HABİTAT VE PAYLAŞILAN SAHNE DİZİLERİ
 // ============================================================================
 
-export let pinnedHabitatId = lsRaw('diorama_pinned_habitat');
+        export let pinnedHabitatId = lsRaw('diorama_pinned_habitat');
         if (pinnedHabitatId && !HABITAT_IDS.has(pinnedHabitatId)) {
             pinnedHabitatId = null;
             try { localStorage.removeItem('diorama_pinned_habitat'); } catch { /* Storage may be disabled. */ }
