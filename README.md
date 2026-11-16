@@ -1,5 +1,7 @@
 # Living Pixel Diorama
 
+[English](README.md) | [Türkçe](README_TR.md)
+
 **Current development line:** `2.0.0-dev.1`  
 **Hosting/runtime target:** Cloudflare Workers Static Assets + Worker API  
 **Application license:** MIT. Bundled fonts retain their individual SIL Open Font License 1.1 notices.
@@ -68,7 +70,8 @@ The Worker name is `diorama-site`. Its static assets come from `dist/`; only `/a
 
 See:
 
-- [Cloudflare deployment guide](docs/DEPLOY_CLOUDFLARE_TR.md)
+- [GitHub and Cloudflare operations guide (Turkish + English)](docs/OPERATIONS_TR_EN.md)
+- [Cloudflare deployment guide (Turkish)](docs/DEPLOY_CLOUDFLARE_TR.md)
 - [Architecture overview](docs/ARCHITECTURE.md)
 - [Code navigation and safe editing guide (Turkish)](docs/CODE_GUIDE_TR.md)
 - [Security model](docs/SECURITY.md)
