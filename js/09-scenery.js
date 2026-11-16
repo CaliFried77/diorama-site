@@ -115,52 +115,65 @@ export function initHabitat(idx) {
         }
 
     } else if (hab.sceneProfile === 'betta-aquarium') {
-        for (let x = 12; x < pw - 12; x += 9 + Math.floor(Math.random() * 6)) {
+        // 1. Takashi Amano U-Shaped Concave Stem-Plant Layout (Tall lush sides, open central river-sand canyon)
+        for (let x = 10; x < pw - 10; x += 8 + Math.floor(Math.random() * 5)) {
+            const nx = x / Math.max(1, pw);
+            const inCenterPath = nx > 0.42 && nx < 0.58;
+            if (inCenterPath && Math.random() < 0.72) continue;
+
+            const moundScale = inCenterPath ? 0.48 : (0.75 + Math.pow(Math.abs(nx - 0.5) * 1.9, 1.2) * 0.55);
             const kindRoll = Math.random();
+
             if (kindRoll < 0.42) {
                 flora.push({
                     type: 'hornwort',
                     x,
-                    h: 42 + Math.random() * 64,
+                    h: (44 + Math.random() * 58) * moundScale,
                     whorlSpan: 4 + Math.floor(Math.random() * 3),
                     glowCol: Math.random() < 0.5 ? '#34d399' : '#2dd4bf',
                     phase: Math.random() * Math.PI * 2
                 });
-            } else if (kindRoll < 0.72) {
+            } else if (kindRoll < 0.74) {
                 flora.push({
                     type: 'ludwigia',
                     x,
-                    h: 32 + Math.random() * 52,
+                    h: (34 + Math.random() * 48) * moundScale,
                     phase: Math.random() * Math.PI * 2
                 });
             } else {
                 flora.push({
                     type: 'val',
                     x,
-                    h: 36 + Math.random() * 56,
+                    h: (38 + Math.random() * 52) * moundScale,
                     phase: Math.random() * Math.PI * 2
                 });
             }
         }
-        for (let fx = 18; fx < pw - 18; fx += 22 + Math.floor(Math.random() * 18)) {
+
+        // 2. Floating Water Lettuce (Pistia) & Amazon Frogbit along the top water surface
+        for (let fx = 14; fx < pw - 14; fx += 18 + Math.floor(Math.random() * 14)) {
             flora.push({
                 type: 'pistia',
                 x: fx,
-                rootLen: 10 + Math.random() * 16,
+                rootLen: 12 + Math.random() * 18,
                 phase: Math.random() * Math.PI * 2
             });
         }
-        for (let i = 0; i < 42; i++) {
+
+        // 3. Natural River Pebbles & Volcanic Aquasoil Granules anchoring the foreground floor
+        for (let i = 0; i < 48; i++) {
+            const px = Math.random() * pw;
+            const nx = px / Math.max(1, pw);
+            const inSand = nx > 0.43 && nx < 0.57;
             flora.push({
                 type: 'pebble',
-                x: Math.random() * pw,
-                y: ph - 4 - Math.random() * 7,
-                w: 2 + Math.floor(Math.random() * 5),
-                h: 1 + Math.floor(Math.random() * 3),
-                shade: ['#102c3a', '#183c4b', '#24505a', '#0b2431'][i % 4]
+                x: px,
+                y: ph - 2 - Math.random() * (inSand ? 4 : 9),
+                w: 2 + Math.floor(Math.random() * 4),
+                h: 1 + Math.floor(Math.random() * 2),
+                shade: inSand ? ['#94a3b8', '#64748b'][i % 2] : ['#0f293a', '#16384c', '#1e4959', '#091d2b'][i % 4]
             });
         }
-
     } else if (hab.sceneProfile === 'wetland') {
         const reach = Math.min(145, Math.round(pw * 0.26));
         const willowZones = [
@@ -821,40 +834,155 @@ function buildStaticEnvironmentLayer(hab) {
         }
     }
 
-    // 4. BETTA AQUARIUM STATIC SCENERY
+   // 4. BETTA AQUARIUM STATIC SCENERY (Takashi Amano Nature Aquascape: Dragon Stone Triad, Twin Spiderwood Arches, Sloped Aquasoil, Sand Path, Marimo Balls & Catappa Litter)
     if (hab.sceneProfile === 'betta-aquarium') {
-        const rx = pw - 62;
-        for (let y = 0; y < 56; y++) {
-            const w = 12 + Math.floor(y * 0.52);
-            sRect(rx - Math.floor(w * 0.45), ph - 56 + y, w, 1, isLightMode ? '#334155' : '#111c2d');
-            if (y % 5 === 0) sRect(rx - 3, ph - 56 + y, 5, 2, '#090f1a');
-            if (!isLightMode && y % 9 === 0) sRect(rx + 2, ph - 56 + y, 2, 1, 'rgba(45, 212, 191, 0.45)');
+        const soilY = (x) => {
+            const nx = x / Math.max(1, pw);
+            const mound = Math.pow(Math.abs(nx - 0.50) * 1.95, 1.45) * 18;
+            return Math.round(ph - 4 - mound - Math.sin(x * 0.04) * 2);
+        };
+
+        // A. Distant Background Stem-Plant Forest Silhouette (Rotala & Vallisneria Wall on Left/Right)
+        const bgPlantCol = isLightMode ? 'rgba(15, 82, 72, 0.24)' : 'rgba(6, 48, 44, 0.48)';
+        for (let x = 0; x < pw; x += 3) {
+            const nx = x / Math.max(1, pw);
+            if (nx > 0.38 && nx < 0.62) continue;
+            const stemH = Math.round((36 + Math.sin(x * 0.14) * 14 + Math.cos(x * 0.27) * 8) * (0.6 + Math.abs(nx - 0.5)));
+            sRect(x, soilY(x) - stemH, 2, stemH, bgPlantCol);
         }
 
-        const woodDark = isLightMode ? '#3f1d0b' : '#1b1115';
-        const woodMid = isLightMode ? '#5c2d16' : '#2b1920';
-        const woodHi = isLightMode ? '#854d0e' : '#472932';
-        const maxTrunkX = Math.min(185, Math.floor(pw * 0.48));
+        // B. Right-Side Iwagumi Dragon Stone (Ohko Rock) Triad with Diagonal Eroded Pockets
+        const stoneDark = isLightMode ? '#1e293b' : '#09111e';
+        const stoneMid = isLightMode ? '#334155' : '#132033';
+        const stoneHi = isLightMode ? '#64748b' : '#243854';
+        const mossPocket = isLightMode ? '#16a34a' : '#0d9488';
 
+        const dragonStones = [
+            { bx: pw - 58, topY: ph - 68, baseW: 38, lean: -0.22 }, // Main Oyaishi Master Stone
+            { bx: pw - 82, topY: ph - 44, baseW: 26, lean: -0.30 }, // Companion Stone Left
+            { bx: pw - 28, topY: ph - 52, baseW: 28, lean: 0.15 }   // Companion Stone Right
+        ];
+        dragonStones.forEach((st, sIdx) => {
+            const bY = ph;
+            const h = bY - st.topY;
+            for (let y = 0; y < h; y++) {
+                const prog = y / h;
+                const w = Math.round(6 + prog * st.baseW + Math.sin(y * 0.25 + sIdx) * 2);
+                const cx = st.bx + Math.round((1 - prog) * h * st.lean);
+                const left = cx - Math.floor(w * 0.5);
+                sRect(left, st.topY + y, w, 1, stoneDark);
+                sRect(left + 1, st.topY + y, Math.max(2, Math.floor(w * 0.55)), 1, stoneMid);
+                sRect(left + 1, st.topY + y, 2, 1, stoneHi);
+                // Characteristic Ohko Dragon Stone diagonal clay & bioluminescent moss pockets
+                if (y > 6 && y % 7 === 0 && w > 12) {
+                    const holeX = left + 4 + ((y * 3 + sIdx * 5) % Math.max(2, w - 9));
+                    sRect(holeX, st.topY + y, 4, 2, '#040811');
+                    sRect(holeX, st.topY + y - 1, 3, 1, mossPocket);
+                    if (!isLightMode && y % 14 === 0) {
+                        sRect(holeX + 1, st.topY + y - 1, 2, 1, 'rgba(45, 212, 191, 0.55)');
+                    }
+                }
+            }
+        });
+
+        // C. Grand Multi-Limb Sunken Spiderwood / Mangrove Root Centerpiece (Left & Upper Canopy Roots)
+        const woodDark = isLightMode ? '#3f1d0b' : '#1a1014';
+        const woodMid = isLightMode ? '#5c2d16' : '#2c1a21';
+        const woodHi = isLightMode ? '#854d0e' : '#4a2c36';
+        const maxTrunkX = Math.min(190, Math.floor(pw * 0.46));
+
+        // 1. Primary sweeping driftwood arch & secondary upper/lower roots from Left Mound
         for (let x = 0; x < maxTrunkX; x++) {
             const t = x / maxTrunkX;
-            const archY = Math.round(ph - 14 - Math.sin(t * Math.PI * 0.88) * 54 + Math.cos(t * 4) * 3);
-            const thick = Math.max(3, Math.floor(15 * (1 - t * 0.72)));
+            const archY = Math.round(ph - 18 - Math.sin(t * Math.PI * 0.88) * 54 + Math.cos(t * 4) * 3);
+            const thick = Math.max(2, Math.floor(15 * (1 - t * 0.74)));
             sRect(x, archY, 2, thick, woodDark);
             sRect(x, archY + 1, 2, Math.max(1, thick - 3), woodMid);
             sRect(x, archY, 2, 2, woodHi);
 
-            if (t > 0.22 && t < 0.82) {
-                const subT = (t - 0.22) / 0.60;
-                const upperY = Math.round(archY - 12 - Math.sin(subT * Math.PI) * 22);
-                const uThick = Math.max(2, Math.floor(6 * (1 - subT * 0.65)));
+            // Upper reaching bough with Java Moss carpet
+            if (t > 0.18 && t < 0.84) {
+                const subT = (t - 0.18) / 0.66;
+                const upperY = Math.round(archY - 12 - Math.sin(subT * Math.PI) * 24);
+                const uThick = Math.max(2, Math.floor(6 * (1 - subT * 0.68)));
                 sRect(x, upperY, 2, uThick, woodDark);
                 sRect(x, upperY, 2, 1, woodHi);
-                if (x % 3 === 0) {
+                if (x % 2 === 0) {
                     sRect(x, upperY - 2, 2, 2, isLightMode ? '#16a34a' : '#0d9488');
                 }
             }
+
+            // Lower anchor root leg plunging into the aquasoil mound
+            if (t > 0.12 && t < 0.48) {
+                const legT = (t - 0.12) / 0.36;
+                const legY = Math.round(archY + thick + legT * (ph - (archY + thick)));
+                const legW = Math.max(2, Math.floor(7 * (1 - legT * 0.5)));
+                sRect(x, legY, legW, 2, woodDark);
+                sRect(x, legY, 2, 1, woodHi);
+            }
         }
+
+        // 2. Right-side counter-balancing Spiderwood root emerging from the Dragon Stone cliff
+        const rightRootSpan = Math.min(95, Math.floor(pw * 0.24));
+        for (let s = 0; s < rightRootSpan; s++) {
+            const t = s / rightRootSpan;
+            const rx = pw - 42 - s;
+            const ry = Math.round(ph - 26 - Math.sin(t * Math.PI * 0.82) * 26 + Math.sin(t * 5) * 2);
+            const rThick = Math.max(2, Math.floor(8 * (1 - t * 0.75)));
+            sRect(rx, ry, 2, rThick, woodDark);
+            sRect(rx, ry, 2, 1, woodHi);
+            if (s % 3 === 0 && t < 0.7) {
+                sRect(rx, ry - 2, 2, 2, isLightMode ? '#16a34a' : '#0d9488');
+            }
+        }
+
+        // D. Sloped Volcanic Aquasoil Mounds & Winding Central White-Gold River Sand Path
+        const soilDark = isLightMode ? '#1e1b18' : '#090d16';
+        const soilMid = isLightMode ? '#292524' : '#131c2b';
+        const soilRim = isLightMode ? '#15803d' : '#0f5138';
+        const sandBase = isLightMode ? '#cbd5e1' : '#334155';
+        const sandHi = isLightMode ? '#f1f5f9' : '#475569';
+
+        for (let x = 0; x < pw; x++) {
+            const nx = x / Math.max(1, pw);
+            const gy = soilY(x);
+            const inSandCanyon = Math.abs(nx - 0.50) < 0.085;
+
+            if (inSandCanyon) {
+                const sandY = ph - 5 - Math.round(Math.cos((nx - 0.50) * 18) * 2);
+                sRect(x, sandY, 1, ph - sandY, sandBase);
+                sRect(x, sandY, 1, 2, sandHi);
+            } else {
+                sRect(x, gy, 1, ph - gy, soilDark);
+                sRect(x, gy + 1, 1, Math.max(1, Math.floor((ph - gy) * 0.5)), soilMid);
+                sRect(x, gy, 1, 2, soilRim);
+            }
+        }
+
+        // E. Velvety Green Marimo Moss Balls (Cladophora) & Dried Catappa (Ketapang) Almond Leaves on the Substrate
+        const marimoBalls = [
+            { x: Math.round(pw * 0.36), r: 5 },
+            { x: Math.round(pw * 0.39), r: 4 },
+            { x: Math.round(pw * 0.61), r: 5 },
+            { x: Math.round(pw * 0.64), r: 3 }
+        ];
+        marimoBalls.forEach(mb => {
+            const my = soilY(mb.x) - mb.r + 2;
+            sRect(mb.x - mb.r, my + mb.r - 1, mb.r * 2, 2, 'rgba(2, 8, 16, 0.5)');
+            for (let dy = -mb.r; dy <= mb.r; dy++) {
+                const span = Math.round(mb.r * Math.sqrt(Math.max(0, 1 - (dy * dy) / (mb.r * mb.r))));
+                const col = dy < -1 ? '#22c55e' : (dy > 1 ? '#14532d' : '#15803d');
+                sRect(mb.x - span, my + dy, span * 2, 1, col);
+            }
+        });
+
+        // Dried amber-brown Catappa leaves resting along the sand edge
+        [Math.round(pw * 0.43), Math.round(pw * 0.56)].forEach((lx, idx) => {
+            const ly = soilY(lx);
+            sRect(lx - 5, ly - 1, 10, 2, '#78350f');
+            sRect(lx - 4, ly - 2, 7, 1, '#b45309');
+            sRect(lx - 3 + idx * 2, ly - 1, 5, 1, '#d97706');
+        });
     }
 
     // 5. BOTANICAL BUTTERFLY GARDEN STATIC SCENERY
