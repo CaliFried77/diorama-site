@@ -1003,176 +1003,458 @@ export class PixelJellyfish {
         }
     }
 }
-
 /* ============================================================================
-   CREATURE 7: AUTHENTIC PIXEL-ART MACAW FLOCK (Scarlet, Blue-and-Gold, Military & Hyacinth)
-   Crisp 1:1 integer pixel grid, horizontal streaming graduated tail, curved hooked
-   bill, white facial patch, and 4-state flap-and-glide wing kinematics.
-   ============================================================================ */
-const PARROT_PALETTES = Object.freeze([
-    // Scarlet Macaw (Kırmızı Ara Papağanı)
-    {
-        body: '#ef4444', shade: '#b91c1c', belly: '#dc2626',
-        wingCovert: '#facc15', wingMid: '#0284c7', wingTip: '#1d4ed8', wingUnder: '#b91c1c',
-        tailMain: '#ef4444', tailEdge: '#38bdf8',
-        face: '#fef3c7', beakUpper: '#fde68a', beakLower: '#1e293b', eye: '#0f172a',
-        rgb: [239, 68, 68]
-    },
-    // Blue-and-Gold Macaw (Mavi-Altın Ara Papağanı)
-    {
-        body: '#0284c7', shade: '#0369a1', belly: '#facc15',
-        wingCovert: '#38bdf8', wingMid: '#0284c7', wingTip: '#1e3a8a', wingUnder: '#eab308',
-        tailMain: '#0284c7', tailEdge: '#facc15',
-        face: '#fef9c3', beakUpper: '#334155', beakLower: '#0f172a', eye: '#0f172a',
-        rgb: [56, 189, 248]
-    },
-    // Emerald / Red-Fronted Macaw (Zümrüt Yeşili Ara Papağanı)
-    {
-        body: '#16a34a', shade: '#15803d', belly: '#4ade80',
-        wingCovert: '#f97316', wingMid: '#0d9488', wingTip: '#0284c7', wingUnder: '#15803d',
-        tailMain: '#dc2626', tailEdge: '#0ea5e9',
-        face: '#fef3c7', beakUpper: '#334155', beakLower: '#0f172a', eye: '#0f172a',
-        rgb: [34, 197, 94]
-    },
-    // Hyacinth / Violet Macaw (Sümbül Ara Papağanı)
-    {
-        body: '#4f46e5', shade: '#3730a3', belly: '#6366f1',
-        wingCovert: '#818cf8', wingMid: '#4338ca', wingTip: '#1e1b4b', wingUnder: '#312e81',
-        tailMain: '#4f46e5', tailEdge: '#38bdf8',
-        face: '#fde047', beakUpper: '#334155', beakLower: '#0f172a', eye: '#0f172a',
-        rgb: [129, 140, 248]
-    },
-]);
+           CREATURE 7: ARTISTIC & REALISTIC MACAW PARROT FLOCK
+           Multi-state AI (Soaring, Diving, Perching on Branches, Hover-Foraging & Pecking),
+           anatomical 3-tier wing plumage, articulated waving tail, opening hooked bill,
+           and crisp shaded pixel art.
+           ============================================================================ */
+        const PARROT_PALETTES = Object.freeze([
+            // 1. Scarlet Macaw (Kırmızı Ara Papağanı - Kırmızı, Kehribar Sarısı ve Kobalt Mavi)
+            {
+                bodyHi: '#f87171', body: '#ef4444', bodyShade: '#b91c1c', belly: '#dc2626',
+                wingShoulder: '#ef4444', wingCovert: '#facc15', wingGreen: '#10b981', wingPrimary: '#1d4ed8', wingTip: '#1e3a8a', wingUnder: '#b91c1c',
+                tailCenter: '#ef4444', tailMid: '#dc2626', tailOuter: '#0284c7',
+                face: '#fef3c7', faceLine: '#ef4444', beakUpper: '#fde68a', beakTip: '#92400e', beakLower: '#1e293b', eye: '#0f172a',
+                rgb: [239, 68, 68]
+            },
+            // 2. Blue-and-Gold Macaw (Mavi-Altın Ara Papağanı - Turkuaz, Safir ve Altın Göğüs)
+            {
+                bodyHi: '#38bdf8', body: '#0284c7', bodyShade: '#0369a1', belly: '#facc15',
+                wingShoulder: '#22c55e', wingCovert: '#38bdf8', wingGreen: '#0ea5e9', wingPrimary: '#1d4ed8', wingTip: '#1e3a8a', wingUnder: '#eab308',
+                tailCenter: '#0284c7', tailMid: '#0369a1', tailOuter: '#facc15',
+                face: '#fef9c3', faceLine: '#0f172a', beakUpper: '#334155', beakTip: '#0f172a', beakLower: '#0f172a', eye: '#0f172a',
+                rgb: [56, 189, 248]
+            },
+            // 3. Military / Emerald Macaw (Zümrüt Yeşili Ara Papağanı - Kızıl Alın, Yeşil Gövde, Turkuaz Uçlar)
+            {
+                bodyHi: '#4ade80', body: '#16a34a', bodyShade: '#15803d', belly: '#22c55e',
+                wingShoulder: '#f97316', wingCovert: '#22c55e', wingGreen: '#0d9488', wingPrimary: '#0284c7', wingTip: '#1e3a8a', wingUnder: '#15803d',
+                tailCenter: '#dc2626', tailMid: '#b91c1c', tailOuter: '#0ea5e9',
+                face: '#fef3c7', faceLine: '#b91c1c', beakUpper: '#334155', beakTip: '#0f172a', beakLower: '#0f172a', eye: '#0f172a',
+                rgb: [34, 197, 94]
+            },
+            // 4. Hyacinth Macaw (Sümbül Ara Papağanı - Kraliyet Mavisi/İndigo ve Altın Göz/Gaga Halkası)
+            {
+                bodyHi: '#818cf8', body: '#4f46e5', bodyShade: '#3730a3', belly: '#4338ca',
+                wingShoulder: '#6366f1', wingCovert: '#4f46e5', wingGreen: '#4338ca', wingPrimary: '#312e81', wingTip: '#1e1b4b', wingUnder: '#312e81',
+                tailCenter: '#4f46e5', tailMid: '#3730a3', tailOuter: '#312e81',
+                face: '#facc15', faceLine: '#312e81', beakUpper: '#334155', beakTip: '#0f172a', beakLower: '#0f172a', eye: '#0f172a',
+                rgb: [129, 140, 248]
+            },
+        ]);
 
-export class PixelParrot {
-    constructor() {
-        this.x = Math.random() * pw;
-        this.y = 26 + Math.random() * Math.max(28, ph * 0.44);
-        this.vx = (Math.random() < 0.5 ? -1 : 1) * (0.34 + Math.random() * 0.16);
-        this.vy = (Math.random() - 0.5) * 0.08;
-        this.phase = Math.random() * Math.PI * 2;
-        this.eatCooldown = 0;
-        this.palette = PARROT_PALETTES[Math.floor(Math.random() * PARROT_PALETTES.length)];
-        this.rgb = this.palette.rgb;
-    }
+        export class PixelParrot {
+            constructor() {
+                this.x = Math.random() * pw;
+                this.y = 28 + Math.random() * Math.max(36, ph * 0.45);
+                this.dir = Math.random() < 0.5 ? -1 : 1;
+                this.vx = this.dir * (0.42 + Math.random() * 0.18);
+                this.vy = (Math.random() - 0.5) * 0.12;
+                this.phase = Math.random() * Math.PI * 2;
+                this.palette = PARROT_PALETTES[Math.floor(Math.random() * PARROT_PALETTES.length)];
+                this.rgb = this.palette.rgb;
 
-    update(time) {
-        this.phase += 0.16 * frameScale;
-        if (this.eatCooldown > 0) this.eatCooldown = Math.max(0, this.eatCooldown - frameScale);
-
-        const fruit = findAvailableStimulus(this, 'tropical_fruit', 185);
-        if (fruit) {
-            const dx = fruit.x - this.x;
-            const dy = fruit.y - this.y;
-            const distance = Math.max(1, Math.hypot(dx, dy));
-            if (distance < 9) {
-                fruit.life = 0;
-                this.eatCooldown = 110;
-                this.vy = -0.18;
-            } else {
-                this.vx += (dx / distance) * 0.024 * frameScale;
-                this.vy += (dy / distance) * 0.024 * frameScale;
+                // Behavioral States: 'flying' | 'perching' | 'perched' | 'eating'
+                this.state = 'flying';
+                this.stateTimer = 140 + Math.random() * 220;
+                this.eatCooldown = 0;
+                this.perchTarget = null;
+                this.targetFruit = null;
+                this.waypointY = this.y;
+                this.headLook = 0;
+                this.beakOpen = 0;
+                this.tailWave = 0;
             }
-        } else {
-            // Smooth flap-and-glide wave motion
-            this.vy += Math.sin(time * 0.0014 + this.phase * 0.35) * 0.003 * frameScale;
-            this.vx += Math.sin(time * 0.0005 + this.phase * 0.2) * 0.0012 * frameScale;
-        }
 
-        const minSpeed = 0.28;
-        if (Math.abs(this.vx) < minSpeed) {
-            this.vx = (this.vx >= 0 ? 1 : -1) * minSpeed;
-        }
-        this.vx = Math.max(-0.68, Math.min(0.68, this.vx));
-        this.vy = Math.max(-0.32, Math.min(0.32, this.vy));
-
-        this.x += this.vx * frameScale;
-        this.y += this.vy * frameScale;
-
-        const upperLimit = 22;
-        const lowerLimit = Math.max(upperLimit + 28, ph * 0.62);
-        if (this.y < upperLimit) { this.y = upperLimit; this.vy = Math.abs(this.vy) * 0.6 + 0.04; }
-        if (this.y > lowerLimit) { this.y = lowerLimit; this.vy = -Math.abs(this.vy) * 0.6 - 0.04; }
-        if (this.x < -30) this.x = pw + 30;
-        if (this.x > pw + 30) this.x = -30;
-    }
-
-    draw() {
-        const p = this.palette;
-        const dir = this.vx >= 0 ? 1 : -1;
-        const bx = Math.round(this.x);
-        // Subtle vertical body lift synchronized with wing downstroke
-        const cycle = this.phase % (Math.PI * 4);
-        const isGliding = cycle > Math.PI * 2.6;
-        const wingSin = isGliding ? 0.15 : Math.sin(this.phase);
-        const by = Math.round(this.y - wingSin * 0.8);
-        const pitch = this.vy > 0.12 ? 1 : (this.vy < -0.12 ? -1 : 0);
-
-        // Integer 1:1 pixel plotter (flips cleanly on X axis with zero fractional tearing)
-        const px = (x, y, w, h, col) => {
-            const drawX = dir > 0 ? (bx + x) : (bx - x - w);
-            pRect(drawX, by + y, w, h, col);
-        };
-
-        // 1. Far-side Background Wing Tip (peeks above shoulder during upstroke/glide)
-        if (wingSin >= 0) {
-            px(-1, -6, 4, 2, p.wingTip);
-            px(0, -4, 4, 2, p.wingMid);
-        }
-
-        // 2. Long, Sleek Horizontal Macaw Tail (streams behind body with slight aerodynamic taper)
-        for (let t = 0; t < 15; t++) {
-            const tx = -6 - t;
-            const ty = 1 + Math.floor(t * 0.22) - pitch;
-            px(tx, ty, 1, 1, p.tailMain);
-            if (t < 10) {
-                px(tx, ty + 1, 1, 1, t < 5 ? p.shade : p.tailEdge);
+            pickPerchSpot() {
+                // Match the actual branch positions of the midground rainforest trees in 09-scenery.js
+                const spots = [
+                    { x: Math.round(pw * 0.14 - 12), y: Math.round(ph * 0.24 + 6) },
+                    { x: Math.round(pw * 0.14 + 14), y: Math.round(ph * 0.24 + 8) },
+                    { x: Math.round(pw * 0.27 + 10), y: Math.round(ph * 0.36 + 6) },
+                    { x: Math.round(pw * 0.75 - 10), y: Math.round(ph * 0.34 + 6) },
+                    { x: Math.round(pw * 0.86 - 14), y: Math.round(ph * 0.22 + 6) },
+                    { x: Math.round(pw * 0.86 + 12), y: Math.round(ph * 0.22 + 8) }
+                ];
+                return spots[Math.floor(Math.random() * spots.length)];
             }
-            if (t >= 3 && t <= 11 && t % 2 === 0) {
-                px(tx, ty - 1, 1, 1, p.tailEdge);
+
+            update(time) {
+                if (this.eatCooldown > 0) this.eatCooldown = Math.max(0, this.eatCooldown - frameScale);
+                this.tailWave += 0.12 * frameScale;
+
+                // 1. PRIORITY: Check for user-dropped tropical fruit anywhere on screen!
+                const fruit = findAvailableStimulus(this, 'tropical_fruit', Math.max(450, pw));
+                if (fruit && this.state !== 'eating') {
+                    this.targetFruit = fruit;
+                    this.state = 'flying';
+                    this.perchTarget = null;
+                }
+
+                // STATE A: EATING / HOVER-FORAGING AT FRUIT
+                if (this.state === 'eating') {
+                    this.phase += 0.38 * frameScale; // Rapid hovering wingbeats
+                    this.stateTimer -= frameScale;
+                    this.beakOpen = Math.sin(this.phase * 1.5) > 0 ? 1 : 0;
+
+                    if (this.targetFruit && this.targetFruit.life > 0) {
+                        const targetX = this.targetFruit.x - this.dir * 10;
+                        const targetY = this.targetFruit.y - 2;
+                        this.x += (targetX - this.x) * frameSmoothing(0.18);
+                        this.y += (targetY - this.y) * frameSmoothing(0.18);
+                        if (this.stateTimer <= 8) {
+                            this.targetFruit.life = 0; // Consume fruit at end of pecking
+                        }
+                    }
+
+                    if (this.stateTimer <= 0) {
+                        this.state = 'flying';
+                        this.eatCooldown = 90;
+                        this.beakOpen = 0;
+                        this.targetFruit = null;
+                        // Graceful upward climb after eating
+                        this.vx = this.dir * 0.48;
+                        this.vy = -0.28;
+                        this.waypointY = 30 + Math.random() * (ph * 0.38);
+                        this.stateTimer = 180 + Math.random() * 200;
+                    }
+                    return;
+                }
+
+                // STATE B: PERCHED ON A RAINFOREST BRANCH
+                if (this.state === 'perched') {
+                    this.phase += 0.04 * frameScale; // Calm breathing rhythm
+                    this.stateTimer -= frameScale;
+                    this.vx = 0;
+                    this.vy = 0;
+
+                    // Occasional curious head turns, crest bobbing & calling while perched
+                    if (frameChance(0.018)) {
+                        this.headLook = (Math.random() < 0.4) ? -1 : 0;
+                    }
+                    if (frameChance(0.012)) {
+                        this.beakOpen = this.beakOpen ? 0 : 1;
+                    }
+
+                    // Take off if timer expires or fruit appears
+                    if (this.stateTimer <= 0 || fruit) {
+                        this.state = 'flying';
+                        this.headLook = 0;
+                        this.beakOpen = 0;
+                        this.dir = (this.x < pw * 0.5) ? 1 : -1;
+                        this.vx = this.dir * 0.46;
+                        this.vy = -0.18;
+                        this.waypointY = 28 + Math.random() * (ph * 0.42);
+                        this.stateTimer = 180 + Math.random() * 240;
+                    }
+                    return;
+                }
+
+                // STATE C: FLYING TOWARD FRUIT
+                if (fruit) {
+                    this.phase += 0.24 * frameScale;
+                    const dx = fruit.x - this.x;
+                    const dy = fruit.y - this.y;
+                    const dist = Math.max(1, Math.hypot(dx, dy));
+
+                    // Smoothly steer velocity toward fruit (NO minSpeed lock blocking turnaround!)
+                    const desiredVx = (dx / dist) * 0.68;
+                    const desiredVy = (dy / dist) * 0.52;
+                    this.vx += (desiredVx - this.vx) * frameSmoothing(0.09);
+                    this.vy += (desiredVy - this.vy) * frameSmoothing(0.09);
+
+                    if (Math.abs(dx) > 4) {
+                        this.dir = dx >= 0 ? 1 : -1;
+                    }
+                    this.beakOpen = dist < 26 ? 1 : 0;
+
+                    this.x += this.vx * frameScale;
+                    this.y += this.vy * frameScale;
+
+                    if (dist < 13) {
+                        this.state = 'eating';
+                        this.stateTimer = 34; // Hover and peck for ~0.55s
+                        this.targetFruit = fruit;
+                        this.vx *= 0.2;
+                        this.vy *= 0.2;
+                    }
+                    return;
+                }
+
+                // STATE D: FLYING TOWARD A BRANCH PERCH
+                if (this.state === 'perching' && this.perchTarget) {
+                    this.phase += 0.22 * frameScale;
+                    const dx = this.perchTarget.x - this.x;
+                    const dy = this.perchTarget.y - this.y;
+                    const dist = Math.max(1, Math.hypot(dx, dy));
+
+                    const speed = Math.min(0.55, Math.max(0.18, dist * 0.03));
+                    const desiredVx = (dx / dist) * speed;
+                    const desiredVy = (dy / dist) * speed;
+                    this.vx += (desiredVx - this.vx) * frameSmoothing(0.08);
+                    this.vy += (desiredVy - this.vy) * frameSmoothing(0.08);
+                    if (Math.abs(dx) > 3) this.dir = dx >= 0 ? 1 : -1;
+
+                    this.x += this.vx * frameScale;
+                    this.y += this.vy * frameScale;
+
+                    if (dist < 5) {
+                        this.x = this.perchTarget.x;
+                        this.y = this.perchTarget.y;
+                        this.state = 'perched';
+                        this.stateTimer = 160 + Math.random() * 220;
+                        this.perchTarget = null;
+                        this.dir = (this.x < pw * 0.5) ? 1 : -1;
+                    }
+                    return;
+                }
+
+                // STATE E: NATURAL SOARING, SWOOPING & BANKING FLIGHT
+                this.phase += 0.17 * frameScale;
+                this.stateTimer -= frameScale;
+
+                if (this.stateTimer <= 0) {
+                    if (Math.random() < 0.38) {
+                        // Decide to go perch on a tree branch
+                        this.perchTarget = this.pickPerchSpot();
+                        this.state = 'perching';
+                    } else {
+                        // Or pick a new altitude and occasionally bank/turn around inside the valley
+                        this.waypointY = 26 + Math.random() * (ph * 0.46);
+                        if (Math.random() < 0.35 && this.x > pw * 0.2 && this.x < pw * 0.8) {
+                            this.dir *= -1;
+                        }
+                        this.stateTimer = 150 + Math.random() * 220;
+                    }
+                }
+
+                // Cruise horizontally with organic swoops toward waypointY
+                const targetVx = this.dir * (0.44 + Math.sin(time * 0.001 + this.phase * 0.2) * 0.1);
+                const dyWay = this.waypointY - this.y;
+                const targetVy = Math.max(-0.26, Math.min(0.26, dyWay * 0.015 + Math.sin(time * 0.002 + this.phase * 0.3) * 0.06));
+
+                this.vx += (targetVx - this.vx) * frameSmoothing(0.045);
+                this.vy += (targetVy - this.vy) * frameSmoothing(0.045);
+                if (Math.abs(this.vx) > 0.08) {
+                    this.dir = this.vx >= 0 ? 1 : -1;
+                }
+
+                this.x += this.vx * frameScale;
+                this.y += this.vy * frameScale;
+
+                // Soft canopy & understory boundaries during normal cruise
+                if (this.y < 20) { this.y = 20; this.vy = Math.abs(this.vy) * 0.5 + 0.04; }
+                if (this.y > ph * 0.68) { this.y = ph * 0.68; this.vy = -Math.abs(this.vy) * 0.5 - 0.04; }
+
+                // Wrap or turn at screen edges
+                if (this.x < -34) this.x = pw + 34;
+                if (this.x > pw + 34) this.x = -34;
+            }
+
+            draw() {
+                const p = this.palette;
+                const dir = this.dir;
+                const bx = Math.round(this.x);
+                const by = Math.round(this.y);
+
+                // Crisp 1:1 integer pixel helper with automatic horizontal mirroring
+                const px = (x, y, w, h, col) => {
+                    const drawX = dir > 0 ? (bx + x) : (bx - x - w);
+                    pRect(drawX, by + y, w, h, col);
+                };
+
+                /* =============================================================
+                   POSE 1: PERCHED UPRIGHT ON A TREE BRANCH
+                   ============================================================= */
+                if (this.state === 'perched') {
+                    const breath = Math.sin(this.phase) > 0.3 ? -1 : 0;
+                    const lookDir = this.headLook === -1 ? -1 : 1;
+
+                    // Long graduated tail hanging down below the branch
+                    for (let t = 0; t < 16; t++) {
+                        const tx = -4 - Math.floor(t * 0.35);
+                        const ty = 4 + t;
+                        px(tx, ty, 2, 1, t < 11 ? p.tailCenter : p.tailOuter);
+                        if (t < 10) px(tx + 2, ty, 1, 1, p.tailMid);
+                    }
+
+                    // Zygodactyl zygote claws gripping the branch
+                    px(-2, 3, 2, 2, '#1e293b');
+                    px(1, 3, 2, 2, '#1e293b');
+
+                    // Upright Sculpted Macaw Torso & Breast
+                    px(-4, -5 + breath, 7, 4, p.body);
+                    px(-3, -1 + breath, 6, 4, p.belly);
+                    px(-4, -4 + breath, 2, 6, p.bodyShade);
+                    px(1, -5 + breath, 2, 5, p.bodyHi);
+
+                    // Neatly Folded 3-Tier Wing resting along the side
+                    px(-3, -4 + breath, 4, 3, p.wingShoulder);
+                    px(-4, -1 + breath, 4, 3, p.wingCovert);
+                    px(-4, 2 + breath, 3, 2, p.wingGreen);
+                    px(-5, 4 + breath, 3, 3, p.wingPrimary);
+                    px(-5, 7 + breath, 2, 2, p.wingTip);
+
+                    // Head, Crown & Bare Facial Patch (supports looking forward or over shoulder)
+                    const hy = -9 + breath;
+                    px(-2, hy, 6, 4, p.body);
+                    px(-1, hy - 1, 4, 1, p.bodyHi); // Crown highlight
+
+                    if (lookDir === 1) {
+                        px(1, hy + 1, 3, 3, p.face);
+                        px(2, hy + 1, 1, 1, p.eye);
+                        px(1, hy + 3, 2, 1, p.faceLine);
+                        // Hooked Beak
+                        px(4, hy + 1, 3, 2, p.beakUpper);
+                        px(6, hy + 2, 1, 2, p.beakTip);
+                        px(4, hy + 3 + this.beakOpen, 2, 1, p.beakLower);
+                    } else {
+                        // Looking back over its shoulder
+                        px(-2, hy + 1, 3, 3, p.face);
+                        px(-1, hy + 1, 1, 1, p.eye);
+                        px(-5, hy + 1, 3, 2, p.beakUpper);
+                        px(-6, hy + 2, 1, 2, p.beakTip);
+                        px(-4, hy + 3, 2, 1, p.beakLower);
+                    }
+                    return;
+                }
+
+                /* =============================================================
+                   POSE 2: IN-FLIGHT / SOARING / DIVING / HOVER-EATING
+                   ============================================================= */
+                const isHovering = this.state === 'eating' || (this.state === 'perching' && Math.hypot(this.vx, this.vy) < 0.28);
+                const cycle = this.phase % (Math.PI * 4);
+                const isGliding = !isHovering && !this.targetFruit && cycle > Math.PI * 2.7;
+                const wingSin = isGliding ? 0.18 : Math.sin(this.phase);
+
+                // Dynamic body pitch (-2 climbing steeply, -1 climbing, 0 level, +1 diving, +2 steep dive)
+                const pitch = isHovering ? -1 : Math.max(-2, Math.min(2, Math.round(this.vy * 6)));
+                const liftY = Math.round(-wingSin * 1.1);
+
+                // 1. Far-Side (Background) Wing for 3D Depth
+                if (isHovering) {
+                    // Flared forward/upward braking wing
+                    px(1, -8 + liftY, 5, 3, p.wingPrimary);
+                    px(0, -5 + liftY, 5, 3, p.wingCovert);
+                } else if (wingSin > 0.1) {
+                    const farH = Math.round(wingSin * 5);
+                    px(0, -4 - farH + liftY, 5, 2, p.wingTip);
+                    px(-1, -2 - farH + liftY, 6, 3, p.wingPrimary);
+                }
+
+                // 2. Long Graduated Streaming Tail (waves with flight & fans out when braking/hovering)
+                const tailLen = 19;
+                for (let t = 0; t < tailLen; t++) {
+                    const tx = -8 - t;
+                    const waveOffset = Math.sin(this.tailWave - t * 0.28) * (t * 0.08);
+                    const pitchOffset = -pitch * (t * 0.22);
+                    const ty = Math.round(1 + t * 0.14 + pitchOffset + waveOffset + liftY);
+
+                    // Central longest scarlet/blue rectrices
+                    px(tx, ty, 1, 1, p.tailCenter);
+                    if (t < 15) {
+                        px(tx, ty - 1, 1, 1, p.tailMid);
+                    }
+                    // Outer cyan/gold graduated feathers (fanned wider during hover/turning)
+                    const fanSpread = isHovering ? 2 : 1;
+                    if (t >= 2 && t < 13) {
+                        px(tx, ty + fanSpread, 1, 1, p.tailOuter);
+                        if (isHovering && t < 9) {
+                            px(tx, ty - 1 - fanSpread, 1, 1, p.tailOuter);
+                        }
+                    }
+                }
+
+                // 3. Sculpted Aerodynamic Macaw Body (with pitch tilt & 3-tone shading)
+                const headPitch = pitch;
+                const rearPitch = -Math.sign(pitch);
+
+                // Upper mantle & back
+                px(-6, -2 + rearPitch + liftY, 6, 2, p.body);
+                px(0, -2 + liftY, 6, 2, p.bodyHi);
+                // Core torso
+                px(-7, 0 + rearPitch + liftY, 14, 3, p.body);
+                // Sunlit breast & shaded belly contour
+                px(1, 1 + headPitch + liftY, 6, 2, p.belly);
+                px(-5, 3 + rearPitch + liftY, 10, 1, p.bodyShade);
+                // Tucked dark zygodactyl feet under tail coverts (slightly lowered when about to land/eat)
+                if (isHovering) {
+                    px(-2, 4 + liftY, 2, 2, '#1e293b');
+                    px(1, 4 + liftY, 2, 2, '#1e293b');
+                } else {
+                    px(-4, 4 + rearPitch + liftY, 3, 1, '#1e293b');
+                }
+
+                // 4. Sculpted Neck, Rounded Crown, Bare Facial Patch & Opening Hooked Beak
+                const hx = 5;
+                const hy = -4 + headPitch + liftY;
+
+                // Neck & Crown
+                px(hx - 1, hy + 1, 5, 4, p.body);
+                px(hx, hy - 1, 6, 2, p.bodyHi);
+                px(hx - 1, hy, 2, 2, p.bodyShade);
+
+                // Iconic Macaw Bare Facial Patch with subtle feather striation pixel
+                px(hx + 2, hy + 1, 4, 3, p.face);
+                px(hx + 2, hy + 3, 2, 1, p.faceLine);
+                // Expressive dark eye + tiny upper-left glint
+                px(hx + 3, hy + 1, 2, 2, p.eye);
+                px(hx + 3, hy + 1, 1, 1, '#ffffff');
+
+                // Large Curved Hooked Macaw Bill (Upper maxilla + articulated lower mandible)
+                px(hx + 6, hy + 1, 3, 2, p.beakUpper);
+                px(hx + 8, hy + 2, 2, 2, p.beakTip);   // Sharp downward hook tip
+                px(hx + 9, hy + 4, 1, 1, p.beakTip);
+                // Lower dark mandible (drops 1px when eating/calling)
+                px(hx + 6, hy + 3 + this.beakOpen, 2, 2, p.beakLower);
+
+                // 5. Foreground 3-Tier Articulated Wing (5 distinct poses)
+                if (isHovering) {
+                    // HOVER / BRAKING FLARE: Swept forward & high with separated primary finger feathers
+                    px(-2, -3 + liftY, 5, 3, p.wingShoulder);
+                    px(-4, -6 + liftY, 6, 3, p.wingCovert);
+                    px(-6, -9 + liftY, 6, 3, p.wingPrimary);
+                    //Separated primary wingtip feathers
+                    px(-8, -11 + liftY, 3, 2, p.wingTip);
+                    px(-5, -12 + liftY, 3, 2, p.wingTip);
+                    px(-2, -11 + liftY, 2, 2, p.wingTip);
+                } else if (isGliding || (wingSin >= -0.22 && wingSin <= 0.28)) {
+                    // POSE A: Broad Cambered Thermal Glide Wing
+                    px(-3, -2 + liftY, 6, 2, p.wingShoulder);
+                    px(-6, -3 + liftY, 7, 2, p.wingCovert);
+                    px(-9, -4 + liftY, 6, 2, p.wingGreen);
+                    px(-13, -5 + liftY, 6, 2, p.wingPrimary);
+                    px(-15, -6 + liftY, 4, 2, p.wingTip);
+                } else if (wingSin > 0.28 && wingSin <= 0.72) {
+                    // POSE B: Mid-Upstroke / Swept Arch
+                    px(-2, -3 + liftY, 5, 3, p.wingShoulder);
+                    px(-5, -6 + liftY, 6, 3, p.wingCovert);
+                    px(-8, -8 + liftY, 6, 2, p.wingGreen);
+                    px(-11, -10 + liftY, 6, 2, p.wingPrimary);
+                    px(-13, -11 + liftY, 4, 2, p.wingTip);
+                } else if (wingSin > 0.72) {
+                    // POSE C: Full High Upstroke (dramatic V-elevation above the back)
+                    px(-1, -4 + liftY, 5, 3, p.wingShoulder);
+                    px(-3, -7 + liftY, 6, 3, p.wingCovert);
+                    px(-5, -10 + liftY, 6, 3, p.wingGreen);
+                    px(-8, -13 + liftY, 6, 3, p.wingPrimary);
+                    px(-10, -15 + liftY, 4, 2, p.wingTip);
+                    px(-6, -15 + liftY, 3, 1, p.wingTip);
+                } else if (wingSin < -0.22 && wingSin >= -0.72) {
+                    // POSE D: Mid-Downstroke (sweeping across the flank)
+                    px(-2, 0 + liftY, 6, 2, p.wingShoulder);
+                    px(-4, 2 + liftY, 6, 2, p.wingCovert);
+                    px(-7, 4 + liftY, 6, 2, p.wingGreen);
+                    px(-10, 6 + liftY, 5, 2, p.wingPrimary);
+                    px(-12, 7 + liftY, 3, 2, p.wingTip);
+                } else {
+                    // POSE E: Deep Power Downstroke (reaching below the chest)
+                    px(-1, 1 + liftY, 5, 3, p.wingShoulder);
+                    px(-3, 4 + liftY, 5, 3, p.wingCovert);
+                    px(-5, 7 + liftY, 5, 2, p.wingGreen);
+                    px(-7, 9 + liftY, 5, 2, p.wingPrimary);
+                    px(-9, 11 + liftY, 3, 2, p.wingTip);
+                }
             }
         }
-
-        // 3. Streamlined Aerodynamic Body & Breast
-        px(-5, -1, 10, 2, p.body);
-        px(-6, 0, 12, 2, p.body);
-        px(-5, 2, 10, 1, p.belly);
-        px(-3, 3, 6, 1, p.shade);
-        // Tucked feet hint under tail coverts (never dangling)
-        px(-4, 3, 2, 1, '#334155');
-
-        // 4. Sculpted Neck, Crown & Rounded Macaw Head
-        px(3, -3, 5, 3, p.body);
-        px(4, -5, 5, 2, p.body);
-        px(3, -4, 2, 1, p.shade); // Nape contour
-
-        // Signature Bare Cream/Yellow Macaw Facial Patch & Crisp Eye
-        px(6, -4, 3, 3, p.face);
-        px(7, -4, 1, 1, p.eye);
-
-        // Curved Hooked Parrot Bill (Upper ivory/slate hook + dark lower mandible)
-        px(9, -4, 3, 2, p.beakUpper);
-        px(11, -3, 1, 2, p.beakUpper); // Curved hook tip pointing down
-        px(9, -2, 2, 1, p.beakLower);  // Lower jaw
-
-        // 5. Articulated Forewing (4 crisp pixel-art states: High Upstroke, Mid-Up, Glide, Deep Downstroke)
-        if (isGliding || (wingSin >= -0.25 && wingSin <= 0.35)) {
-            // STATE A: Outstretched Swept Glide Wing
-            px(-4, -3, 7, 2, p.wingCovert);
-            px(-7, -4, 6, 2, p.wingMid);
-            px(-10, -5, 5, 2, p.wingTip);
-        } else if (wingSin > 0.35) {
-            // STATE B: High Upstroke (swept dramatically above back, showing tri-color feathers)
-            px(-2, -4, 5, 3, p.wingCovert);
-            px(-4, -7, 6, 3, p.wingMid);
-            px(-7, -9, 5, 2, p.wingTip);
-            px(-8, -10, 3, 1, p.wingTip);
-        } else {
-            // STATE C: Powerful Downstroke (sweeps down across and below the belly)
-            px(-1, 0, 5, 2, p.wingCovert);
-            px(-3, 2, 5, 3, p.wingMid);
-            px(-5, 5, 4, 2, p.wingTip);
-            px(-6, 6, 2, 1, p.wingTip);
-        }
-    }
-}
