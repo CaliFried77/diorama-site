@@ -2,6 +2,11 @@ import { stimuli, canvas, PIXEL_SCALE, HABITATS, currentHabitatIdx, pw, ph, fram
 
 /* CREATURES — Living Pixel Diorama
    Native ES module. Cross-file dependencies are declared with imports and exports. */
+// ============================================================================
+// BÖLÜM BAŞI: YEM/UYARAN HEDEFLEME VE TÜRLERİN ORTAK ETKİLEŞİMİ
+// Canlılar burada sahneye bırakılan yemleri bulur; tıklama olayları uyaran üretir.
+// ============================================================================
+
 function findAvailableStimulus(creature, type, maxDist = 145) {
     if (creature.eatCooldown > 0) return null;
     let best = null;
@@ -163,6 +168,11 @@ canvas.addEventListener('pointerdown', (e) => {
    baskets (corbiculae) after sipping nectar, returns to the Grand Right Apiary
    Sanctuary to deposit pollen, and performs figure-8 hover dances!
    ============================================================================ */
+// ============================================================================
+// BÖLÜM SONU: YEM/UYARAN ETKİLEŞİMİ
+// BÖLÜM BAŞI: ARI SINIFI
+// ============================================================================
+
 export class PixelBee {
     constructor() {
         this.x = 24 + Math.random() * (pw - 48);
@@ -384,6 +394,11 @@ export class PixelBee {
 /* ============================================================================
    CREATURE 6: MAJESTIC ARTICULATED NISHIKIGOI (Japon Zen Koi Balığı)
    ============================================================================ */
+// ============================================================================
+// BÖLÜM SONU: ARI SINIFI
+// BÖLÜM BAŞI: KOİ BALIĞI SINIFI
+// ============================================================================
+
 export class PixelKoi {
     constructor() {
         this.x = 28 + Math.random() * (pw - 56);
@@ -604,6 +619,11 @@ export class PixelKoi {
 /* ============================================================================
    CREATURE 2: SHOW-QUALITY HALFMOON & DUMBO BETTA SPLENDENS
    ============================================================================ */
+// ============================================================================
+// BÖLÜM SONU: KOİ BALIĞI SINIFI
+// BÖLÜM BAŞI: BETTA BALIĞI SINIFI
+// ============================================================================
+
 export class PixelBetta {
     constructor() {
         this.x = 28 + Math.random() * (pw - 56);
@@ -924,6 +944,11 @@ const DRAGONFLY_SPECIES = Object.freeze([
     }
 ]);
 
+// ============================================================================
+// BÖLÜM SONU: BETTA BALIĞI SINIFI
+// BÖLÜM BAŞI: YUSUFÇUK SINIFI
+// ============================================================================
+
 export class PixelDragonfly {
     constructor() {
         this.x = 30 + Math.random() * (pw - 60);
@@ -1102,6 +1127,11 @@ export class PixelDragonfly {
 /* ============================================================================
    CREATURE 4: TRUE 4-LOBED ORNATE SWALLOWTAIL & MORPHO BUTTERFLIES
    ============================================================================ */
+// ============================================================================
+// BÖLÜM SONU: YUSUFÇUK SINIFI
+// BÖLÜM BAŞI: KELEBEK SINIFI
+// ============================================================================
+
 export class PixelButterfly {
     constructor() {
         this.x = Math.random() * pw;
@@ -1272,6 +1302,11 @@ export class PixelButterfly {
 /* ============================================================================
    CREATURE 5: ARTISTIC 360° BIOLUMINESCENT JELLYFISH
    ============================================================================ */
+// ============================================================================
+// BÖLÜM SONU: KELEBEK SINIFI
+// BÖLÜM BAŞI: DENİZANASI SINIFI
+// ============================================================================
+
 export class PixelJellyfish {
     constructor() {
         this.x = 24 + Math.random() * (pw - 48);
@@ -1538,6 +1573,11 @@ const PARROT_PALETTES = Object.freeze([
         rgb: [129, 140, 248]
     },
 ]);
+
+// ============================================================================
+// BÖLÜM SONU: DENİZANASI SINIFI
+// BÖLÜM BAŞI: PAPAĞAN SINIFI
+// ============================================================================
 
 export class PixelParrot {
     constructor() {
@@ -1905,6 +1945,11 @@ export class PixelParrot {
    their fluffy tails while sitting, perform parabolic physics jumps between
    platforms, and pounce into the snow for Golden Cloudberries!
    ============================================================================ */
+// ============================================================================
+// BÖLÜM SONU: PAPAĞAN SINIFI
+// BÖLÜM BAŞI: KUTUP PLATFORMU VE TİLKİ SAHNESİ
+// ============================================================================
+
 export function getArcticLedges() {
     return [
         // 0: Main Valley Snow Floor (Center & Shores)
@@ -1939,6 +1984,11 @@ const LEDGE_LINKS = Object.freeze({
 });
 
 let arcticSpawnCounter = 0;
+
+// ============================================================================
+// BÖLÜM SONU: KUTUP PLATFORMU VE TİLKİ SAHNESİ
+// BÖLÜM BAŞI: KUTUP TİLKİSİ VE KAR BAYKUŞU SINIFI
+// ============================================================================
 
 export class PixelArcticFox {
     constructor() {
@@ -2295,3 +2345,7 @@ export class PixelArcticFox {
         px(9, hy + 1, 1, 1, p.nose);    // Black button nose
     }
 }
+
+// ============================================================================
+// BÖLÜM SONU: KUTUP TİLKİSİ VE KAR BAYKUŞU SINIFI
+// ============================================================================
