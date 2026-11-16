@@ -810,6 +810,7 @@ export function buildStaticEnvironmentLayer(hab) {
         const bridgeRightShore = shoreY(bridgeEnd);
         const bridgeLeftY = bridgeLeftShore + 4;
         const bridgeRightY = bridgeRightShore + 4;
+        const bridgeBaseY = Math.round((bridgeLeftY + bridgeRightY) * 0.5);
         const bridgeRise = Math.max(8, Math.round(ph * 0.035));
         const bridgeDark = isLightMode ? '#7f1d1d' : '#57191e';
         const bridgeMid = isLightMode ? '#b91c1c' : '#9f3030';
