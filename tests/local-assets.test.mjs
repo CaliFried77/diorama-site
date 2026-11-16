@@ -204,14 +204,14 @@ test('habitat input is separated from creature classes and Arctic food uses the 
 test('service worker precaches local shell assets and leaves external live services to the network', () => {
   assert.match(main, /serviceWorker\.register/);
   assert.match(sw, /\!url\.origin === self\.location\.origin|url\.origin !== self\.location\.origin/);
-  for (const asset of ['./index.html', './css/utilities.css', './css/widgets.css', './js/main.js', './js/11-calendar.js', './js/focus-timer-state.js', './js/10-glass-renderer.js', './manifest.webmanifest', './icons/diorama-192.png']) {
+  for (const asset of ['./index.html', './css/utilities.css', './css/widgets.css', './js/main.js', './js/habitat-interactions.js', './js/arctic-geometry.js', './js/11-calendar.js', './js/focus-timer-state.js', './js/10-glass-renderer.js', './manifest.webmanifest', './icons/diorama-192.png']) {
     assert.ok(sw.includes(asset), `Offline shell missing ${asset}`);
   }
 });
 
 
 test('production HTML preloads every native module and exposes app metadata', () => {
-  for (const module of ['01-core-ui.js', '02-news.js', '03-weather.js', '04-focus-audio.js', '07-habitat-state.js', '11-calendar.js', 'scene-math.js', 'main.js']) {
+  for (const module of ['01-core-ui.js', '02-news.js', '03-weather.js', '04-focus-audio.js', '07-habitat-state.js', '11-calendar.js', 'habitat-interactions.js', 'arctic-geometry.js', 'scene-math.js', 'main.js']) {
     assert.ok(builtHtml.includes(`rel=\"modulepreload\" href=\"./js/${module}\"`), `Missing modulepreload for ${module}`);
   }
   assert.match(builtHtml, /name=\"description\"/);
