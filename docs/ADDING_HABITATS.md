@@ -32,7 +32,7 @@ Mevcut profiller:
 | `creatureProfile` | `bee`, `betta`, `dragonfly`, `butterfly`, `jellyfish`, `koi`, `parrot`, `arctic_fox` |
 | `interactionProfile` | `nectar`, `bloodworm`, `midge`, `blossom`, `plankton`, `pellet`, `fruit`, `cloudberry` |
 
-Tamamen yeni bir ekosistem veya tür tasarlanacaksa mevcut profil kodu kopyalanarak genişletilmemeli; zemin eğrileri için `js/habitat-geometry.js`, statik arka plan kompozisyonu için `js/habitat-backgrounds.js`, habitat başlangıcı ve hareketli flora/efektler için `js/09-scenery.js`, yeni canlı sınıfı için `js/08-creatures.js` ve hava/animasyon entegrasyonu için ilgili modüller güncellenmelidir. Sonrasında veri yedekleme doğrulaması `HABITAT_IDS` üzerinden katalogla otomatik eşleşir.
+Tamamen yeni bir ekosistem veya tür tasarlanacaksa mevcut profil kodu kopyalanarak genişletilmemeli; habitat geçişinin başlangıç akışı için `js/habitat-initializer.js`, bitki türü ve başlangıç koordinatları için `js/habitat-flora-generator.js`, zemin eğrileri için `js/habitat-geometry.js`, statik arka plan için `js/habitat-backgrounds.js`, bitkilerin animasyonu için `js/habitat-flora-renderer.js`, sahne çizim sırası ve hava efektleri için `js/09-scenery.js` ve yeni canlı sınıfı için `js/08-creatures.js` güncellenmelidir. Sonrasında veri yedekleme doğrulaması `HABITAT_IDS` üzerinden katalogla otomatik eşleşir.
 
 Yeni `arctic-tundra` profili `PixelArcticFox` ile kutup tilkileri ve karlı platformları kullanır. `cloudberry` etkileşimi sahneye düşen ve platformlara yerleşen altın kutup böğürtlenleri bırakır; tilkiler bu yemleri takip eder. Yeni profil eklerken katalogdaki izin listelerini ve ilgili sahne/canlı/yem uygulamalarını aynı değişiklikte güncelle.
 
