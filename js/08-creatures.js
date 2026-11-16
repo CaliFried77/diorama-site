@@ -104,7 +104,7 @@ canvas.addEventListener('pointerdown', (e) => {
                 claimedBy: null
             });
         }
-} else if (interactionProfile === 'fruit') {
+    } else if (interactionProfile === 'fruit') {
         // Spawn a trio of detailed pixel-art tropical fruits: Mango, Pink Guava & Golden Banana Cluster
         const kinds = ['mango', 'guava', 'banana'];
         for (let i = 0; i < 3; i++) {
@@ -125,12 +125,6 @@ canvas.addEventListener('pointerdown', (e) => {
     }
 });
 
-/* ============================================================================
-   CREATURE 1: ARTISAN HONEYBEE, ROYAL BUMBLEBEE & VIOLET CARPENTER BEE
-   Multi-state foraging AI: Visits all meadow wildflowers, fills hind-leg pollen
-   baskets (corbiculae) after sipping nectar, returns to the hanging Skep Hive or
-   Right Apiary Box to deposit pollen, and performs figure-8 hover dances!
-   ============================================================================ */
 /* ============================================================================
    CREATURE 1: ARTISAN HONEYBEE, ROYAL BUMBLEBEE & VIOLET CARPENTER BEE
    Multi-state foraging AI: Visits all meadow wildflowers, fills hind-leg pollen
@@ -207,7 +201,6 @@ export class PixelBee {
             this.vx += (dx / dist) * 0.045 * frameScale;
             this.vy += (dy / dist) * 0.045 * frameScale;
         } else if (this.eatCooldown === 0 && this.hasPollen && frameChance(0.008)) {
-            // Fly back to the Grand Right-Side Apiary Sanctuary!
             const apiaryX = Math.round(pw * 0.84);
             const hiveTargets = [
                 { x: apiaryX - 2, y: ph - 22 },
@@ -356,6 +349,9 @@ export class PixelBee {
     }
 }
 
+/* ============================================================================
+   CREATURE 6: MAJESTIC ARTICULATED NISHIKIGOI (Japon Zen Koi Balığı)
+   ============================================================================ */
 export class PixelKoi {
     constructor() {
         this.x = 28 + Math.random() * (pw - 56);
@@ -368,15 +364,10 @@ export class PixelKoi {
         this.biteRipple = 0;
 
         const varieties = [
-            // 1. Kohaku (Saf Beyaz Gövde & Parlak Vermilyon Sırt Desenleri)
             { kind: 'kohaku', base: '#f8fafc', shade: '#cbd5e1', patch1: '#ef4444', patch2: '#dc2626', fin: 'rgba(254, 226, 226, 0.85)', rgb: [248, 113, 113] },
-            // 2. Tancho (Saf Kar Beyazı Gövde & Başta Tek Kızıl Güneş Beneği)
             { kind: 'tancho', base: '#ffffff', shade: '#e2e8f0', patch1: '#dc2626', patch2: '#f8fafc', fin: 'rgba(248, 250, 252, 0.88)', rgb: [239, 68, 68] },
-            // 3. Showa Sanshoku (Beyaz, Kızıl Kırmızı & Sumi Mürekkep Siyahı)
             { kind: 'showa', base: '#f1f5f9', shade: '#cbd5e1', patch1: '#e11d48', patch2: '#0f172a', fin: 'rgba(241, 245, 249, 0.85)', rgb: [251, 113, 133] },
-            // 4. Yamabuki Ogon (Parlak Metalik Altın & Kehribar Pullar)
             { kind: 'ogon', base: '#fef08a', shade: '#eab308', patch1: '#f59e0b', patch2: '#ca8a04', fin: 'rgba(254, 249, 195, 0.85)', rgb: [250, 204, 21] },
-            // 5. Asagi (İndigo Mavisi Sırt Pulları & Kızıl Yanak/Yüzgeçler)
             { kind: 'asagi', base: '#93c5fd', shade: '#3b82f6', patch1: '#1d4ed8', patch2: '#ef4444', fin: 'rgba(254, 202, 202, 0.85)', rgb: [96, 165, 250] }
         ];
         this.pal = varieties[Math.floor(Math.random() * varieties.length)];
@@ -405,7 +396,6 @@ export class PixelKoi {
         if (this.eatCooldown > 0) this.eatCooldown = Math.max(0, this.eatCooldown - frameScale);
         if (this.biteRipple > 0) this.biteRipple = Math.max(0, this.biteRipple - 0.35 * frameScale);
 
-        // Seek user-dropped pond pellets across the entire pond
         const pellet = findAvailableStimulus(this, 'koi_pellet', Math.max(360, pw * 0.85));
         if (pellet) {
             const dx = pellet.x - this.x;
@@ -415,14 +405,13 @@ export class PixelKoi {
             if (dist < 8) {
                 pellet.life = 0;
                 this.eatCooldown = 85;
-                this.biteRipple = 9; // Trigger surface gulp ring!
+                this.biteRipple = 9;
                 this.targetAngle += (Math.random() - 0.5) * 1.4;
             }
         } else if (frameChance(0.018)) {
             this.targetAngle += (Math.random() - 0.5) * 0.95;
         }
 
-        // Respect Zen pond shoreline banks (top, bottom, and right lantern island)
         if (this.y < 32) this.targetAngle = Math.cos(this.angle) >= 0 ? 0.45 : Math.PI - 0.45;
         if (this.y > ph - 24) this.targetAngle = Math.cos(this.angle) >= 0 ? -0.45 : Math.PI + 0.45;
         if (this.x > pw - 68 && this.y > ph - 42) {
@@ -469,14 +458,12 @@ export class PixelKoi {
         const perpX = -sin;
         const perpY = cos;
 
-        // 1. Deep Underwater Shadow beneath the Koi (adds 3D suspension over pond pebbles)
         for (let i = 1; i < 14; i++) {
             const pt = this.spine[i];
             if (Math.abs(pt.x - this.x) > 45) continue;
             pRect(pt.x + 2, pt.y + 5, 4, 3, 'rgba(2, 10, 18, 0.30)');
         }
 
-        // 2. Sculpted Teardrop Pectoral Fan Fins (node 3) & Ventral Fins (node 7)
         const pecNode = this.spine[3];
         if (Math.abs(pecNode.x - this.x) < 40) {
             const finStroke = Math.sin(this.phase * 0.85) * 0.24;
@@ -502,7 +489,6 @@ export class PixelKoi {
             });
         }
 
-        // 3. Flowing Bifurcated Tail Veil (nodes 13..17)
         for (let i = 13; i < this.spineLen; i++) {
             const pt = this.spine[i];
             const prev = this.spine[i - 1];
@@ -512,12 +498,11 @@ export class PixelKoi {
             const tPerpY = Math.cos(segAng);
             const spread = (i - 12) * 1.45;
             for (let w = -Math.ceil(spread); w <= Math.ceil(spread); w++) {
-                if (i >= 16 && Math.abs(w) <= 1) continue; // Forked notch
+                if (i >= 16 && Math.abs(w) <= 1) continue;
                 pRect(pt.x + tPerpX * w, pt.y + tPerpY * w, 1, 1, this.pal.fin);
             }
         }
 
-        // 4. Plump Sculpted Koi Body Segments (drawn from tail to head)
         const bodyRadii = [2.9, 3.9, 4.6, 4.9, 4.8, 4.5, 4.1, 3.6, 3.1, 2.6, 2.2, 1.8, 1.4, 1.1];
         for (let i = 13; i >= 0; i--) {
             const pt = this.spine[i];
@@ -533,14 +518,11 @@ export class PixelKoi {
                         let col = isEdge ? this.pal.shade : this.pal.base;
 
                         if (this.pal.kind === 'tancho') {
-                            // Pure white body; iconic crimson circle only on the crown (segments 0..1)
                             if (i <= 1 && d2 <= 3.2) col = this.pal.patch1;
                         } else if (this.pal.kind === 'asagi') {
-                            // Reticulated blue net pattern on back, red flanks
                             if (isEdge && i >= 2 && i <= 9) col = this.pal.patch2;
                             else if ((dx + dy + i) % 2 === 0 && d2 < rad * rad * 0.6) col = this.pal.patch1;
                         } else {
-                            // Kohaku / Showa / Ogon saddle markings
                             if ((i >= 1 && i <= 4 && dx >= -2) || (i >= 7 && i <= 10 && dy <= 1)) {
                                 col = this.pal.patch1;
                             } else if ((i + this.seed) % 5 === 0 && Math.abs(dx) <= 1) {
@@ -553,7 +535,6 @@ export class PixelKoi {
             }
         }
 
-        // 5. Spine-Aligned Dorsal Ridge Fin along segments 4..10
         for (let i = 4; i <= 10; i++) {
             const pt = this.spine[i];
             const prev = this.spine[i - 1];
@@ -565,7 +546,6 @@ export class PixelKoi {
             pRect(pt.x + dPerpX * sway, pt.y + dPerpY * sway, 2, 1, 'rgba(255, 255, 255, 0.88)');
         }
 
-        // 6. Rounded Snout, Eyes & Delicate Sensory Barbels (Whiskers)
         const head = this.spine[0];
         const snoutX = head.x + cos * 3.3;
         const snoutY = head.y + sin * 3.3;
@@ -576,12 +556,10 @@ export class PixelKoi {
         pRect(eyeX + perpX * 2.8, eyeY + perpY * 2.8, 1, 1, '#0f172a');
         pRect(eyeX - perpX * 2.8, eyeY - perpY * 2.8, 1, 1, '#0f172a');
 
-        // Two sensory Koi barbels curving forward from the upper lip
         const barbCol = this.pal.kind === 'tancho' ? '#fda4af' : this.pal.patch1;
         pRect(snoutX + cos * 1.3 + perpX * 2.1, snoutY + sin * 1.3 + perpY * 2.1, 1, 1, barbCol);
         pRect(snoutX + cos * 1.3 - perpX * 2.1, snoutY + sin * 1.3 - perpY * 2.1, 1, 1, barbCol);
 
-        // 7. Expanding Surface Ring when the Koi gulps a pellet
         if (this.biteRipple > 0) {
             const r = (10 - this.biteRipple) * 1.4;
             for (let a = 0; a < Math.PI * 2; a += 0.6) {
@@ -590,25 +568,21 @@ export class PixelKoi {
         }
     }
 }
+
 /* ============================================================================
    CREATURE 2: SHOW-QUALITY HALFMOON & DUMBO BETTA SPLENDENS
-   Realistic Betta kinematics: Mid-to-bottom aquascape preference, burst-glide-hover
-   rhythm, horizontal turns without upward drift, fin-flaring displays, and quick
-   labyrinth surface air-sips followed by immediate dives!
    ============================================================================ */
 export class PixelBetta {
     constructor() {
         this.x = 28 + Math.random() * (pw - 56);
-        // Spawn naturally in the middle-to-lower aquascape zone
         this.y = ph * 0.42 + Math.random() * (ph * 0.42);
         this.dir = Math.random() < 0.5 ? 1 : -1;
-        this.pitch = 0; // Vertical tilt in radians (-0.45 up to +0.45 down)
+        this.pitch = 0;
         this.angle = this.dir === 1 ? 0 : Math.PI;
         this.speed = 0.24 + Math.random() * 0.11;
         this.curSpeed = this.speed;
         this.phase = Math.random() * Math.PI * 2;
 
-        // Behavioral States: 'cruise' | 'hover' | 'surface_sip'
         this.state = 'cruise';
         this.stateTimer = 90 + Math.random() * 140;
         this.homeY = ph * 0.44 + Math.random() * (ph * 0.38);
@@ -617,31 +591,26 @@ export class PixelBetta {
         this.surfaceRipple = 0;
 
         const themes = [
-            // 1. Royal Sapphire Butterfly Halfmoon
             {
                 kind: 'butterfly', bodyDark: '#1e3a8a', bodyMid: '#2563eb', bodyHi: '#60a5fa',
                 finBase: '#1d4ed8', finMid: '#4f46e5', finRay: '#93c5fd', finRim: '#f8fafc',
                 pec: 'rgba(186, 230, 253, 0.75)', rgb: [56, 189, 248]
             },
-            // 2. Red Dragon Scale Halfmoon
             {
                 kind: 'dragon', bodyDark: '#991b1b', bodyMid: '#e2e8f0', bodyHi: '#ffffff',
                 finBase: '#991b1b', finMid: '#e11d48', finRay: '#fb7185', finRim: '#fecdd3',
                 pec: 'rgba(254, 205, 211, 0.75)', rgb: [251, 113, 133]
             },
-            // 3. Mustard Gas / Paradise Betta
             {
                 kind: 'mustard', bodyDark: '#115e59', bodyMid: '#0d9488', bodyHi: '#5eead4',
                 finBase: '#0f766e', finMid: '#eab308', finRay: '#fde047', finRim: '#fef08a',
                 pec: 'rgba(254, 240, 138, 0.75)', rgb: [45, 212, 191]
             },
-            // 4. Koi Galaxy Nemo
             {
                 kind: 'koi', bodyDark: '#c2410c', bodyMid: '#fffbeb', bodyHi: '#f97316',
                 finBase: '#e11d48', finMid: '#f59e0b', finRay: '#38bdf8', finRim: '#e0f2fe',
                 pec: 'rgba(254, 215, 170, 0.78)', rgb: [251, 146, 60]
             },
-            // 5. Black Orchid & Lavender Dumbo
             {
                 kind: 'orchid', bodyDark: '#090d16', bodyMid: '#312e81', bodyHi: '#818cf8',
                 finBase: '#4c1d95', finMid: '#9333ea', finRay: '#e879f9', finRim: '#f5d0fe',
@@ -673,7 +642,6 @@ export class PixelBetta {
         let targetPitch = 0;
         let targetSpd = this.speed;
 
-        // 1. PRIORITY: Hunt user-dropped crimson bloodworms anywhere in the aquarium
         const worm = findAvailableStimulus(this, 'bloodworm', Math.max(380, pw * 0.85));
         if (worm) {
             this.state = 'cruise';
@@ -692,32 +660,26 @@ export class PixelBetta {
                 this.flareTimer = 45;
                 this.state = 'hover';
                 this.stateTimer = 40;
-                // Settle back into mid-lower tank after eating
                 this.homeY = Math.max(ph * 0.42, Math.min(ph - 30, this.y + 18));
             }
         } else if (this.state === 'surface_sip') {
-            // 2. Quick Labyrinth Organ Surface Breath -> Then immediately dive back down!
             this.stateTimer -= frameScale;
-            targetPitch = -0.46; // Climb toward water surface
+            targetPitch = -0.46;
             targetSpd = this.speed * 1.35;
 
             if (this.y <= 14 || this.stateTimer <= 0) {
-                if (this.y <= 16) this.surfaceRipple = 8; // Tiny air-sip surface ring
+                if (this.y <= 16) this.surfaceRipple = 8;
                 this.state = 'cruise';
                 this.stateTimer = 110 + Math.random() * 120;
-                // Immediately assign a deep homeY in the lower-mid plants so it dives down!
                 this.homeY = ph * 0.48 + Math.random() * (ph * 0.36);
                 this.pitch = 0.38;
             }
         } else if (this.state === 'hover') {
-            // 3. Contemplative Betta Hover (pausing near driftwood/plants, fluttering pectoral fins & flaring)
             this.stateTimer -= frameScale;
             targetSpd = 0.03;
-            // Gentle natural fin-weight sink if hovering too high
             targetPitch = this.y < ph * 0.38 ? 0.16 : Math.sin(this.phase * 0.5) * 0.06;
 
             if (this.stateTimer <= 0) {
-                // Occasionally take a quick labyrinth breath at the surface (only ~5% chance)
                 if (Math.random() < 0.05 && this.y > ph * 0.45) {
                     this.state = 'surface_sip';
                     this.stateTimer = 95;
@@ -725,19 +687,15 @@ export class PixelBetta {
                     this.state = 'cruise';
                     this.stateTimer = 100 + Math.random() * 160;
                     if (Math.random() < 0.45) this.dir *= -1;
-                    // Always pick a new target depth in the mid-to-bottom zone (40%..84% of depth)
                     this.homeY = ph * 0.40 + Math.random() * (ph * 0.44);
                 }
             }
         } else {
-            // 4. Normal Regal Cruise in Mid-to-Lower Aquascape
             this.stateTimer -= frameScale;
             const dyHome = this.homeY - this.y;
             targetPitch = Math.max(-0.34, Math.min(0.38, dyHome * 0.014 + Math.sin(this.phase * 0.4) * 0.06));
-            // Natural burst-and-glide swimming cadence
             targetSpd = this.speed * (0.85 + 0.30 * Math.sin(this.phase * 0.75));
 
-            // Turn inward softly before hitting aquarium glass edges
             if (this.x < 34 && this.dir === -1) {
                 this.dir = 1;
                 this.flareTimer = 35;
@@ -753,19 +711,17 @@ export class PixelBetta {
             }
         }
 
-        // Enforce floor & ceiling safety bounds (prevents any upward trapping!)
         if (this.state !== 'surface_sip' && !worm && this.y < ph * 0.30) {
-            targetPitch = Math.max(targetPitch, 0.28); // Push gently down into the aquascape
+            targetPitch = Math.max(targetPitch, 0.28);
         }
         if (this.y > ph - 26) {
-            targetPitch = Math.min(targetPitch, -0.28); // Keep above substrate pebbles
+            targetPitch = Math.min(targetPitch, -0.28);
         }
 
         this.pitch += (targetPitch - this.pitch) * frameSmoothing(0.08);
         this.curSpeed += (targetSpd - this.curSpeed) * frameSmoothing(0.09);
         this.phase += (this.state === 'hover' ? 0.055 : 0.082) * frameScale;
 
-        // Compute true rendering angle without ever rotating through vertical -PI/2!
         this.angle = this.dir === 1 ? this.pitch : (Math.PI - this.pitch);
 
         this.x += Math.cos(this.angle) * this.curSpeed * frameScale;
@@ -788,7 +744,6 @@ export class PixelBetta {
         this.history[0].x = tailBaseX;
         this.history[0].y = tailBaseY;
 
-        // Veil tail physics: flows behind the fish when cruising, drapes softly downward when hovering
         const hoverDrape = this.state === 'hover' ? 0.09 : 0.02;
         for (let i = 1; i < this.history.length; i++) {
             const prev = this.history[i - 1];
@@ -809,14 +764,12 @@ export class PixelBetta {
         const upSign = this.dir;
         const flareBonus = this.flareTimer > 0 ? 1.18 : 1.0;
 
-        // 0. Tiny Surface Ripple when taking a labyrinth breath at the top
         if (this.surfaceRipple > 0) {
             const r = Math.round((8 - this.surfaceRipple) * 1.6);
             pRect(this.x - r, 3, 2, 1, 'rgba(224, 242, 254, 0.55)');
             pRect(this.x + r, 3, 2, 1, 'rgba(224, 242, 254, 0.55)');
         }
 
-        // 1. 180° Halfmoon / Rosetail Fluted Caudal Veil
         for (let i = this.history.length - 1; i >= 0; i--) {
             const pt = this.history[i];
             if (Math.abs(pt.x - this.x) > 42 || Math.abs(pt.y - this.y) > 42) continue;
@@ -844,7 +797,6 @@ export class PixelBetta {
             }
         }
 
-        // 2. Sweeping Dorsal Sail Fin & Broad Trapezoidal Anal Veil
         for (let i = 0; i < 12; i++) {
             const pt = this.history[i];
             if (Math.abs(pt.x - this.x) > 42) continue;
@@ -860,7 +812,6 @@ export class PixelBetta {
             }
         }
 
-        // 3. Long Trailing Dual Ventral "Necktie" Fins beneath the throat
         const venBaseX = this.x + cos * 1.2 + perpX * 2.2 * upSign;
         const venBaseY = this.y + sin * 1.2 + perpY * 2.2 * upSign;
         for (let v = 0; v < 6; v++) {
@@ -871,7 +822,6 @@ export class PixelBetta {
             pRect(vx - cos * 1.2, vy - sin * 1.2, 1, 1, v >= 4 ? this.pal.finRim : this.pal.finBase);
         }
 
-        // 4. Sculpted Arched Betta Torso
         for (let b = -5; b <= 6; b++) {
             const halfThick = b > 3 ? (6 - b) * 0.72 : (b < -2 ? (6 + b) * 0.68 : 2.5);
             for (let w = -Math.floor(halfThick); w <= Math.floor(halfThick); w++) {
@@ -893,14 +843,12 @@ export class PixelBetta {
             }
         }
 
-        // 5. Fluttering Translucent "Dumbo Ear" Pectoral Fan Fin
         const pecFlutter = Math.sin(this.phase * (this.state === 'hover' ? 3.2 : 2.2)) * 1.4;
         const pecX = this.x + cos * (1.5 + pecFlutter * 0.35) + perpX * 1.2 * upSign;
         const pecY = this.y + sin * (1.5 + pecFlutter * 0.35) + perpY * 1.2 * upSign;
         pRect(pecX - 1, pecY - 1, 3, 3, this.pal.pec);
         pRect(pecX, pecY, 2, 2, '#ffffff');
 
-        // 6. Upturned Labyrinth Mouth, Flaring Gill Beard & Jewel Eye
         const eyeX = this.x + cos * 4.5 - perpX * 0.6 * upSign;
         const eyeY = this.y + sin * 4.5 - perpY * 0.6 * upSign;
         pRect(eyeX, eyeY, 1, 1, '#0f172a');
@@ -913,140 +861,214 @@ export class PixelBetta {
         }
     }
 }
+
 /* ============================================================================
-   CREATURE 3: SERENE EMPEROR DRAGONFLY
+   CREATURE 3: ARTISTIC EMPEROR DRAGONFLY & DAMSELFLY FLOCK
    ============================================================================ */
+const DRAGONFLY_SPECIES = Object.freeze([
+    {
+        thorax: '#22c55e', thoraxHi: '#86efac', body: '#38bdf8', seg: '#0f172a',
+        eye: '#10b981', eyeHi: '#d1fae5',
+        wing: 'rgba(224, 242, 254, 0.72)', vein: 'rgba(125, 211, 252, 0.9)', stigma: '#0369a1',
+        rgb: [56, 189, 248]
+    },
+    {
+        thorax: '#dc2626', thoraxHi: '#fca5a5', body: '#ef4444', seg: '#7f1d1d',
+        eye: '#f97316', eyeHi: '#fef08a',
+        wing: 'rgba(254, 243, 199, 0.68)', vein: 'rgba(253, 186, 116, 0.88)', stigma: '#b91c1c',
+        rgb: [248, 113, 113]
+    },
+    {
+        thorax: '#0d9488', thoraxHi: '#5eead4', body: '#10b981', seg: '#064e3b',
+        eye: '#34d399', eyeHi: '#ecfdf5',
+        wing: 'rgba(209, 250, 229, 0.70)', vein: 'rgba(110, 231, 183, 0.9)', stigma: '#047857',
+        rgb: [52, 211, 153]
+    },
+    {
+        thorax: '#eab308', thoraxHi: '#fef08a', body: '#facc15', seg: '#18181b',
+        eye: '#22c55e', eyeHi: '#dcfce7',
+        wing: 'rgba(254, 249, 195, 0.68)', vein: 'rgba(253, 224, 71, 0.85)', stigma: '#713f12',
+        rgb: [250, 204, 21]
+    }
+]);
+
 export class PixelDragonfly {
     constructor() {
-        this.x = Math.random() * pw;
-        this.y = 25 + Math.random() * (ph - 70);
-        this.targetX = 35 + Math.random() * (pw - 70);
-        this.targetY = 25 + Math.random() * (ph - 75);
-        this.angle = Math.atan2(this.targetY - this.y, this.targetX - this.x);
-        this.hoverTimer = 0;
-        this.perched = false;
+        this.x = 30 + Math.random() * (pw - 60);
+        this.y = 28 + Math.random() * (ph - 72);
+        this.dir = Math.random() < 0.5 ? -1 : 1;
+        this.vx = this.dir * 0.45;
+        this.vy = 0;
         this.phase = Math.random() * Math.PI * 2;
         this.eatCooldown = 0;
 
-        const palettes = [
-            { body: '#10b981', seg: '#047857', eye: '#38bdf8', wing: 'rgba(167, 243, 208, 0.75)', tip: '#6ee7b7', rgb: [52, 211, 153] },
-            { body: '#38bdf8', seg: '#0369a1', eye: '#fde047', wing: 'rgba(186, 230, 253, 0.75)', tip: '#7dd3fc', rgb: [56, 189, 248] }
-        ];
-        this.pal = palettes[Math.floor(Math.random() * palettes.length)];
+        this.pal = DRAGONFLY_SPECIES[Math.floor(Math.random() * DRAGONFLY_SPECIES.length)];
         this.rgb = this.pal.rgb;
+
+        this.perchedReed = null;
+        this.perched = false;
+        this.hoverTimer = 15 + Math.floor(Math.random() * 35);
+        this.targetX = this.x + this.dir * 60;
+        this.targetY = this.y;
     }
 
     pickNextDestination() {
-        const reeds = flora.filter(f => f.type === 'reed');
-        if (reeds.length > 0 && Math.random() < 0.25) {
+        const reeds = flora.filter(f => f.type === 'reed' && f.h > 42);
+        if (reeds.length > 0 && Math.random() < 0.36) {
             const r = reeds[Math.floor(Math.random() * reeds.length)];
-            this.targetX = r.x;
-            this.targetY = ph - r.h;
-            this.perched = true;
-            this.hoverTimer = 55 + Math.floor(Math.random() * 55);
-        } else {
+            this.perchedReed = r;
             this.perched = false;
-            this.targetX = 30 + Math.random() * (pw - 60);
-            this.targetY = 24 + Math.random() * (ph - 70);
-            this.hoverTimer = 22 + Math.floor(Math.random() * 35);
+            this.targetX = r.tipX || r.x;
+            this.targetY = (r.tipY || (ph - r.h)) - 2;
+            this.hoverTimer = 85 + Math.floor(Math.random() * 95);
+        } else {
+            this.perchedReed = null;
+            this.perched = false;
+            this.targetX = 28 + Math.random() * (pw - 56);
+            this.targetY = 26 + Math.random() * (ph - 52);
+            this.hoverTimer = 28 + Math.floor(Math.random() * 52);
         }
     }
 
     update(t) {
-        this.phase += (this.perched ? 0.04 : 0.30) * frameScale;
         if (this.eatCooldown > 0) this.eatCooldown = Math.max(0, this.eatCooldown - frameScale);
 
-        const midge = findAvailableStimulus(this, 'midge', 150);
+        const midge = findAvailableStimulus(this, 'midge', Math.max(320, pw * 0.8));
         if (midge) {
             this.perched = false;
+            this.perchedReed = null;
             this.targetX = midge.x;
             this.targetY = midge.y;
-            if (Math.hypot(this.targetX - this.x, this.targetY - this.y) < 6) {
+            const distM = Math.hypot(this.targetX - this.x, this.targetY - this.y);
+            if (distM < 7) {
                 midge.life = 0;
-                this.eatCooldown = 85;
-                this.pickNextDestination();
+                this.eatCooldown = 70;
+                this.hoverTimer = 24;
+                this.vx *= 0.15;
+                this.vy *= 0.15;
                 return;
             }
         }
 
+        if (this.perched && this.perchedReed) {
+            this.phase += 0.05 * frameScale;
+            this.x = (this.perchedReed.tipX || this.perchedReed.x);
+            this.y = (this.perchedReed.tipY || (ph - this.perchedReed.h)) - 2;
+            this.vx = 0;
+            this.vy = 0;
+            this.hoverTimer -= frameScale;
+            if (this.hoverTimer <= 0) {
+                this.perched = false;
+                this.perchedReed = null;
+                this.vy = -0.35;
+                this.pickNextDestination();
+            }
+            return;
+        }
+
+        if (this.perchedReed) {
+            this.targetX = this.perchedReed.tipX || this.perchedReed.x;
+            this.targetY = (this.perchedReed.tipY || (ph - this.perchedReed.h)) - 2;
+        }
+
+        this.phase += 0.42 * frameScale;
         const dx = this.targetX - this.x;
         const dy = this.targetY - this.y;
         const dist = Math.hypot(dx, dy);
 
         if (dist > 5) {
-            const desired = Math.atan2(dy, dx);
-            let diff = desired - this.angle;
-            while (diff > Math.PI) diff -= Math.PI * 2;
-            while (diff < -Math.PI) diff += Math.PI * 2;
-            this.angle += diff * frameSmoothing(0.075);
-            const spd = Math.min(0.62, Math.max(0.28, dist * 0.028));
-            this.x += Math.cos(this.angle) * spd * frameScale;
-            this.y += Math.sin(this.angle) * spd * frameScale;
-        } else {
-            if (!this.perched) {
-                this.x += Math.cos(this.angle) * 0.08 * frameScale;
-                this.y += Math.sin(t * 0.005 + this.phase) * 0.08 * frameScale;
+            const maxSpd = midge ? 1.25 : 0.92;
+            const spd = Math.min(maxSpd, Math.max(0.22, dist * 0.055));
+            const desiredVx = (dx / dist) * spd;
+            const desiredVy = (dy / dist) * spd;
+            this.vx += (desiredVx - this.vx) * frameSmoothing(0.16);
+            this.vy += (desiredVy - this.vy) * frameSmoothing(0.16);
+
+            if (Math.abs(dx) > 3) {
+                this.dir = dx >= 0 ? 1 : -1;
             }
-            this.hoverTimer -= frameScale;
-            if (this.hoverTimer <= 0) {
-                this.pickNextDestination();
+            this.x += this.vx * frameScale;
+            this.y += this.vy * frameScale;
+        } else {
+            if (this.perchedReed) {
+                this.perched = true;
+                this.dir = (this.x < pw * 0.5) ? 1 : -1;
+            } else {
+                this.vx *= Math.pow(0.75, frameScale);
+                this.vy *= Math.pow(0.75, frameScale);
+                this.y += Math.sin(t * 0.008 + this.phase) * 0.09 * frameScale;
+                this.hoverTimer -= frameScale;
+                if (this.hoverTimer <= 0) {
+                    this.pickNextDestination();
+                }
             }
         }
     }
 
     draw() {
-        const cos = Math.cos(this.angle);
-        const sin = Math.sin(this.angle);
-        const perpX = -sin;
-        const perpY = cos;
+        const p = this.pal;
+        const dir = this.dir;
+        const bx = Math.round(this.x);
+        const by = Math.round(this.y);
 
-        const flap1 = this.perched ? 0.05 : Math.sin(this.phase) * 0.25;
-        const flap2 = this.perched ? -0.05 : Math.cos(this.phase) * 0.25;
+        const px = (x, y, w, h, col) => {
+            const drawX = dir > 0 ? (bx + x) : (bx - x - w);
+            pRect(drawX, by + y, w, h, col);
+        };
 
-        const wingPairs = [
-            { offsetAlong: 2, span: 13, sweep: 0.14 + flap1 },
-            { offsetAlong: -2, span: 11, sweep: -0.20 + flap2 }
-        ];
-
-        wingPairs.forEach(wp => {
-            const bx = this.x + cos * wp.offsetAlong;
-            const by = this.y + sin * wp.offsetAlong;
-            [-1, 1].forEach(side => {
-                const wAng = this.angle + side * (Math.PI / 2 + wp.sweep);
-                const wCos = Math.cos(wAng);
-                const wSin = Math.sin(wAng);
-                const wPerpX = -wSin;
-                const wPerpY = wCos;
-                for (let s = 2; s <= wp.span; s++) {
-                    const hw = s > wp.span - 2 ? 0 : 1;
-                    for (let w = -hw; w <= hw; w++) {
-                        if (w === 0 || (s + w) % 2 === 0) {
-                            pRect(bx + wCos * s + wPerpX * w, by + wSin * s + wPerpY * w, 1, 1, s >= wp.span - 1 ? this.pal.tip : this.pal.wing);
-                        }
-                    }
-                }
-            });
-        });
-
-        for (let i = -14; i <= -2; i++) {
-            pRect(this.x + cos * i, this.y + sin * i, 1, 1, i % 2 === 0 ? this.pal.body : this.pal.seg);
+        const waterHorizonY = ph - 52;
+        if (by > waterHorizonY - 28 && bx > pw * 0.22 && bx < pw * 0.78) {
+            const reflY = Math.min(ph - 3, Math.round(waterHorizonY + (by - (waterHorizonY - 28)) * 0.75 + 14));
+            pRect(bx - 6, reflY, 13, 1, 'rgba(186, 230, 253, 0.22)');
+            pRect(bx - 3, reflY + 1, 7, 1, `rgba(${this.rgb[0]}, ${this.rgb[1]}, ${this.rgb[2]}, 0.28)`);
         }
-        for (let i = -1; i <= 2; i++) {
-            for (let w = -1; w <= 1; w++) {
-                pRect(this.x + cos * i + perpX * w, this.y + sin * i + perpY * w, 1, 1, this.pal.body);
+
+        const dartTilt = this.perched ? 0 : (Math.abs(this.vx) > 0.45 ? 1 : 0);
+        const flapFore = this.perched ? -1 : Math.round(Math.sin(this.phase) * 4);
+        const flapHind = this.perched ? 1 : Math.round(Math.cos(this.phase) * 4);
+
+        for (let s = 1; s <= 10; s++) {
+            const wx = -1 - Math.floor(s * 0.65);
+            const wy = -2 - Math.round((s / 10) * flapHind) - Math.floor(s * 0.25);
+            px(wx, wy, 2, 2, p.wing);
+            if (s % 2 === 0) px(wx, wy, 1, 1, p.vein);
+            if (s === 9) px(wx, wy, 2, 1, p.stigma);
+        }
+
+        for (let seg = 0; seg < 13; seg++) {
+            const ax = -3 - seg;
+            const ay = (seg > 5 ? dartTilt : 0) + (this.perched && seg > 7 ? -1 : 0);
+            const isRing = (seg % 2 === 1);
+            px(ax, ay, 1, 1, isRing ? p.seg : p.body);
+            if (seg < 4) {
+                px(ax, ay + 1, 1, 1, p.seg);
             }
         }
-        const hx = this.x + cos * 4;
-        const hy = this.y + sin * 4;
-        pRect(hx + perpX, hy + perpY, 1, 1, this.pal.eye);
-        pRect(hx - perpX, hy - perpY, 1, 1, this.pal.eye);
-        pRect(hx, hy, 1, 1, this.pal.body);
+        px(-16, dartTilt, 1, 1, p.seg);
+
+        px(-2, -1, 5, 3, p.thorax);
+        px(-1, -1, 3, 1, p.thoraxHi);
+        px(-2, 1, 4, 1, p.seg);
+        px(-1, 2, 1, 2, '#0f172a');
+        px(1, 2, 1, 2, '#0f172a');
+        px(2, 2, 1, 1, '#0f172a');
+
+        px(3, -2, 3, 3, p.eye);
+        px(4, -2, 2, 1, p.eyeHi);
+        px(5, 0, 1, 1, '#0f172a');
+
+        for (let s = 1; s <= 12; s++) {
+            const wx = 1 + Math.floor(s * 0.35);
+            const wy = -2 - Math.round((s / 12) * flapFore) - Math.floor(s * 0.35);
+            px(wx, wy, 2, 2, p.wing);
+            if (s % 2 === 1) px(wx, wy, 1, 1, p.vein);
+            if (s === 10 || s === 11) px(wx, wy, 2, 1, p.stigma);
+        }
     }
 }
 
 /* ============================================================================
    CREATURE 4: TRUE 4-LOBED ORNATE SWALLOWTAIL & MORPHO BUTTERFLIES
-   Enhanced with natural flower-perching & wing-basking on Buddleia/Hydrangeas!
    ============================================================================ */
 export class PixelButterfly {
     constructor() {
@@ -1214,11 +1236,9 @@ export class PixelButterfly {
         }
     }
 }
+
 /* ============================================================================
-   CREATURE 5: ARTISTIC 360° BIOLUMINESCENT JELLYFISH (Pelagia, Aurelia & Chrysaora)
-   Translucent double-layered bell with scalloped lappet rim, glowing inner gonads,
-   frilled undulating oral arms, beaded nematocyst tentacles, and jet-propulsion
-   vortex rings!
+   CREATURE 5: ARTISTIC 360° BIOLUMINESCENT JELLYFISH
    ============================================================================ */
 export class PixelJellyfish {
     constructor() {
@@ -1232,28 +1252,24 @@ export class PixelJellyfish {
         this.glowBoost = 0;
 
         const palettes = [
-            // 1. Magenta Pelagia (Pelagia noctiluca - Neon Pembe, Eflatun & Altın Çekirdek)
             {
                 outerGlow: 'rgba(240, 171, 252, 0.22)', bell: '#d946ef', bellShade: '#86198f',
                 rim: '#f5d0fe', core: '#fef08a', gonad: '#f472b6',
                 oralArm: '#f0abfc', tent: '#a21caf', bead: '#fae8ff',
                 rgb: [217, 70, 239]
             },
-            // 2. Crystal Cyan Aequorea (Biyolüminesan Turkuaz & Buz Mavisi)
             {
                 outerGlow: 'rgba(103, 232, 249, 0.22)', bell: '#06b6d4', bellShade: '#155e75',
                 rim: '#cffafe', core: '#fef9c3', gonad: '#38bdf8',
                 oralArm: '#67e8f9', tent: '#0e7490', bead: '#ecfeff',
                 rgb: [34, 211, 238]
             },
-            // 3. Deep Violet Atolla / Crown Jelly (Kraliyet İndigosu, Mor & Elektrik Mavisi)
             {
                 outerGlow: 'rgba(196, 181, 253, 0.22)', bell: '#8b5cf6', bellShade: '#4c1d95',
                 rim: '#ede9fe', core: '#38bdf8', gonad: '#c084fc',
                 oralArm: '#c4b5fd', tent: '#5b21b6', bead: '#f5f3ff',
                 rgb: [139, 92, 246]
             },
-            // 4. Golden Sea Nettle (Chrysaora fuscescens - Kehribar, Mercan Kırmızısı & Altın)
             {
                 outerGlow: 'rgba(253, 224, 71, 0.20)', bell: '#f59e0b', bellShade: '#9a3412',
                 rim: '#fef08a', core: '#ffffff', gonad: '#fb7185',
@@ -1291,7 +1307,6 @@ export class PixelJellyfish {
         if (this.eatCooldown > 0) this.eatCooldown = Math.max(0, this.eatCooldown - frameScale);
         if (this.glowBoost > 0) this.glowBoost = Math.max(0, this.glowBoost - frameScale);
 
-        // Seek user-spawned bioluminescent plankton swarms across a wide radius
         const plankton = findAvailableStimulus(this, 'plankton_swarm', Math.max(340, pw * 0.75));
         if (plankton) {
             const dx = plankton.x - this.x;
@@ -1301,15 +1316,13 @@ export class PixelJellyfish {
             if (dist < 10) {
                 plankton.life = 0;
                 this.eatCooldown = 80;
-                this.glowBoost = 65; // Glow brighter after feeding!
+                this.glowBoost = 65;
                 this.targetAngle = -Math.PI / 2 + (Math.random() - 0.5) * 1.4;
             }
         } else if (frameChance(0.02)) {
-            // Gentle upward-biased pelagic drifting
             this.targetAngle += (Math.random() - 0.5) * 0.9;
         }
 
-        // Keep away from canyon walls and reef floor
         if (this.y < 22) this.targetAngle = Math.PI * 0.45 + (Math.random() - 0.5) * 0.4;
         if (this.y > ph - 38) this.targetAngle = -Math.PI * 0.5 + (Math.random() - 0.5) * 0.4;
         if (this.x < 34) this.targetAngle = (Math.random() - 0.5) * 0.7;
@@ -1320,7 +1333,6 @@ export class PixelJellyfish {
         while (diff < -Math.PI) diff += Math.PI * 2;
         this.angle += diff * frameSmoothing(0.035);
 
-        // Realistic jellyfish jet-propulsion cycle: sharp power stroke + slow recovery glide
         const sinP = Math.sin(this.phase);
         const pulse = sinP > 0 ? Math.pow(sinP, 1.4) : 0;
         const speedMult = plankton ? 1.45 : 1.0;
@@ -1329,7 +1341,6 @@ export class PixelJellyfish {
         this.x += Math.cos(this.angle) * (this.baseSpeed + thrust) * frameScale;
         this.y += Math.sin(this.angle) * (this.baseSpeed + thrust) * frameScale;
 
-        // Seamless horizontal wrap if ever needed
         if (this.x < -28) {
             const d = pw + 56;
             this.x += d;
@@ -1380,7 +1391,6 @@ export class PixelJellyfish {
         const bellW = Math.round(11 - contract * 2.2);
         const bellH = Math.round(8 + contract * 1.6);
 
-        // 1. Subtle Bioluminescent Water Vortex Ring pushed behind the bell during contraction
         if (contract > 0.45) {
             const ringDist = 6 + (1 - contract) * 8;
             const rx = this.x - cos * ringDist;
@@ -1389,7 +1399,6 @@ export class PixelJellyfish {
             pRect(rx - perpX * 5, ry - perpY * 5, 1, 1, p.outerGlow);
         }
 
-        // 2. Trailing Filaments & Frilled Central Oral Arms
         for (let k = 0; k < this.numTentacles; k++) {
             const nodes = this.tentacles[k];
             const isOral = (k >= 3 && k <= 5);
@@ -1400,14 +1409,12 @@ export class PixelJellyfish {
                 if (Math.abs(pt.x - this.x) > 42 || Math.abs(pt.y - this.y) > 42) continue;
 
                 if (isOral) {
-                    // Thick frilled oral arms in the center
                     const frill = (s % 2 === 0) ? 1 : -1;
                     pRect(pt.x, pt.y, 1, 1, s < 5 ? p.core : p.oralArm);
                     if (s < 9) {
                         pRect(pt.x + perpX * frill, pt.y + perpY * frill, 1, 1, p.oralArm);
                     }
                 } else {
-                    // Delicate outer tentacles with glowing nematocyst beads
                     if (s > 11 && s % 2 === 1) continue;
                     const isBead = (s % 4 === 2);
                     pRect(pt.x, pt.y, 1, 1, isBead ? p.bead : p.tent);
@@ -1415,7 +1422,6 @@ export class PixelJellyfish {
             }
         }
 
-        // 3. Soft Outer Bioluminescent Aura around the Umbrella Dome
         const auraW = bellW + (this.glowBoost > 0 ? 3 : 2);
         const auraH = bellH + (this.glowBoost > 0 ? 3 : 2);
         for (let dy = -auraH; dy <= 1; dy += 2) {
@@ -1427,14 +1433,12 @@ export class PixelJellyfish {
             }
         }
 
-        // 4. Translucent Sculpted Umbrella Bell, Radial Canals, Glowing Gonads & Scalloped Lappets
         for (let dy = -bellH; dy <= 2; dy++) {
             for (let dx = -bellW; dx <= bellW; dx++) {
                 const nx = dx / Math.max(1, bellW);
                 const ny = dy / Math.max(1, bellH);
                 const distSq = nx * nx + ny * ny;
 
-                // Scalloped lappet skirt along the bottom margin (dy === 1 or 2)
                 if (dy >= 1) {
                     if (Math.abs(dx) > bellW - 1) continue;
                     const lappetWave = Math.sin(dx * 1.4 + this.phase) > -0.1;
@@ -1458,7 +1462,6 @@ export class PixelJellyfish {
                 } else if (isRadialCanal && dy < 0) {
                     col = p.rim;
                 } else if (distSq > 0.48 && dy < 0) {
-                    // Translucent mesoglea dithering so background reef faintly shows through
                     col = (dx + dy) % 2 === 0 ? p.bell : p.bellShade;
                 }
 
@@ -1469,458 +1472,397 @@ export class PixelJellyfish {
         }
     }
 }
+
 /* ============================================================================
-           CREATURE 7: ARTISTIC & REALISTIC MACAW PARROT FLOCK
-           Multi-state AI (Soaring, Diving, Perching on Branches, Hover-Foraging & Pecking),
-           anatomical 3-tier wing plumage, articulated waving tail, opening hooked bill,
-           and crisp shaded pixel art.
-           ============================================================================ */
-        const PARROT_PALETTES = Object.freeze([
-            // 1. Scarlet Macaw (Kırmızı Ara Papağanı - Kırmızı, Kehribar Sarısı ve Kobalt Mavi)
-            {
-                bodyHi: '#f87171', body: '#ef4444', bodyShade: '#b91c1c', belly: '#dc2626',
-                wingShoulder: '#ef4444', wingCovert: '#facc15', wingGreen: '#10b981', wingPrimary: '#1d4ed8', wingTip: '#1e3a8a', wingUnder: '#b91c1c',
-                tailCenter: '#ef4444', tailMid: '#dc2626', tailOuter: '#0284c7',
-                face: '#fef3c7', faceLine: '#ef4444', beakUpper: '#fde68a', beakTip: '#92400e', beakLower: '#1e293b', eye: '#0f172a',
-                rgb: [239, 68, 68]
-            },
-            // 2. Blue-and-Gold Macaw (Mavi-Altın Ara Papağanı - Turkuaz, Safir ve Altın Göğüs)
-            {
-                bodyHi: '#38bdf8', body: '#0284c7', bodyShade: '#0369a1', belly: '#facc15',
-                wingShoulder: '#22c55e', wingCovert: '#38bdf8', wingGreen: '#0ea5e9', wingPrimary: '#1d4ed8', wingTip: '#1e3a8a', wingUnder: '#eab308',
-                tailCenter: '#0284c7', tailMid: '#0369a1', tailOuter: '#facc15',
-                face: '#fef9c3', faceLine: '#0f172a', beakUpper: '#334155', beakTip: '#0f172a', beakLower: '#0f172a', eye: '#0f172a',
-                rgb: [56, 189, 248]
-            },
-            // 3. Military / Emerald Macaw (Zümrüt Yeşili Ara Papağanı - Kızıl Alın, Yeşil Gövde, Turkuaz Uçlar)
-            {
-                bodyHi: '#4ade80', body: '#16a34a', bodyShade: '#15803d', belly: '#22c55e',
-                wingShoulder: '#f97316', wingCovert: '#22c55e', wingGreen: '#0d9488', wingPrimary: '#0284c7', wingTip: '#1e3a8a', wingUnder: '#15803d',
-                tailCenter: '#dc2626', tailMid: '#b91c1c', tailOuter: '#0ea5e9',
-                face: '#fef3c7', faceLine: '#b91c1c', beakUpper: '#334155', beakTip: '#0f172a', beakLower: '#0f172a', eye: '#0f172a',
-                rgb: [34, 197, 94]
-            },
-            // 4. Hyacinth Macaw (Sümbül Ara Papağanı - Kraliyet Mavisi/İndigo ve Altın Göz/Gaga Halkası)
-            {
-                bodyHi: '#818cf8', body: '#4f46e5', bodyShade: '#3730a3', belly: '#4338ca',
-                wingShoulder: '#6366f1', wingCovert: '#4f46e5', wingGreen: '#4338ca', wingPrimary: '#312e81', wingTip: '#1e1b4b', wingUnder: '#312e81',
-                tailCenter: '#4f46e5', tailMid: '#3730a3', tailOuter: '#312e81',
-                face: '#facc15', faceLine: '#312e81', beakUpper: '#334155', beakTip: '#0f172a', beakLower: '#0f172a', eye: '#0f172a',
-                rgb: [129, 140, 248]
-            },
-        ]);
+   CREATURE 7: ARTISTIC & REALISTIC MACAW PARROT FLOCK
+   ============================================================================ */
+const PARROT_PALETTES = Object.freeze([
+    {
+        bodyHi: '#f87171', body: '#ef4444', bodyShade: '#b91c1c', belly: '#dc2626',
+        wingShoulder: '#ef4444', wingCovert: '#facc15', wingGreen: '#10b981', wingPrimary: '#1d4ed8', wingTip: '#1e3a8a', wingUnder: '#b91c1c',
+        tailCenter: '#ef4444', tailMid: '#dc2626', tailOuter: '#0284c7',
+        face: '#fef3c7', faceLine: '#ef4444', beakUpper: '#fde68a', beakTip: '#92400e', beakLower: '#1e293b', eye: '#0f172a',
+        rgb: [239, 68, 68]
+    },
+    {
+        bodyHi: '#38bdf8', body: '#0284c7', bodyShade: '#0369a1', belly: '#facc15',
+        wingShoulder: '#22c55e', wingCovert: '#38bdf8', wingGreen: '#0ea5e9', wingPrimary: '#1d4ed8', wingTip: '#1e3a8a', wingUnder: '#eab308',
+        tailCenter: '#0284c7', tailMid: '#0369a1', tailOuter: '#facc15',
+        face: '#fef9c3', faceLine: '#0f172a', beakUpper: '#334155', beakTip: '#0f172a', beakLower: '#0f172a', eye: '#0f172a',
+        rgb: [56, 189, 248]
+    },
+    {
+        bodyHi: '#4ade80', body: '#16a34a', bodyShade: '#15803d', belly: '#22c55e',
+        wingShoulder: '#f97316', wingCovert: '#22c55e', wingGreen: '#0d9488', wingPrimary: '#0284c7', wingTip: '#1e3a8a', wingUnder: '#15803d',
+        tailCenter: '#dc2626', tailMid: '#b91c1c', tailOuter: '#0ea5e9',
+        face: '#fef3c7', faceLine: '#b91c1c', beakUpper: '#334155', beakTip: '#0f172a', beakLower: '#0f172a', eye: '#0f172a',
+        rgb: [34, 197, 94]
+    },
+    {
+        bodyHi: '#818cf8', body: '#4f46e5', bodyShade: '#3730a3', belly: '#4338ca',
+        wingShoulder: '#6366f1', wingCovert: '#4f46e5', wingGreen: '#4338ca', wingPrimary: '#312e81', wingTip: '#1e1b4b', wingUnder: '#312e81',
+        tailCenter: '#4f46e5', tailMid: '#3730a3', tailOuter: '#312e81',
+        face: '#facc15', faceLine: '#312e81', beakUpper: '#334155', beakTip: '#0f172a', beakLower: '#0f172a', eye: '#0f172a',
+        rgb: [129, 140, 248]
+    },
+]);
 
-        export class PixelParrot {
-            constructor() {
-                this.x = Math.random() * pw;
-                this.y = 28 + Math.random() * Math.max(36, ph * 0.45);
-                this.dir = Math.random() < 0.5 ? -1 : 1;
-                this.vx = this.dir * (0.42 + Math.random() * 0.18);
-                this.vy = (Math.random() - 0.5) * 0.12;
-                this.phase = Math.random() * Math.PI * 2;
-                this.palette = PARROT_PALETTES[Math.floor(Math.random() * PARROT_PALETTES.length)];
-                this.rgb = this.palette.rgb;
+export class PixelParrot {
+    constructor() {
+        this.x = Math.random() * pw;
+        this.y = 28 + Math.random() * Math.max(36, ph * 0.45);
+        this.dir = Math.random() < 0.5 ? -1 : 1;
+        this.vx = this.dir * (0.42 + Math.random() * 0.18);
+        this.vy = (Math.random() - 0.5) * 0.12;
+        this.phase = Math.random() * Math.PI * 2;
+        this.palette = PARROT_PALETTES[Math.floor(Math.random() * PARROT_PALETTES.length)];
+        this.rgb = this.palette.rgb;
 
-                // Behavioral States: 'flying' | 'perching' | 'perched' | 'eating'
+        this.state = 'flying';
+        this.stateTimer = 140 + Math.random() * 220;
+        this.eatCooldown = 0;
+        this.perchTarget = null;
+        this.targetFruit = null;
+        this.waypointY = this.y;
+        this.headLook = 0;
+        this.beakOpen = 0;
+        this.tailWave = 0;
+    }
+
+    pickPerchSpot() {
+        const spots = [
+            { x: Math.round(pw * 0.14 - 12), y: Math.round(ph * 0.24 + 6) },
+            { x: Math.round(pw * 0.14 + 14), y: Math.round(ph * 0.24 + 8) },
+            { x: Math.round(pw * 0.27 + 10), y: Math.round(ph * 0.36 + 6) },
+            { x: Math.round(pw * 0.75 - 10), y: Math.round(ph * 0.34 + 6) },
+            { x: Math.round(pw * 0.86 - 14), y: Math.round(ph * 0.22 + 6) },
+            { x: Math.round(pw * 0.86 + 12), y: Math.round(ph * 0.22 + 8) }
+        ];
+        return spots[Math.floor(Math.random() * spots.length)];
+    }
+
+    update(time) {
+        if (this.eatCooldown > 0) this.eatCooldown = Math.max(0, this.eatCooldown - frameScale);
+        this.tailWave += 0.12 * frameScale;
+
+        const fruit = findAvailableStimulus(this, 'tropical_fruit', Math.max(450, pw));
+        if (fruit && this.state !== 'eating') {
+            this.targetFruit = fruit;
+            this.state = 'flying';
+            this.perchTarget = null;
+        }
+
+        if (this.state === 'eating') {
+            this.phase += 0.38 * frameScale;
+            this.stateTimer -= frameScale;
+            this.beakOpen = Math.sin(this.phase * 1.5) > 0 ? 1 : 0;
+
+            if (this.targetFruit && this.targetFruit.life > 0) {
+                const targetX = this.targetFruit.x - this.dir * 10;
+                const targetY = this.targetFruit.y - 2;
+                this.x += (targetX - this.x) * frameSmoothing(0.18);
+                this.y += (targetY - this.y) * frameSmoothing(0.18);
+                if (this.stateTimer <= 8) {
+                    this.targetFruit.life = 0;
+                }
+            }
+
+            if (this.stateTimer <= 0) {
                 this.state = 'flying';
-                this.stateTimer = 140 + Math.random() * 220;
-                this.eatCooldown = 0;
-                this.perchTarget = null;
+                this.eatCooldown = 90;
+                this.beakOpen = 0;
                 this.targetFruit = null;
-                this.waypointY = this.y;
+                this.vx = this.dir * 0.48;
+                this.vy = -0.28;
+                this.waypointY = 30 + Math.random() * (ph * 0.38);
+                this.stateTimer = 180 + Math.random() * 200;
+            }
+            return;
+        }
+
+        if (this.state === 'perched') {
+            this.phase += 0.04 * frameScale;
+            this.stateTimer -= frameScale;
+            this.vx = 0;
+            this.vy = 0;
+
+            if (frameChance(0.018)) {
+                this.headLook = (Math.random() < 0.4) ? -1 : 0;
+            }
+            if (frameChance(0.012)) {
+                this.beakOpen = this.beakOpen ? 0 : 1;
+            }
+
+            if (this.stateTimer <= 0 || fruit) {
+                this.state = 'flying';
                 this.headLook = 0;
                 this.beakOpen = 0;
-                this.tailWave = 0;
+                this.dir = (this.x < pw * 0.5) ? 1 : -1;
+                this.vx = this.dir * 0.46;
+                this.vy = -0.18;
+                this.waypointY = 28 + Math.random() * (ph * 0.42);
+                this.stateTimer = 180 + Math.random() * 240;
+            }
+            return;
+        }
+
+        if (fruit) {
+            this.phase += 0.24 * frameScale;
+            const dx = fruit.x - this.x;
+            const dy = fruit.y - this.y;
+            const dist = Math.max(1, Math.hypot(dx, dy));
+
+            const desiredVx = (dx / dist) * 0.68;
+            const desiredVy = (dy / dist) * 0.52;
+            this.vx += (desiredVx - this.vx) * frameSmoothing(0.09);
+            this.vy += (desiredVy - this.vy) * frameSmoothing(0.09);
+
+            if (Math.abs(dx) > 4) {
+                this.dir = dx >= 0 ? 1 : -1;
+            }
+            this.beakOpen = dist < 26 ? 1 : 0;
+
+            this.x += this.vx * frameScale;
+            this.y += this.vy * frameScale;
+
+            if (dist < 13) {
+                this.state = 'eating';
+                this.stateTimer = 34;
+                this.targetFruit = fruit;
+                this.vx *= 0.2;
+                this.vy *= 0.2;
+            }
+            return;
+        }
+
+        if (this.state === 'perching' && this.perchTarget) {
+            this.phase += 0.22 * frameScale;
+            const dx = this.perchTarget.x - this.x;
+            const dy = this.perchTarget.y - this.y;
+            const dist = Math.max(1, Math.hypot(dx, dy));
+
+            const speed = Math.min(0.55, Math.max(0.18, dist * 0.03));
+            const desiredVx = (dx / dist) * speed;
+            const desiredVy = (dy / dist) * speed;
+            this.vx += (desiredVx - this.vx) * frameSmoothing(0.08);
+            this.vy += (desiredVy - this.vy) * frameSmoothing(0.08);
+            if (Math.abs(dx) > 3) this.dir = dx >= 0 ? 1 : -1;
+
+            this.x += this.vx * frameScale;
+            this.y += this.vy * frameScale;
+
+            if (dist < 5) {
+                this.x = this.perchTarget.x;
+                this.y = this.perchTarget.y;
+                this.state = 'perched';
+                this.stateTimer = 160 + Math.random() * 220;
+                this.perchTarget = null;
+                this.dir = (this.x < pw * 0.5) ? 1 : -1;
+            }
+            return;
+        }
+
+        this.phase += 0.17 * frameScale;
+        this.stateTimer -= frameScale;
+
+        if (this.stateTimer <= 0) {
+            if (Math.random() < 0.38) {
+                this.perchTarget = this.pickPerchSpot();
+                this.state = 'perching';
+            } else {
+                this.waypointY = 26 + Math.random() * (ph * 0.46);
+                if (Math.random() < 0.35 && this.x > pw * 0.2 && this.x < pw * 0.8) {
+                    this.dir *= -1;
+                }
+                this.stateTimer = 150 + Math.random() * 220;
+            }
+        }
+
+        const targetVx = this.dir * (0.44 + Math.sin(time * 0.001 + this.phase * 0.2) * 0.1);
+        const dyWay = this.waypointY - this.y;
+        const targetVy = Math.max(-0.26, Math.min(0.26, dyWay * 0.015 + Math.sin(time * 0.002 + this.phase * 0.3) * 0.06));
+
+        this.vx += (targetVx - this.vx) * frameSmoothing(0.045);
+        this.vy += (targetVy - this.vy) * frameSmoothing(0.045);
+        if (Math.abs(this.vx) > 0.08) {
+            this.dir = this.vx >= 0 ? 1 : -1;
+        }
+
+        this.x += this.vx * frameScale;
+        this.y += this.vy * frameScale;
+
+        if (this.y < 20) { this.y = 20; this.vy = Math.abs(this.vy) * 0.5 + 0.04; }
+        if (this.y > ph * 0.68) { this.y = ph * 0.68; this.vy = -Math.abs(this.vy) * 0.5 - 0.04; }
+
+        if (this.x < -34) this.x = pw + 34;
+        if (this.x > pw + 34) this.x = -34;
+    }
+
+    draw() {
+        const p = this.palette;
+        const dir = this.dir;
+        const bx = Math.round(this.x);
+        const by = Math.round(this.y);
+
+        const px = (x, y, w, h, col) => {
+            const drawX = dir > 0 ? (bx + x) : (bx - x - w);
+            pRect(drawX, by + y, w, h, col);
+        };
+
+        if (this.state === 'perched') {
+            const breath = Math.sin(this.phase) > 0.3 ? -1 : 0;
+            const lookDir = this.headLook === -1 ? -1 : 1;
+
+            for (let t = 0; t < 16; t++) {
+                const tx = -4 - Math.floor(t * 0.35);
+                const ty = 4 + t;
+                px(tx, ty, 2, 1, t < 11 ? p.tailCenter : p.tailOuter);
+                if (t < 10) px(tx + 2, ty, 1, 1, p.tailMid);
             }
 
-            pickPerchSpot() {
-                // Match the actual branch positions of the midground rainforest trees in 09-scenery.js
-                const spots = [
-                    { x: Math.round(pw * 0.14 - 12), y: Math.round(ph * 0.24 + 6) },
-                    { x: Math.round(pw * 0.14 + 14), y: Math.round(ph * 0.24 + 8) },
-                    { x: Math.round(pw * 0.27 + 10), y: Math.round(ph * 0.36 + 6) },
-                    { x: Math.round(pw * 0.75 - 10), y: Math.round(ph * 0.34 + 6) },
-                    { x: Math.round(pw * 0.86 - 14), y: Math.round(ph * 0.22 + 6) },
-                    { x: Math.round(pw * 0.86 + 12), y: Math.round(ph * 0.22 + 8) }
-                ];
-                return spots[Math.floor(Math.random() * spots.length)];
+            px(-2, 3, 2, 2, '#1e293b');
+            px(1, 3, 2, 2, '#1e293b');
+
+            px(-4, -5 + breath, 7, 4, p.body);
+            px(-3, -1 + breath, 6, 4, p.belly);
+            px(-4, -4 + breath, 2, 6, p.bodyShade);
+            px(1, -5 + breath, 2, 5, p.bodyHi);
+
+            px(-3, -4 + breath, 4, 3, p.wingShoulder);
+            px(-4, -1 + breath, 4, 3, p.wingCovert);
+            px(-4, 2 + breath, 3, 2, p.wingGreen);
+            px(-5, 4 + breath, 3, 3, p.wingPrimary);
+            px(-5, 7 + breath, 2, 2, p.wingTip);
+
+            const hy = -9 + breath;
+            px(-2, hy, 6, 4, p.body);
+            px(-1, hy - 1, 4, 1, p.bodyHi);
+
+            if (lookDir === 1) {
+                px(1, hy + 1, 3, 3, p.face);
+                px(2, hy + 1, 1, 1, p.eye);
+                px(1, hy + 3, 2, 1, p.faceLine);
+                px(4, hy + 1, 3, 2, p.beakUpper);
+                px(6, hy + 2, 1, 2, p.beakTip);
+                px(4, hy + 3 + this.beakOpen, 2, 1, p.beakLower);
+            } else {
+                px(-2, hy + 1, 3, 3, p.face);
+                px(-1, hy + 1, 1, 1, p.eye);
+                px(-5, hy + 1, 3, 2, p.beakUpper);
+                px(-6, hy + 2, 1, 2, p.beakTip);
+                px(-4, hy + 3, 2, 1, p.beakLower);
             }
+            return;
+        }
 
-            update(time) {
-                if (this.eatCooldown > 0) this.eatCooldown = Math.max(0, this.eatCooldown - frameScale);
-                this.tailWave += 0.12 * frameScale;
+        const isHovering = this.state === 'eating' || (this.state === 'perching' && Math.hypot(this.vx, this.vy) < 0.28);
+        const cycle = this.phase % (Math.PI * 4);
+        const isGliding = !isHovering && !this.targetFruit && cycle > Math.PI * 2.7;
+        const wingSin = isGliding ? 0.18 : Math.sin(this.phase);
 
-                // 1. PRIORITY: Check for user-dropped tropical fruit anywhere on screen!
-                const fruit = findAvailableStimulus(this, 'tropical_fruit', Math.max(450, pw));
-                if (fruit && this.state !== 'eating') {
-                    this.targetFruit = fruit;
-                    this.state = 'flying';
-                    this.perchTarget = null;
-                }
+        const pitch = isHovering ? -1 : Math.max(-2, Math.min(2, Math.round(this.vy * 6)));
+        const liftY = Math.round(-wingSin * 1.1);
 
-                // STATE A: EATING / HOVER-FORAGING AT FRUIT
-                if (this.state === 'eating') {
-                    this.phase += 0.38 * frameScale; // Rapid hovering wingbeats
-                    this.stateTimer -= frameScale;
-                    this.beakOpen = Math.sin(this.phase * 1.5) > 0 ? 1 : 0;
+        if (isHovering) {
+            px(1, -8 + liftY, 5, 3, p.wingPrimary);
+            px(0, -5 + liftY, 5, 3, p.wingCovert);
+        } else if (wingSin > 0.1) {
+            const farH = Math.round(wingSin * 5);
+            px(0, -4 - farH + liftY, 5, 2, p.wingTip);
+            px(-1, -2 - farH + liftY, 6, 3, p.wingPrimary);
+        }
 
-                    if (this.targetFruit && this.targetFruit.life > 0) {
-                        const targetX = this.targetFruit.x - this.dir * 10;
-                        const targetY = this.targetFruit.y - 2;
-                        this.x += (targetX - this.x) * frameSmoothing(0.18);
-                        this.y += (targetY - this.y) * frameSmoothing(0.18);
-                        if (this.stateTimer <= 8) {
-                            this.targetFruit.life = 0; // Consume fruit at end of pecking
-                        }
-                    }
+        const tailLen = 19;
+        for (let t = 0; t < tailLen; t++) {
+            const tx = -8 - t;
+            const waveOffset = Math.sin(this.tailWave - t * 0.28) * (t * 0.08);
+            const pitchOffset = -pitch * (t * 0.22);
+            const ty = Math.round(1 + t * 0.14 + pitchOffset + waveOffset + liftY);
 
-                    if (this.stateTimer <= 0) {
-                        this.state = 'flying';
-                        this.eatCooldown = 90;
-                        this.beakOpen = 0;
-                        this.targetFruit = null;
-                        // Graceful upward climb after eating
-                        this.vx = this.dir * 0.48;
-                        this.vy = -0.28;
-                        this.waypointY = 30 + Math.random() * (ph * 0.38);
-                        this.stateTimer = 180 + Math.random() * 200;
-                    }
-                    return;
-                }
-
-                // STATE B: PERCHED ON A RAINFOREST BRANCH
-                if (this.state === 'perched') {
-                    this.phase += 0.04 * frameScale; // Calm breathing rhythm
-                    this.stateTimer -= frameScale;
-                    this.vx = 0;
-                    this.vy = 0;
-
-                    // Occasional curious head turns, crest bobbing & calling while perched
-                    if (frameChance(0.018)) {
-                        this.headLook = (Math.random() < 0.4) ? -1 : 0;
-                    }
-                    if (frameChance(0.012)) {
-                        this.beakOpen = this.beakOpen ? 0 : 1;
-                    }
-
-                    // Take off if timer expires or fruit appears
-                    if (this.stateTimer <= 0 || fruit) {
-                        this.state = 'flying';
-                        this.headLook = 0;
-                        this.beakOpen = 0;
-                        this.dir = (this.x < pw * 0.5) ? 1 : -1;
-                        this.vx = this.dir * 0.46;
-                        this.vy = -0.18;
-                        this.waypointY = 28 + Math.random() * (ph * 0.42);
-                        this.stateTimer = 180 + Math.random() * 240;
-                    }
-                    return;
-                }
-
-                // STATE C: FLYING TOWARD FRUIT
-                if (fruit) {
-                    this.phase += 0.24 * frameScale;
-                    const dx = fruit.x - this.x;
-                    const dy = fruit.y - this.y;
-                    const dist = Math.max(1, Math.hypot(dx, dy));
-
-                    // Smoothly steer velocity toward fruit (NO minSpeed lock blocking turnaround!)
-                    const desiredVx = (dx / dist) * 0.68;
-                    const desiredVy = (dy / dist) * 0.52;
-                    this.vx += (desiredVx - this.vx) * frameSmoothing(0.09);
-                    this.vy += (desiredVy - this.vy) * frameSmoothing(0.09);
-
-                    if (Math.abs(dx) > 4) {
-                        this.dir = dx >= 0 ? 1 : -1;
-                    }
-                    this.beakOpen = dist < 26 ? 1 : 0;
-
-                    this.x += this.vx * frameScale;
-                    this.y += this.vy * frameScale;
-
-                    if (dist < 13) {
-                        this.state = 'eating';
-                        this.stateTimer = 34; // Hover and peck for ~0.55s
-                        this.targetFruit = fruit;
-                        this.vx *= 0.2;
-                        this.vy *= 0.2;
-                    }
-                    return;
-                }
-
-                // STATE D: FLYING TOWARD A BRANCH PERCH
-                if (this.state === 'perching' && this.perchTarget) {
-                    this.phase += 0.22 * frameScale;
-                    const dx = this.perchTarget.x - this.x;
-                    const dy = this.perchTarget.y - this.y;
-                    const dist = Math.max(1, Math.hypot(dx, dy));
-
-                    const speed = Math.min(0.55, Math.max(0.18, dist * 0.03));
-                    const desiredVx = (dx / dist) * speed;
-                    const desiredVy = (dy / dist) * speed;
-                    this.vx += (desiredVx - this.vx) * frameSmoothing(0.08);
-                    this.vy += (desiredVy - this.vy) * frameSmoothing(0.08);
-                    if (Math.abs(dx) > 3) this.dir = dx >= 0 ? 1 : -1;
-
-                    this.x += this.vx * frameScale;
-                    this.y += this.vy * frameScale;
-
-                    if (dist < 5) {
-                        this.x = this.perchTarget.x;
-                        this.y = this.perchTarget.y;
-                        this.state = 'perched';
-                        this.stateTimer = 160 + Math.random() * 220;
-                        this.perchTarget = null;
-                        this.dir = (this.x < pw * 0.5) ? 1 : -1;
-                    }
-                    return;
-                }
-
-                // STATE E: NATURAL SOARING, SWOOPING & BANKING FLIGHT
-                this.phase += 0.17 * frameScale;
-                this.stateTimer -= frameScale;
-
-                if (this.stateTimer <= 0) {
-                    if (Math.random() < 0.38) {
-                        // Decide to go perch on a tree branch
-                        this.perchTarget = this.pickPerchSpot();
-                        this.state = 'perching';
-                    } else {
-                        // Or pick a new altitude and occasionally bank/turn around inside the valley
-                        this.waypointY = 26 + Math.random() * (ph * 0.46);
-                        if (Math.random() < 0.35 && this.x > pw * 0.2 && this.x < pw * 0.8) {
-                            this.dir *= -1;
-                        }
-                        this.stateTimer = 150 + Math.random() * 220;
-                    }
-                }
-
-                // Cruise horizontally with organic swoops toward waypointY
-                const targetVx = this.dir * (0.44 + Math.sin(time * 0.001 + this.phase * 0.2) * 0.1);
-                const dyWay = this.waypointY - this.y;
-                const targetVy = Math.max(-0.26, Math.min(0.26, dyWay * 0.015 + Math.sin(time * 0.002 + this.phase * 0.3) * 0.06));
-
-                this.vx += (targetVx - this.vx) * frameSmoothing(0.045);
-                this.vy += (targetVy - this.vy) * frameSmoothing(0.045);
-                if (Math.abs(this.vx) > 0.08) {
-                    this.dir = this.vx >= 0 ? 1 : -1;
-                }
-
-                this.x += this.vx * frameScale;
-                this.y += this.vy * frameScale;
-
-                // Soft canopy & understory boundaries during normal cruise
-                if (this.y < 20) { this.y = 20; this.vy = Math.abs(this.vy) * 0.5 + 0.04; }
-                if (this.y > ph * 0.68) { this.y = ph * 0.68; this.vy = -Math.abs(this.vy) * 0.5 - 0.04; }
-
-                // Wrap or turn at screen edges
-                if (this.x < -34) this.x = pw + 34;
-                if (this.x > pw + 34) this.x = -34;
+            px(tx, ty, 1, 1, p.tailCenter);
+            if (t < 15) {
+                px(tx, ty - 1, 1, 1, p.tailMid);
             }
-
-            draw() {
-                const p = this.palette;
-                const dir = this.dir;
-                const bx = Math.round(this.x);
-                const by = Math.round(this.y);
-
-                // Crisp 1:1 integer pixel helper with automatic horizontal mirroring
-                const px = (x, y, w, h, col) => {
-                    const drawX = dir > 0 ? (bx + x) : (bx - x - w);
-                    pRect(drawX, by + y, w, h, col);
-                };
-
-                /* =============================================================
-                   POSE 1: PERCHED UPRIGHT ON A TREE BRANCH
-                   ============================================================= */
-                if (this.state === 'perched') {
-                    const breath = Math.sin(this.phase) > 0.3 ? -1 : 0;
-                    const lookDir = this.headLook === -1 ? -1 : 1;
-
-                    // Long graduated tail hanging down below the branch
-                    for (let t = 0; t < 16; t++) {
-                        const tx = -4 - Math.floor(t * 0.35);
-                        const ty = 4 + t;
-                        px(tx, ty, 2, 1, t < 11 ? p.tailCenter : p.tailOuter);
-                        if (t < 10) px(tx + 2, ty, 1, 1, p.tailMid);
-                    }
-
-                    // Zygodactyl zygote claws gripping the branch
-                    px(-2, 3, 2, 2, '#1e293b');
-                    px(1, 3, 2, 2, '#1e293b');
-
-                    // Upright Sculpted Macaw Torso & Breast
-                    px(-4, -5 + breath, 7, 4, p.body);
-                    px(-3, -1 + breath, 6, 4, p.belly);
-                    px(-4, -4 + breath, 2, 6, p.bodyShade);
-                    px(1, -5 + breath, 2, 5, p.bodyHi);
-
-                    // Neatly Folded 3-Tier Wing resting along the side
-                    px(-3, -4 + breath, 4, 3, p.wingShoulder);
-                    px(-4, -1 + breath, 4, 3, p.wingCovert);
-                    px(-4, 2 + breath, 3, 2, p.wingGreen);
-                    px(-5, 4 + breath, 3, 3, p.wingPrimary);
-                    px(-5, 7 + breath, 2, 2, p.wingTip);
-
-                    // Head, Crown & Bare Facial Patch (supports looking forward or over shoulder)
-                    const hy = -9 + breath;
-                    px(-2, hy, 6, 4, p.body);
-                    px(-1, hy - 1, 4, 1, p.bodyHi); // Crown highlight
-
-                    if (lookDir === 1) {
-                        px(1, hy + 1, 3, 3, p.face);
-                        px(2, hy + 1, 1, 1, p.eye);
-                        px(1, hy + 3, 2, 1, p.faceLine);
-                        // Hooked Beak
-                        px(4, hy + 1, 3, 2, p.beakUpper);
-                        px(6, hy + 2, 1, 2, p.beakTip);
-                        px(4, hy + 3 + this.beakOpen, 2, 1, p.beakLower);
-                    } else {
-                        // Looking back over its shoulder
-                        px(-2, hy + 1, 3, 3, p.face);
-                        px(-1, hy + 1, 1, 1, p.eye);
-                        px(-5, hy + 1, 3, 2, p.beakUpper);
-                        px(-6, hy + 2, 1, 2, p.beakTip);
-                        px(-4, hy + 3, 2, 1, p.beakLower);
-                    }
-                    return;
-                }
-
-                /* =============================================================
-                   POSE 2: IN-FLIGHT / SOARING / DIVING / HOVER-EATING
-                   ============================================================= */
-                const isHovering = this.state === 'eating' || (this.state === 'perching' && Math.hypot(this.vx, this.vy) < 0.28);
-                const cycle = this.phase % (Math.PI * 4);
-                const isGliding = !isHovering && !this.targetFruit && cycle > Math.PI * 2.7;
-                const wingSin = isGliding ? 0.18 : Math.sin(this.phase);
-
-                // Dynamic body pitch (-2 climbing steeply, -1 climbing, 0 level, +1 diving, +2 steep dive)
-                const pitch = isHovering ? -1 : Math.max(-2, Math.min(2, Math.round(this.vy * 6)));
-                const liftY = Math.round(-wingSin * 1.1);
-
-                // 1. Far-Side (Background) Wing for 3D Depth
-                if (isHovering) {
-                    // Flared forward/upward braking wing
-                    px(1, -8 + liftY, 5, 3, p.wingPrimary);
-                    px(0, -5 + liftY, 5, 3, p.wingCovert);
-                } else if (wingSin > 0.1) {
-                    const farH = Math.round(wingSin * 5);
-                    px(0, -4 - farH + liftY, 5, 2, p.wingTip);
-                    px(-1, -2 - farH + liftY, 6, 3, p.wingPrimary);
-                }
-
-                // 2. Long Graduated Streaming Tail (waves with flight & fans out when braking/hovering)
-                const tailLen = 19;
-                for (let t = 0; t < tailLen; t++) {
-                    const tx = -8 - t;
-                    const waveOffset = Math.sin(this.tailWave - t * 0.28) * (t * 0.08);
-                    const pitchOffset = -pitch * (t * 0.22);
-                    const ty = Math.round(1 + t * 0.14 + pitchOffset + waveOffset + liftY);
-
-                    // Central longest scarlet/blue rectrices
-                    px(tx, ty, 1, 1, p.tailCenter);
-                    if (t < 15) {
-                        px(tx, ty - 1, 1, 1, p.tailMid);
-                    }
-                    // Outer cyan/gold graduated feathers (fanned wider during hover/turning)
-                    const fanSpread = isHovering ? 2 : 1;
-                    if (t >= 2 && t < 13) {
-                        px(tx, ty + fanSpread, 1, 1, p.tailOuter);
-                        if (isHovering && t < 9) {
-                            px(tx, ty - 1 - fanSpread, 1, 1, p.tailOuter);
-                        }
-                    }
-                }
-
-                // 3. Sculpted Aerodynamic Macaw Body (with pitch tilt & 3-tone shading)
-                const headPitch = pitch;
-                const rearPitch = -Math.sign(pitch);
-
-                // Upper mantle & back
-                px(-6, -2 + rearPitch + liftY, 6, 2, p.body);
-                px(0, -2 + liftY, 6, 2, p.bodyHi);
-                // Core torso
-                px(-7, 0 + rearPitch + liftY, 14, 3, p.body);
-                // Sunlit breast & shaded belly contour
-                px(1, 1 + headPitch + liftY, 6, 2, p.belly);
-                px(-5, 3 + rearPitch + liftY, 10, 1, p.bodyShade);
-                // Tucked dark zygodactyl feet under tail coverts (slightly lowered when about to land/eat)
-                if (isHovering) {
-                    px(-2, 4 + liftY, 2, 2, '#1e293b');
-                    px(1, 4 + liftY, 2, 2, '#1e293b');
-                } else {
-                    px(-4, 4 + rearPitch + liftY, 3, 1, '#1e293b');
-                }
-
-                // 4. Sculpted Neck, Rounded Crown, Bare Facial Patch & Opening Hooked Beak
-                const hx = 5;
-                const hy = -4 + headPitch + liftY;
-
-                // Neck & Crown
-                px(hx - 1, hy + 1, 5, 4, p.body);
-                px(hx, hy - 1, 6, 2, p.bodyHi);
-                px(hx - 1, hy, 2, 2, p.bodyShade);
-
-                // Iconic Macaw Bare Facial Patch with subtle feather striation pixel
-                px(hx + 2, hy + 1, 4, 3, p.face);
-                px(hx + 2, hy + 3, 2, 1, p.faceLine);
-                // Expressive dark eye + tiny upper-left glint
-                px(hx + 3, hy + 1, 2, 2, p.eye);
-                px(hx + 3, hy + 1, 1, 1, '#ffffff');
-
-                // Large Curved Hooked Macaw Bill (Upper maxilla + articulated lower mandible)
-                px(hx + 6, hy + 1, 3, 2, p.beakUpper);
-                px(hx + 8, hy + 2, 2, 2, p.beakTip);   // Sharp downward hook tip
-                px(hx + 9, hy + 4, 1, 1, p.beakTip);
-                // Lower dark mandible (drops 1px when eating/calling)
-                px(hx + 6, hy + 3 + this.beakOpen, 2, 2, p.beakLower);
-
-                // 5. Foreground 3-Tier Articulated Wing (5 distinct poses)
-                if (isHovering) {
-                    // HOVER / BRAKING FLARE: Swept forward & high with separated primary finger feathers
-                    px(-2, -3 + liftY, 5, 3, p.wingShoulder);
-                    px(-4, -6 + liftY, 6, 3, p.wingCovert);
-                    px(-6, -9 + liftY, 6, 3, p.wingPrimary);
-                    //Separated primary wingtip feathers
-                    px(-8, -11 + liftY, 3, 2, p.wingTip);
-                    px(-5, -12 + liftY, 3, 2, p.wingTip);
-                    px(-2, -11 + liftY, 2, 2, p.wingTip);
-                } else if (isGliding || (wingSin >= -0.22 && wingSin <= 0.28)) {
-                    // POSE A: Broad Cambered Thermal Glide Wing
-                    px(-3, -2 + liftY, 6, 2, p.wingShoulder);
-                    px(-6, -3 + liftY, 7, 2, p.wingCovert);
-                    px(-9, -4 + liftY, 6, 2, p.wingGreen);
-                    px(-13, -5 + liftY, 6, 2, p.wingPrimary);
-                    px(-15, -6 + liftY, 4, 2, p.wingTip);
-                } else if (wingSin > 0.28 && wingSin <= 0.72) {
-                    // POSE B: Mid-Upstroke / Swept Arch
-                    px(-2, -3 + liftY, 5, 3, p.wingShoulder);
-                    px(-5, -6 + liftY, 6, 3, p.wingCovert);
-                    px(-8, -8 + liftY, 6, 2, p.wingGreen);
-                    px(-11, -10 + liftY, 6, 2, p.wingPrimary);
-                    px(-13, -11 + liftY, 4, 2, p.wingTip);
-                } else if (wingSin > 0.72) {
-                    // POSE C: Full High Upstroke (dramatic V-elevation above the back)
-                    px(-1, -4 + liftY, 5, 3, p.wingShoulder);
-                    px(-3, -7 + liftY, 6, 3, p.wingCovert);
-                    px(-5, -10 + liftY, 6, 3, p.wingGreen);
-                    px(-8, -13 + liftY, 6, 3, p.wingPrimary);
-                    px(-10, -15 + liftY, 4, 2, p.wingTip);
-                    px(-6, -15 + liftY, 3, 1, p.wingTip);
-                } else if (wingSin < -0.22 && wingSin >= -0.72) {
-                    // POSE D: Mid-Downstroke (sweeping across the flank)
-                    px(-2, 0 + liftY, 6, 2, p.wingShoulder);
-                    px(-4, 2 + liftY, 6, 2, p.wingCovert);
-                    px(-7, 4 + liftY, 6, 2, p.wingGreen);
-                    px(-10, 6 + liftY, 5, 2, p.wingPrimary);
-                    px(-12, 7 + liftY, 3, 2, p.wingTip);
-                } else {
-                    // POSE E: Deep Power Downstroke (reaching below the chest)
-                    px(-1, 1 + liftY, 5, 3, p.wingShoulder);
-                    px(-3, 4 + liftY, 5, 3, p.wingCovert);
-                    px(-5, 7 + liftY, 5, 2, p.wingGreen);
-                    px(-7, 9 + liftY, 5, 2, p.wingPrimary);
-                    px(-9, 11 + liftY, 3, 2, p.wingTip);
+            const fanSpread = isHovering ? 2 : 1;
+            if (t >= 2 && t < 13) {
+                px(tx, ty + fanSpread, 1, 1, p.tailOuter);
+                if (isHovering && t < 9) {
+                    px(tx, ty - 1 - fanSpread, 1, 1, p.tailOuter);
                 }
             }
         }
+
+        const headPitch = pitch;
+        const rearPitch = -Math.sign(pitch);
+
+        px(-6, -2 + rearPitch + liftY, 6, 2, p.body);
+        px(0, -2 + liftY, 6, 2, p.bodyHi);
+        px(-7, 0 + rearPitch + liftY, 14, 3, p.body);
+        px(1, 1 + headPitch + liftY, 6, 2, p.belly);
+        px(-5, 3 + rearPitch + liftY, 10, 1, p.bodyShade);
+
+        if (isHovering) {
+            px(-2, 4 + liftY, 2, 2, '#1e293b');
+            px(1, 4 + liftY, 2, 2, '#1e293b');
+        } else {
+            px(-4, 4 + rearPitch + liftY, 3, 1, '#1e293b');
+        }
+
+        const hx = 5;
+        const hy = -4 + headPitch + liftY;
+
+        px(hx - 1, hy + 1, 5, 4, p.body);
+        px(hx, hy - 1, 6, 2, p.bodyHi);
+        px(hx - 1, hy, 2, 2, p.bodyShade);
+
+        px(hx + 2, hy + 1, 4, 3, p.face);
+        px(hx + 2, hy + 3, 2, 1, p.faceLine);
+        px(hx + 3, hy + 1, 2, 2, p.eye);
+        px(hx + 3, hy + 1, 1, 1, '#ffffff');
+
+        px(hx + 6, hy + 1, 3, 2, p.beakUpper);
+        px(hx + 8, hy + 2, 2, 2, p.beakTip);
+        px(hx + 9, hy + 4, 1, 1, p.beakTip);
+        px(hx + 6, hy + 3 + this.beakOpen, 2, 2, p.beakLower);
+
+        if (isHovering) {
+            px(-2, -3 + liftY, 5, 3, p.wingShoulder);
+            px(-4, -6 + liftY, 6, 3, p.wingCovert);
+            px(-6, -9 + liftY, 6, 3, p.wingPrimary);
+            px(-8, -11 + liftY, 3, 2, p.wingTip);
+            px(-5, -12 + liftY, 3, 2, p.wingTip);
+            px(-2, -11 + liftY, 2, 2, p.wingTip);
+        } else if (isGliding || (wingSin >= -0.22 && wingSin <= 0.28)) {
+            px(-3, -2 + liftY, 6, 2, p.wingShoulder);
+            px(-6, -3 + liftY, 7, 2, p.wingCovert);
+            px(-9, -4 + liftY, 6, 2, p.wingGreen);
+            px(-13, -5 + liftY, 6, 2, p.wingPrimary);
+            px(-15, -6 + liftY, 4, 2, p.wingTip);
+        } else if (wingSin > 0.28 && wingSin <= 0.72) {
+            px(-2, -3 + liftY, 5, 3, p.wingShoulder);
+            px(-5, -6 + liftY, 6, 3, p.wingCovert);
+            px(-8, -8 + liftY, 6, 2, p.wingGreen);
+            px(-11, -10 + liftY, 6, 2, p.wingPrimary);
+            px(-13, -11 + liftY, 4, 2, p.wingTip);
+        } else if (wingSin > 0.72) {
+            px(-1, -4 + liftY, 5, 3, p.wingShoulder);
+            px(-3, -7 + liftY, 6, 3, p.wingCovert);
+            px(-5, -10 + liftY, 6, 3, p.wingGreen);
+            px(-8, -13 + liftY, 6, 3, p.wingPrimary);
+            px(-10, -15 + liftY, 4, 2, p.wingTip);
+            px(-6, -15 + liftY, 3, 1, p.wingTip);
+        } else if (wingSin < -0.22 && wingSin >= -0.72) {
+            px(-2, 0 + liftY, 6, 2, p.wingShoulder);
+            px(-4, 2 + liftY, 6, 2, p.wingCovert);
+            px(-7, 4 + liftY, 6, 2, p.wingGreen);
+            px(-10, 6 + liftY, 5, 2, p.wingPrimary);
+            px(-12, 7 + liftY, 3, 2, p.wingTip);
+        } else {
+            px(-1, 1 + liftY, 5, 3, p.wingShoulder);
+            px(-3, 4 + liftY, 5, 3, p.wingCovert);
+            px(-5, 7 + liftY, 5, 2, p.wingGreen);
+            px(-7, 9 + liftY, 5, 2, p.wingPrimary);
+            px(-9, 11 + liftY, 3, 2, p.wingTip);
+        }
+    }
+}
