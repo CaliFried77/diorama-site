@@ -513,7 +513,40 @@ export function drawHabitatEnvironment(time) {
         }
     }
 
-    drawHabitatFlora(time, hab);
+    if (hab.sceneProfile === 'koi-pond') {
+        // Bamboo, iris and lily movement is cached at 20 Hz. The main scene and
+        // koi remain full-rate; drawing one small bitmap avoids hundreds of
+        // per-stem fillRect calls on every animation frame.
+        let cache = sceneCache.koiFloraCache;
+        const cacheInvalid = !cache || cache.hab !== hab.id || cache.light !== isLightMode ||
+            cache.width !== pw || cache.height !== ph;
+        const refreshFlora = cacheInvalid || time - cache.updatedAt >= 50;
+
+        if (refreshFlora) {
+            if (cacheInvalid) {
+                const layer = document.createElement('canvas');
+                layer.width = pw;
+                layer.height = ph;
+                cache = {
+                    canvas: layer,
+                    ctx: layer.getContext('2d'),
+                    hab: hab.id,
+                    light: isLightMode,
+                    width: pw,
+                    height: ph,
+                    updatedAt: 0,
+                };
+                sceneCache.koiFloraCache = cache;
+            } else {
+                cache.ctx.clearRect(0, 0, pw, ph);
+            }
+            drawHabitatFlora(time, hab, cache.ctx);
+            cache.updatedAt = time;
+        }
+        ctx.drawImage(cache.canvas, 0, 0);
+    } else {
+        drawHabitatFlora(time, hab);
+    }
 
     ambientParticles.forEach((pt, idx) => {
         if (hab.sceneProfile === 'koi-pond') {
