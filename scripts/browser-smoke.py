@@ -160,7 +160,9 @@ async def ensure_habitat_popover_open(page):
         "(panel) => panel.classList.contains('open')"
     )
     if not is_open:
-        await page.locator("#habitatMenuBtn").click()
+        # Dispatch the button's click handler directly; Playwright's navigation
+        # auto-wait can time out on this persistent single-page popover.
+        await page.locator("#habitatMenuBtn").dispatch_event("click")
     await page.locator("#habitatPopover.open").wait_for(state="visible")
 
 

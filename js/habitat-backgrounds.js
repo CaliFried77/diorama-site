@@ -800,35 +800,69 @@ export function buildStaticEnvironmentLayer(hab) {
         drawMapleCloud(Math.round(pw * 0.215), 10, 42, 22, 2.1);
         drawMapleCloud(Math.round(pw * 0.285), 28, 25, 17, 3.0);
 
-        // Köprünün kemeri, alt taşıyıcıları ve korkuluğu ayrı tonlarla çizilir.
+        // Uzak kıyıyı gerçekten birbirine bağlayan kemerli kızıl köprü.
+        // İki uç, kıyı yüksekliğine ayrı ayrı oturur; taş ayaklar ve kısa döşeli
+        // yaklaşımlar köprünün suyun üzerinde havada asılı görünmesini önler.
         const bridgeStart = Math.round(pw * 0.575);
         const bridgeWidth = Math.max(48, Math.min(138, Math.round(pw * 0.235)));
-        const bridgeBaseY = shoreY(Math.round(bridgeStart + bridgeWidth * 0.5)) + 17;
-        const bridgeRise = Math.max(8, Math.round(ph * 0.047));
+        const bridgeEnd = bridgeStart + bridgeWidth;
+        const bridgeLeftShore = shoreY(bridgeStart);
+        const bridgeRightShore = shoreY(bridgeEnd);
+        const bridgeLeftY = bridgeLeftShore + 4;
+        const bridgeRightY = bridgeRightShore + 4;
+        const bridgeBaseY = Math.round((bridgeLeftY + bridgeRightY) * 0.5);
+        const bridgeRise = Math.max(8, Math.round(ph * 0.035));
         const bridgeDark = isLightMode ? '#7f1d1d' : '#57191e';
         const bridgeMid = isLightMode ? '#b91c1c' : '#9f3030';
         const bridgeRed = isLightMode ? '#dc4a3d' : '#c34b40';
         const bridgeLight = isLightMode ? '#f3a184' : '#ed8564';
+
+        const drawBridgeLanding = (x, shoreYValue) => {
+            sRect(x - 8, shoreYValue + 1, 17, 6, stoneDark);
+            sRect(x - 7, shoreYValue + 1, 15, 2, stoneHi);
+            sRect(x - 9, shoreYValue + 5, 19, 2, mossDark);
+            sRect(x - 5, shoreYValue + 3, 11, 2, stoneMid);
+        };
+        drawBridgeLanding(bridgeStart, bridgeLeftShore);
+        drawBridgeLanding(bridgeEnd, bridgeRightShore);
+
+        // Kısa taş patikalar iki köprü ayağını kıyı bahçesine bağlar.
+        for (let step = 0; step < 6; step++) {
+            const lx = Math.round(bridgeStart - 22 + step * 3.5);
+            const ly = shoreY(lx) + 2 + (step % 2);
+            sRect(lx, ly, 4, 2, stoneMid);
+            sRect(lx, ly, 2, 1, stoneHi);
+
+            const rx = Math.round(bridgeEnd + 3 + step * 3.5);
+            const ry = shoreY(rx) + 2 + (step % 2);
+            sRect(rx, ry, 4, 2, stoneMid);
+            sRect(rx, ry, 2, 1, stoneHi);
+        }
+
         for (let x = 0; x <= bridgeWidth; x++) {
             const t = x / bridgeWidth;
             const arch = Math.sin(t * Math.PI);
-            const deckY = bridgeBaseY - Math.round(arch * bridgeRise);
-            sRect(bridgeStart + x, deckY + 4, 1, 2, 'rgba(3, 17, 23, 0.48)');
+            const landingY = bridgeLeftY + (bridgeRightY - bridgeLeftY) * t;
+            const deckY = Math.round(landingY - arch * bridgeRise);
+
+            sRect(bridgeStart + x, deckY + 4, 1, 2, 'rgba(3, 17, 23, 0.36)');
             sRect(bridgeStart + x, deckY + 2, 1, 3, bridgeDark);
             sRect(bridgeStart + x, deckY, 1, 2, bridgeRed);
-            if (x % 7 === 0) sRect(bridgeStart + x, deckY + 1, 1, 1, bridgeLight);
-            const railY = deckY - 9;
+            if (x % 4 === 0) sRect(bridgeStart + x, deckY + 1, 1, 1, bridgeLight);
+
+            const railY = deckY - 8;
             sRect(bridgeStart + x, railY, 1, 2, bridgeMid);
             if (x % 8 === 0 || x === bridgeWidth) {
-                sRect(bridgeStart + x, railY, 2, 9, bridgeDark);
+                sRect(bridgeStart + x, railY, 2, 8, bridgeDark);
                 sRect(bridgeStart + x, railY, 1, 2, bridgeLight);
-                sRect(bridgeStart + x, railY + 8, 2, 2, bridgeRed);
+                sRect(bridgeStart + x, railY + 7, 2, 2, bridgeRed);
             }
         }
-        sRect(bridgeStart - 4, bridgeBaseY + 1, 8, 5, stoneDark);
-        sRect(bridgeStart + bridgeWidth - 3, bridgeBaseY + 1, 8, 5, stoneDark);
-        sRect(bridgeStart - 2, bridgeBaseY, 4, 2, stoneHi);
-        sRect(bridgeStart + bridgeWidth - 1, bridgeBaseY, 4, 2, stoneHi);
+        // Deck caps visually overlap the stone landings at both ends.
+        sRect(bridgeStart - 5, bridgeLeftY + 1, 11, 3, bridgeDark);
+        sRect(bridgeStart + bridgeWidth - 5, bridgeRightY + 1, 11, 3, bridgeDark);
+        sRect(bridgeStart - 4, bridgeLeftY, 9, 1, bridgeLight);
+        sRect(bridgeStart + bridgeWidth - 4, bridgeRightY, 9, 1, bridgeLight);
 
         // Gölet yüzeyinde ince, kırık ışık izleri ve köprü/akçaağaç yansımaları.
         for (let band = 0; band < 23; band++) {

@@ -2,7 +2,7 @@ import { recordRenderFrame } from './performance-monitor.js';
 import { cachedGlassCards, popovers, setPopoverOpen, shortcutModal, closeShortcutModal, toggleZenMode, refreshGlassCardCache } from './01-core-ui.js';
 import { pw, ph, canvas, HABITATS, currentHabitatIdx, creatures, pinnedHabitatId, prefersReducedMotion, BASE_FRAME_MS, MAX_FRAME_DELTA_MS, REDUCED_MOTION_QUERY, setPinnedHabitatId, setFrameScale, setPrefersReducedMotion } from './07-habitat-state.js';
 import { initHabitat } from './habitat-initializer.js';
-import { drawHabitatEnvironment } from './09-scenery.js';
+import { drawHabitatEnvironment, drawKoiWaterOptics } from './09-scenery.js';
 import { drawWxFront } from './03-weather.js';
 import { lsPut, esc } from './storage.js';
 
@@ -234,6 +234,8 @@ import { lsPut, esc } from './storage.js';
                 creatures[i].draw();
             }
 
+            // The water surface is the foreground optical layer: draw it over koi sprites.
+            drawKoiWaterOptics(sceneTime);
             drawWxFront(sceneTime);
 
             // The refractive lens is expensive; 30 Hz is visually smooth for this pixel-art UI.
