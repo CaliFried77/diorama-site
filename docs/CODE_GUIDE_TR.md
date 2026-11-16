@@ -23,7 +23,7 @@ Bu belge, projeyi ileride düzenlerken doğru dosyayı bulmayı ve değişiklikl
 | `js/habitat-flora-renderer.js` | Flora oluşturucusunun hazırladığı bitkilerin kare bazlı animasyon/çizimi | Bitki türlerinin görünümü, sallanması veya hareketli çizim davranışı değişirken |
 | `js/habitat-initializer.js` | Aktif habitatı seçer; sahne dizilerini ve önbelleği sıfırlayıp flora/canlı oluşturucularını çağırır | Habitat geçişinin genel başlangıç akışını değiştirirken |
 | `js/habitat-flora-generator.js` | Her biyom için bitkilerin türünü, miktarını, rengini ve sahnedeki başlangıç koordinatlarını üretir | Yeni biyoma bitki eklerken veya bitkilerin başlangıç yerleşimini değiştirirken |
-| `js/09-scenery.js` | Gökyüzü, ortam efektleri, statik arka plan, flora çizimi ve yem çizimi çağrı sırasını yönetir | Hareketli sahne efektleri veya çizim sırası değişirken |
+| `js/09-scenery.js` | Gökyüzü/hava efektlerini ve sahne katmanlarının kare başına çağrı sırasını yönetir | Hareketli atmosfer efektleri veya çizim sırası değişirken |
 | `js/10-glass-renderer.js` | Animasyon döngüsü, canlıların sahneye çizilmesi, cam yansıma katmanı ve klavye kısayolları | Animasyon, çizim sırası veya cam efektleri değişirken |
 | `js/11-calendar.js` | Takvim, etkinlik doğrulama ve yerel kayıt | Takvim özellikleri değişirken |
 | `js/storage.js`, `js/news-utils.js`, `js/scene-math.js`, `js/scene-state.js`, `js/services.js`, `js/focus-timer-state.js` | Birden fazla modülün kullandığı küçük, ortak yardımcılar ve döngü engelleyici servis köprüleri | Aynı mantık birden fazla modülde gerçekten ortaksa |
@@ -37,7 +37,7 @@ Bu belge, projeyi ileride düzenlerken doğru dosyayı bulmayı ve değişiklikl
 
 - `js/07-habitat-state.js` ortak durum deposudur. Buradaki değişiklik çok sayıda sahne modülünü etkileyebilir.
 - `js/08-creatures.js` canlı sınıflarını ve yem/uyaran etkileşimini birlikte barındırır. Bir canlıyı değiştirirken başka türlerin ortak davranışlarını bozmamaya dikkat et.
-- `js/09-scenery.js` büyük bir çizim dosyasıdır. Habitat çizimlerini ayırmak cazip görünse de, önce ortak çizim sırası ve paylaşılan durum testlerle anlaşılmalıdır.
+- `js/09-scenery.js` artık sahne çizim orkestrasyonunu yapar; gerçek flora, statik çevre ve yem çizimleri ayrı modüllerdedir. Yeni çizim katmanı eklerken sıralamayı burada güncelle.
 - `js/10-glass-renderer.js` animasyon döngüsünü yönetir. Burada küçük görünen değişiklikler FPS, pil tüketimi ve çizim sırasını etkileyebilir.
 - `js/02-news.js` kaynak önbelleği, isteklerin eşzamanlılığı ve yeniden deneme kurallarını içerir. Sadece görünümü değiştirirken istek/önbellek mantığına dokunma.
 
@@ -134,8 +134,9 @@ Bunlar hemen taşınacak veya silinecek kodlar değildir. Önce mevcut kullanım
 
 1. **Tamamlandı — Kutup platform geometrisi:** `getArcticLedges(width, height)` ve platform bağlantı grafiği, canlı sınıflarından ayrılarak saf `js/arctic-geometry.js` modülüne taşındı. Modül DOM/canvas durumuna erişmez; iki boyut parametresiyle çalışır ve ayrı birim testleri vardır.
 2. **Tamamlandı — Yem bırakma etkileşimi:** Canvas `pointerdown` dinleyicisi ve habitat profiline göre yem/uyaran üretimi `js/habitat-interactions.js` dosyasına taşındı. `js/08-creatures.js` artık yalnızca canlı davranışını, hareketini ve çizimini yönetiyor. Yemlerin üretimi ile kare bazlı animasyon/çizim/ömür yönetimi etkileşim modülünde toplanıyor. Çizim sırası korunarak taşındı.
-3. **Tamamlandı — Statik sahne katmanı:** Yaklaşık 944 satırlık statik arka plan oluşturucusu `js/habitat-backgrounds.js` dosyasına, ortak zemin eğrileri ise saf `js/habitat-geometry.js` modülüne taşındı. `js/09-scenery.js` habitat kurulumu ve kare bazlı hareketli çevreyi yönetmeye devam ediyor. Sonraki aşamada yalnızca gerçekten ayrı sorumluluk taşıyan dinamik çizim grupları incelenmeli; her biyomu otomatik olarak ayrı dosyaya bölmek hedef değil.
-4. **Haber ve hava modülleri:** `js/02-news.js` veri/önbellek, RSS istekleri ve arayüzü; `js/03-weather.js` servis verisi, panel ve sahne efektlerini birlikte yönetiyor. İleride veri katmanı ile çizim katmanı ayrılabilir. Önce mevcut fonksiyonların veri akışı belgelenmeli.
-5. **Ortak arayüz modülü:** `js/01-core-ui.js` tema, saat, arama, kısayollar ve popover davranışlarını içeriyor. Büyüyen bu modül özellik gruplarına ayrılabilir; ancak ortak popover ve cam kart durumu tek bir noktada kalmalı.
+3. **Tamamlandı — Statik sahne ve zemin geometrisi:** Yaklaşık 944 satırlık statik arka plan oluşturucusu `js/habitat-backgrounds.js` dosyasına, ortak zemin eğrileri saf `js/habitat-geometry.js` modülüne taşındı.
+4. **Tamamlandı — Habitat başlatma ve flora üretimi:** `initHabitat` ayrı `js/habitat-initializer.js` modülüne alındı. Biyomlara özgü bitki türü/konum üretimi `js/habitat-flora-generator.js` dosyasına ayrıldı; bitkilerin hareketli çizimi `js/habitat-flora-renderer.js` içinde. `js/09-scenery.js` artık sahne katmanlarını kare başına sırayla çağırıyor.
+5. **Haber ve hava modülleri:** `js/02-news.js` veri/önbellek, RSS istekleri ve arayüzü; `js/03-weather.js` servis verisi, panel ve sahne efektlerini birlikte yönetiyor. İleride veri katmanı ile çizim katmanı ayrılabilir. Önce mevcut fonksiyonların veri akışı belgelenmeli.
+6. **Ortak arayüz modülü:** `js/01-core-ui.js` tema, saat, arama, kısayollar ve popover davranışlarını içeriyor. Büyüyen bu modül özellik gruplarına ayrılabilir; ancak ortak popover ve cam kart durumu tek bir noktada kalmalı.
 
-Bu çalışmada dört kullanılmayan import kaldırıldı. Kutup platform geometrisi `js/arctic-geometry.js` dosyasına; zemin eğrileri `js/habitat-geometry.js` dosyasına; statik çevre katmanları `js/habitat-backgrounds.js` dosyasına; yem/uyaran üretimi ve kare bazlı çizim döngüsü ise `js/habitat-interactions.js` dosyasına taşındı. Canlıların mevcut hareket kodu ve sahne çizim sırası korundu.
+Bu çalışmada dört kullanılmayan import kaldırıldı. Kutup platform geometrisi `js/arctic-geometry.js`, zemin eğrileri `js/habitat-geometry.js`, statik çevre `js/habitat-backgrounds.js`, flora başlangıç dağılımı `js/habitat-flora-generator.js`, flora çizimi `js/habitat-flora-renderer.js`, habitat başlatma `js/habitat-initializer.js` ve yem/uyaran üretimi ile çizimi `js/habitat-interactions.js` dosyalarına ayrıldı. Canlıların hareket davranışı ve sahne çizim sırası korundu.
