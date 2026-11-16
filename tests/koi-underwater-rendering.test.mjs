@@ -20,7 +20,7 @@ test('Kyoto water optics are composited over the koi sprites', () => {
 });
 
 test('Koi rendering no longer uses a hard black drop shadow', () => {
-  assert.match(koi, /ctx\.globalAlpha = 0\.92/, 'koi sprites receive underwater attenuation');
+  assert.match(koi, /ctx\.globalAlpha = 0\.84/, 'koi sprites receive underwater attenuation');
   assert.doesNotMatch(koi, /rgba\(2, 10, 18, 0\.30\)/, 'old floating shadow is removed');
 });
 
