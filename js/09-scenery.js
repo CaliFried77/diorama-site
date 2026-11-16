@@ -83,22 +83,22 @@ export function initHabitat(idx) {
         });
     }
 
-   if (hab.sceneProfile === 'meadow') {
-        // Rich Wildflower Meadow: Sunflowers, Foxgloves, Lavender, Poppies, Daisies, Buttercups & Fluffy Dandelions
+  if (hab.sceneProfile === 'meadow') {
+        // Rich Wildflower Meadow: Sunflowers, Foxgloves, Lavender, Poppies, Daisies & Buttercups
         for (let x = 12; x < pw - 12; x += 6 + Math.floor(Math.random() * 4)) {
             const nx = x / Math.max(1, pw);
-            // Leave space around the right-side wooden apiary hive box (nx ~ 0.84..0.90)
-            if (nx > 0.83 && nx < 0.90) continue;
+            // Keep a clear garden terrace around the Grand Right-Side Apiary Sanctuary
+            if (nx > 0.78 && nx < 0.90) continue;
 
             const baseY = getGroundY(x, 'meadow') + Math.round((Math.random() - 0.5) * 2);
             const r = Math.random();
 
-            if (r < 0.18 && (nx > 0.12 && nx < 0.42 || nx > 0.66 && nx < 0.82)) {
+            if (r < 0.18 && (nx > 0.25 && nx < 0.44 || nx > 0.64 && nx < 0.77)) {
                 flora.push({
                     type: 'sunflower',
                     x,
                     baseY,
-                    h: 32 + Math.random() * 24,
+                    h: 32 + Math.random() * 22,
                     headR: 4 + Math.floor(Math.random() * 2),
                     phase: Math.random() * Math.PI * 2
                 });
@@ -107,7 +107,7 @@ export function initHabitat(idx) {
                     type: 'foxglove',
                     x,
                     baseY,
-                    h: 24 + Math.random() * 22,
+                    h: 24 + Math.random() * 20,
                     hue: Math.random() < 0.5 ? '#c084fc' : '#f472b6',
                     phase: Math.random() * Math.PI * 2
                 });
@@ -116,14 +116,14 @@ export function initHabitat(idx) {
                     type: 'meadow',
                     x,
                     baseY,
-                    h: 14 + Math.random() * 22,
+                    h: 14 + Math.random() * 20,
                     hasBloom: Math.random() < 0.78,
                     kind: ['lavender', 'daisy', 'poppy', 'buttercup'][Math.floor(Math.random() * 4)],
                     phase: Math.random() * Math.PI * 2
                 });
             }
         }
-
+      
     } else if (hab.sceneProfile === 'betta-aquarium') {
         // 1. Takashi Amano U-Shaped Concave Stem-Plant Layout (Tall lush sides, open central river-sand canyon)
         for (let x = 10; x < pw - 10; x += 8 + Math.floor(Math.random() * 5)) {
@@ -622,7 +622,7 @@ function buildStaticEnvironmentLayer(hab) {
     const mistCol = isLightMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(148, 163, 184, 0.035)';
     sRect(0, ph - 28, pw, 10, mistCol);
 
-   // 2. MEADOW STATIC SCENERY (Ancient Framing Oak, Blossoming Right Orchard Bough, Distant Rolling Hills & Artisan Apiary Box)
+   // 2. MEADOW STATIC SCENERY (Harmonious Left Orchard Grove, Right Blossoming Tree & Grand 3-Tier Artisan Apiary)
     if (hab.sceneProfile === 'meadow') {
         const trunkDark = isLightMode ? '#451a03' : '#181014';
         const trunkMid = isLightMode ? '#78350f' : '#291b22';
@@ -630,122 +630,82 @@ function buildStaticEnvironmentLayer(hab) {
         const leafDark = isLightMode ? '#14532d' : '#08221d';
         const leafMid = isLightMode ? '#15803d' : '#10382e';
         const leafHi = isLightMode ? '#22c55e' : '#1b5442';
-        const leafGold = isLightMode ? '#84cc16' : '#2dd4bf';
 
-        // A. Distant Sunlit Tuscan/Anatolian Rolling Hills & Cypress/Orchard Silhouettes
-        const hillCol = isLightMode ? 'rgba(21, 128, 61, 0.22)' : 'rgba(13, 56, 44, 0.45)';
-        for (let x = 0; x < pw; x += 2) {
-            const nx = x / Math.max(1, pw);
-            const h = Math.round(14 + Math.sin(nx * Math.PI * 2.5) * 8 + Math.cos(x * 0.05) * 3);
-            const gy = getGroundY(x, 'meadow');
-            sRect(x, gy - h, 2, h, hillCol);
-        }
-
-        // B. Secondary Midground Orchard Tree on Left-Midground Hillside
-        const groveX = Math.round(pw * 0.24);
-        const groveBaseY = getGroundY(groveX, 'meadow') + 2;
-        const groveTopY = groveBaseY - 72;
-        for (let y = groveTopY; y < groveBaseY; y++) {
-            const prog = (y - groveTopY) / 72;
-            const flare = prog > 0.75 ? Math.pow((prog - 0.75) / 0.25, 2) * 8 : 0;
-            const w = Math.round(6 + prog * 4 + flare);
-            const left = Math.round(groveX - flare * 0.5);
-            sRect(left, y, w, 1, trunkDark);
-            sRect(left + w - 2, y, 2, 1, trunkMid);
-        }
-        [[groveX + 2, groveTopY - 8, 22, 15], [groveX + 18, groveTopY - 2, 18, 13], [groveX - 12, groveTopY - 3, 16, 12]].forEach(([cx, cy, rx, ry], idx) => {
+        // Helper for soft, layered pixel-art foliage clouds with natural scalloped rims
+        const drawLeafCluster = (cx, cy, rx, ry, blossoms = false, blossomCol = '#fda4af') => {
             for (let dy = -ry; dy <= ry; dy++) {
-                const span = Math.round(rx * Math.sqrt(Math.max(0, 1 - (dy * dy) / (ry * ry))));
-                const col = dy < -ry * 0.25 ? leafHi : (dy > ry * 0.35 ? leafDark : leafMid);
+                const ratio = 1 - (dy * dy) / (ry * ry);
+                if (ratio <= 0) continue;
+                const scallop = Math.sin(dy * 0.65 + cx * 0.14) * 2.2;
+                const span = Math.max(1, Math.round(rx * Math.sqrt(ratio) + scallop));
+                const col = dy < -ry * 0.26 ? leafHi : (dy > ry * 0.34 ? leafDark : leafMid);
                 sRect(cx - span, cy + dy, span * 2, 1, col);
-                if (dy % 5 === 0 && span > 4) {
-                    sRect(cx + ((dy * 7 + idx * 5) % (span - 2)), cy + dy, 2, 2, '#fbbf24');
+            }
+            if (blossoms) {
+                [[-0.45, -0.25], [0.35, -0.30], [-0.15, 0.20], [0.42, 0.18], [0.05, -0.42]].forEach(([bx, by]) => {
+                    const px = Math.round(cx + bx * rx);
+                    const py = Math.round(cy + by * ry);
+                    sRect(px, py, 2, 2, blossomCol);
+                    sRect(px, py, 1, 1, '#fff1f2');
+                });
+            }
+        };
+
+        // Helper to draw an organic forked tree with root flare & reaching boughs
+        const drawOrchardTree = (baseX, baseY, height, baseWidth, leanDir, blossoms, blossomCol) => {
+            const topY = baseY - height;
+            for (let y = topY; y < baseY; y++) {
+                const prog = (y - topY) / height;
+                const curve = Math.sin(prog * Math.PI * 0.9) * 3.5 * leanDir;
+                const flare = prog > 0.72 ? Math.pow((prog - 0.72) / 0.28, 2) * (baseWidth * 1.1) : 0;
+                const w = Math.round(baseWidth * (0.45 + prog * 0.55) + flare);
+                const left = Math.round(baseX + curve - w * 0.5);
+                sRect(left, y, w, 1, trunkDark);
+                sRect(left + Math.floor(w * 0.35), y, Math.max(1, Math.floor(w * 0.35)), 1, trunkMid);
+                sRect(left + (leanDir >= 0 ? w - 2 : 1), y, 1, 1, trunkHi);
+            }
+            // Forked left & right upper limbs supporting the canopy clouds
+            [-1, 1].forEach(dir => {
+                const reach = Math.round(height * (dir === leanDir ? 0.34 : 0.25));
+                for (let s = 0; s < reach; s++) {
+                    const t = s / reach;
+                    const bx = baseX + dir * s;
+                    const by = topY + Math.round(height * 0.18 - Math.sin(t * Math.PI * 0.65) * 10);
+                    const thick = Math.max(2, Math.round((baseWidth * 0.45) * (1 - t * 0.7)));
+                    sRect(bx, by, 1, thick, trunkDark);
+                    sRect(bx, by, 1, 1, trunkHi);
                 }
-            }
-        });
+            });
 
-        // C. Grand Ancient Meadow Oak on Left (Reaches all the way from ground to top-left canopy without floating!)
-        const oakReach = Math.min(155, Math.round(pw * 0.30));
-        const oakBaseY = getGroundY(0, 'meadow') + 4;
-        for (let y = 0; y < oakBaseY; y++) {
-            const prog = y / oakBaseY;
-            const rootFlare = prog > 0.70 ? Math.pow((prog - 0.70) / 0.30, 2) * 20 : 0;
-            const w = Math.round(16 + prog * 7 + rootFlare);
-            sRect(0, y, w, 1, trunkDark);
-            sRect(w - 6, y, 4, 1, trunkMid);
-            sRect(w - 2, y, 2, 1, trunkHi);
-            if (y % 19 === 0 && y > 30 && y < oakBaseY - 20) {
-                sRect(5, y, 4, 2, trunkHi);
-            }
+            // Multi-lobed organic tree crown
+            const rx = Math.round(height * 0.34);
+            const ry = Math.round(height * 0.20);
+            drawLeafCluster(baseX - Math.round(rx * 0.65), topY + 8, Math.round(rx * 0.82), Math.round(ry * 0.82), false);
+            drawLeafCluster(baseX + Math.round(rx * 0.68), topY + 6, Math.round(rx * 0.85), Math.round(ry * 0.84), blossoms, blossomCol);
+            drawLeafCluster(baseX, topY - 4, rx, ry, blossoms, blossomCol);
+            drawLeafCluster(baseX + leanDir * 8, topY - 10, Math.round(rx * 0.75), Math.round(ry * 0.72), blossoms, blossomCol);
+        };
+
+        // A. Smooth Distant Rolling Hills (1px continuous fill — zero vertical comb stripes!)
+        const hillCol = isLightMode ? 'rgba(22, 101, 52, 0.18)' : 'rgba(13, 56, 44, 0.42)';
+        for (let x = 0; x < pw; x++) {
+            const nx = x / Math.max(1, pw);
+            const h = Math.round(14 + Math.sin(nx * Math.PI * 2.5) * 8 + Math.cos(x * 0.04) * 3);
+            const gy = getGroundY(x, 'meadow');
+            sRect(x, gy - h, 1, h, hillCol);
         }
 
-        // Top-Left Continuous Overlapping Oak Canopy (Hugs top screen edge seamlessly)
-        [0.06, 0.28, 0.50, 0.72, 0.90].forEach((tNode, idx) => {
-            const cx = Math.round(tNode * oakReach);
-            const branchY = Math.round(6 + Math.pow(tNode, 1.2) * 14);
-            const rx = Math.round(30 * (1 - tNode * 0.28));
-            const bottomY = branchY + Math.round(9 * (1 - tNode * 0.25));
+        // B. Harmonious Left Orchard Grove (Two naturally proportioned, overlapping trees: 116px & 90px)
+        const leftTree1X = 24;
+        const leftTree2X = Math.round(pw * 0.19);
+        drawOrchardTree(leftTree2X, getGroundY(leftTree2X, 'meadow') + 2, 90, 9, 1, true, '#fbbf24');
+        drawOrchardTree(leftTree1X, getGroundY(leftTree1X, 'meadow') + 3, 116, 13, 1, true, '#fda4af');
 
-            for (let y = 0; y <= bottomY; y++) {
-                const normY = (y - branchY * 0.5) / Math.max(1, bottomY - branchY * 0.5);
-                const ellipse = Math.max(0, 1 - normY * normY);
-                const span = Math.round(rx * (y < branchY * 0.5 ? 1 : Math.sqrt(ellipse)));
-                let col = y < branchY * 0.35 ? leafHi : (y > branchY ? leafDark : leafMid);
-                if ((y + idx) % 6 === 0 && span > 6) col = leafGold;
-                sRect(cx - span, y, span * 2, 1, col);
-            }
-        });
-        for (let s = 0; s <= oakReach; s++) {
-            const t = s / Math.max(1, oakReach);
-            const by = Math.round(6 + Math.pow(t, 1.2) * 14 + Math.sin(s * 0.08) * 1.5);
-            const thick = Math.max(2, Math.round(9 * (1 - t * 0.75)));
-            sRect(s, by - Math.floor(thick * 0.5), 1, thick, trunkDark);
-            sRect(s, by + Math.ceil(thick * 0.5) - 1, 1, 1, trunkHi);
-        }
+        // C. Right-Edge Blossoming Hawthorn/Apple Tree sheltering the Grand Apiary (102px tall)
+        const rightTreeX = pw - 20;
+        drawOrchardTree(rightTreeX, getGroundY(rightTreeX, 'meadow') + 3, 102, 11, -1, true, '#fda4af');
 
-        // Lower Sturdy Horizontal Oak Limb at ph * 0.42 (Holds the Golden Skep Beehive in the midground!)
-        const skepBranchY = Math.round(ph * 0.42);
-        for (let bx = 14; bx <= 92; bx++) {
-            const t = (bx - 14) / 78;
-            const by = skepBranchY + Math.round(Math.sin(t * Math.PI * 0.8) * 3);
-            const bw = Math.max(2, Math.round(8 * (1 - t * 0.7)));
-            sRect(bx, by, 1, bw, trunkDark);
-            sRect(bx, by, 1, 1, trunkHi);
-        }
-        // Leaf cluster shading the beehive limb
-        [[46, skepBranchY - 6, 20, 10], [78, skepBranchY - 4, 18, 9]].forEach(([cx, cy, rx, ry]) => {
-            for (let dy = -ry; dy <= ry; dy++) {
-                const span = Math.round(rx * Math.sqrt(Math.max(0, 1 - (dy * dy) / (ry * ry))));
-                sRect(cx - span, cy + dy, span * 2, 1, dy < 0 ? leafHi : leafDark);
-            }
-        });
-
-        // D. Top-Right Framing Blossoming Apple/Hawthorn Orchard Bough
-        const rightReach = Math.min(115, Math.round(pw * 0.22));
-        [0.10, 0.38, 0.68].forEach((tNode) => {
-            const cx = Math.round(pw - tNode * rightReach);
-            const branchY = Math.round(5 + Math.pow(tNode, 1.2) * 12);
-            const rx = Math.round(24 * (1 - tNode * 0.25));
-            const bottomY = branchY + 7;
-            for (let y = 0; y <= bottomY; y++) {
-                const normY = (y - branchY * 0.5) / Math.max(1, bottomY - branchY * 0.5);
-                const span = Math.round(rx * (y < branchY * 0.5 ? 1 : Math.sqrt(Math.max(0, 1 - normY * normY))));
-                sRect(cx - span, y, span * 2, 1, y < branchY * 0.4 ? leafHi : leafMid);
-                if (y % 4 === 0 && span > 5) {
-                    sRect(cx - Math.floor(span * 0.4), y, 2, 2, '#fda4af');
-                    sRect(cx + Math.floor(span * 0.3), y, 1, 1, '#ffffff');
-                }
-            }
-        });
-        for (let s = 0; s <= rightReach; s++) {
-            const t = s / Math.max(1, rightReach);
-            const bx = pw - 1 - s;
-            const by = Math.round(5 + Math.pow(t, 1.2) * 12 + Math.sin(s * 0.1) * 1.5);
-            const thick = Math.max(2, Math.round(7 * (1 - t * 0.75)));
-            sRect(bx, by, 1, thick, trunkDark);
-        }
-
-        // E. Rolling Velvet Meadow Ground Contour
+        // D. Rolling Velvet Meadow Ground Contour
         const turfTop = isLightMode ? '#16a34a' : '#0f392b';
         const turfDeep = isLightMode ? '#14532d' : '#071f18';
         for (let x = 0; x < pw; x++) {
@@ -754,41 +714,72 @@ function buildStaticEnvironmentLayer(hab) {
             sRect(x, gy, 1, 2, turfTop);
         }
 
-        // F. Right-Hillside Artisan Wooden Beehive Box (Cottagecore Apiary) & Wild Rose Bush
-        const hx = Math.round(pw * 0.86);
+        // E. GRAND ARTISAN APIARY SANCTUARY on the Right Hillside (~52px tall architectural focal point)
+        const hx = Math.round(pw * 0.84);
         const hgy = getGroundY(hx, 'meadow') + 1;
-        // Wild rose & lavender bush behind the wooden hive
-        [[hx + 12, hgy - 10, 13, 9], [hx - 12, hgy - 8, 10, 7]].forEach(([cx, cy, rxR, ryR]) => {
-            for (let dy = -ryR; dy <= ryR; dy++) {
-                const span = Math.round(rxR * Math.sqrt(Math.max(0, 1 - (dy * dy) / (ryR * ryR))));
-                sRect(cx - span, cy + dy, span * 2, 1, dy < 0 ? leafHi : leafDark);
-            }
-            sRect(cx - 2, cy - 2, 2, 2, '#fb7185');
-            sRect(cx + 3, cy + 1, 2, 2, '#fda4af');
+
+        // 1. Lush Wild Rose & Lavender Bushes flanking the Grand Apiary
+        drawLeafCluster(hx - 20, hgy - 11, 14, 10, true, '#c084fc');
+        drawLeafCluster(hx + 19, hgy - 13, 16, 11, true, '#fb7185');
+
+        // 2. Cobblestone & Timber Foundation Stand
+        const stoneDark = isLightMode ? '#475569' : '#1e293b';
+        const stoneHi = isLightMode ? '#94a3b8' : '#475569';
+        sRect(hx - 19, hgy, 38, 3, 'rgba(2, 10, 14, 0.45)'); // Ground shadow
+        sRect(hx - 17, hgy - 5, 34, 6, stoneDark);
+        for (let sx = hx - 15; sx <= hx + 11; sx += 6) {
+            sRect(sx, hgy - 4, 4, 3, stoneHi); // Individual stone blocks
+        }
+        // Heavy oak landing board jutting out at hgy - 7
+        sRect(hx - 16, hgy - 7, 32, 2, trunkDark);
+        sRect(hx - 15, hgy - 7, 30, 1, trunkHi);
+
+        // 3. Tall 3-Story Artisan Wooden Hive Body (Brood Box + 2 Honey Supers: 26px wide, 30px tall)
+        const boxLight = isLightMode ? '#fef3c7' : '#eab308';
+        const boxMid = isLightMode ? '#fde68a' : '#ca8a04';
+        const boxShadow = isLightMode ? '#f59e0b' : '#a16207';
+        const bodyTop = hgy - 37;
+        const bodyH = 30;
+
+        sRect(hx - 13, bodyTop, 26, bodyH, boxLight);
+        sRect(hx + 7, bodyTop, 6, bodyH, boxMid); // Right-side 3D shading
+        // Corner timber framing posts
+        sRect(hx - 13, bodyTop, 2, bodyH, trunkMid);
+        sRect(hx + 11, bodyTop, 2, bodyH, trunkDark);
+
+        // Horizontal tier seams dividing the 3 stacked honey boxes + recessed side handles
+        [hgy - 17, hgy - 27].forEach(seamY => {
+            sRect(hx - 13, seamY, 26, 2, trunkDark);
+            sRect(hx - 12, seamY, 24, 1, trunkHi);
+            sRect(hx - 4, seamY + 4, 6, 1, boxShadow); // Carved wooden box grip
         });
 
-        // Wooden hive stand legs & shadow
-        sRect(hx - 10, hgy, 20, 3, 'rgba(2, 10, 14, 0.45)');
-        sRect(hx - 8, hgy - 4, 3, 5, trunkDark);
-        sRect(hx + 5, hgy - 4, 3, 5, trunkDark);
-        sRect(hx - 10, hgy - 5, 20, 2, trunkMid); // Landing board
+        // Glowing Golden Honeycomb Inspection Window in the middle super
+        sRect(hx - 5, hgy - 24, 8, 5, trunkDark);
+        sRect(hx - 4, hgy - 23, 6, 3, '#f59e0b');
+        sRect(hx - 3, hgy - 22, 4, 1, '#fef08a');
 
-        // Two-tier painted wooden Langstroth honey boxes (Warm cream & honey-gold)
-        const boxCol = isLightMode ? '#fef3c7' : '#d97706';
-        const boxShade = isLightMode ? '#fde68a' : '#b45309';
-        sRect(hx - 8, hgy - 19, 16, 14, boxCol);
-        sRect(hx - 8, hgy - 12, 16, 1, trunkMid); // Super box seam
-        sRect(hx + 5, hgy - 19, 3, 14, boxShade);
-        // Dark entrance slot & golden landing glow
-        sRect(hx - 5, hgy - 7, 6, 2, '#1e1b18');
-        sRect(hx - 4, hgy - 6, 4, 1, '#fef08a');
+        // Arched Hive Entrance Slot & Golden Pollen Landing Threshold at bottom brood box
+        sRect(hx - 6, hgy - 10, 10, 3, '#181014');
+        sRect(hx - 5, hgy - 11, 8, 1, trunkMid);
+        sRect(hx - 4, hgy - 8, 6, 1, '#fef08a');
 
-        // Pitched gable wooden roof cap
-        for (let r = 0; r <= 5; r++) {
-            const rw = 11 - r * 2;
-            sRect(hx - rw, hgy - 20 - r, rw * 2, 1, r === 0 ? trunkDark : '#b45309');
+        // 4. Steep Overhanging Cedar-Shingle Gable Roof with Carved Finial (hx - 18 to hx + 18)
+        for (let r = 0; r <= 11; r++) {
+            const halfW = 18 - Math.floor(r * 1.45);
+            const ry = bodyTop - 1 - r;
+            const roofCol = r % 3 === 0 ? trunkDark : (r % 2 === 0 ? trunkHi : trunkMid);
+            sRect(hx - halfW, ry, halfW * 2, 1, roofCol);
         }
+        // Roof peak finial spire
+        sRect(hx - 1, bodyTop - 15, 2, 4, trunkDark);
+        sRect(hx, bodyTop - 15, 1, 3, '#fbbf24');
+
+        // 5. Side Timber Arm on Left of Roof for the Hanging Brass Apiary Lantern
+        sRect(hx - 19, bodyTop + 2, 7, 2, trunkDark);
+        sRect(hx - 19, bodyTop + 2, 6, 1, trunkHi);
     }
+    
     // 3. WETLAND STATIC SCENERY
     if (hab.sceneProfile === 'wetland') {
         const waterHorizonY = ph - 52;
@@ -1620,20 +1611,35 @@ export function drawHabitatEnvironment(time) {
        DYNAMIC / ANIMATED HABITAT DETAILS (Scoped Per Biome)
        ========================================================================= */
 
-    // 1. MEADOW: Swaying Golden Beehive on the Oak Branch
+    // 1. MEADOW: Warm Hanging Apiary Lantern on the Grand Beehive & Drifting Dandelion Seeds
     if (hab.sceneProfile === 'meadow') {
-        const branchY = ph - 119;
-        const hiveSway = Math.round(Math.sin(time * 0.0016) * 1.2);
-        const hx = 76 + hiveSway;
-        const hy = branchY + 5;
-        pRect(76, branchY + 2, 1, 4, '#78350f');
-        for (let ry = 0; ry <= 12; ry++) {
-            const hw = Math.round(3 + Math.sin((ry / 12) * Math.PI) * 4.5);
-            const tierCol = ry % 3 === 0 ? '#b45309' : (ry % 2 === 0 ? '#f59e0b' : '#d97706');
-            pRect(hx - hw, hy + ry, hw * 2 + 1, 1, tierCol);
+        const hx = Math.round(pw * 0.84);
+        const hgy = getGroundY(hx, 'meadow') + 1;
+        const bodyTop = hgy - 37;
+        const sway = Math.round(Math.sin(time * 0.002) * 1);
+        const lx = hx - 18 + sway;
+        const ly = bodyTop + 4;
+
+        // Hanging brass lantern chain & warm glowing glass lamp on the Grand Apiary
+        pRect(hx - 18, bodyTop + 4, 1, 3, '#475569');
+        pRect(lx - 2, ly + 3, 5, 1, '#451a03');
+        pRect(lx - 2, ly + 4, 5, 4, '#fef08a');
+        pRect(lx - 1, ly + 5, 3, 2, '#ffffff');
+        pRect(lx - 4, ly + 2, 9, 8, 'rgba(253, 224, 71, 0.22)');
+        pRect(lx - 2, ly + 8, 5, 1, '#451a03');
+
+        // Subtle golden honey-glow pulsing inside the hive inspection window
+        const winPulse = (0.65 + 0.3 * Math.sin(time * 0.003)).toFixed(2);
+        pRect(hx - 4, hgy - 23, 6, 3, `rgba(254, 240, 138, ${winPulse})`);
+
+        // Soft drifting white dandelion fluff seeds floating across the meadow breeze
+        for (let d = 0; d < 6; d++) {
+            const dx = Math.round(((d * 97 + time * (0.008 + (d % 3) * 0.002)) % (pw + 40)) - 20);
+            const dy = Math.round(ph * 0.35 + (d * 19) % Math.floor(ph * 0.45) + Math.sin(time * 0.002 + d) * 8);
+            pRect(dx, dy, 1, 2, '#78350f');
+            pRect(dx - 1, dy - 1, 3, 1, 'rgba(255, 255, 255, 0.85)');
+            pRect(dx, dy - 2, 1, 1, 'rgba(255, 255, 255, 0.95)');
         }
-        pRect(hx - 1, hy + 7, 3, 3, '#1e1b18');
-        pRect(hx, hy + 8, 1, 1, '#fef08a');
     }
 
     // 2. BETTA AQUARIUM: Swaying Anubias Rosettes & Rising Oxygen Bubbles
