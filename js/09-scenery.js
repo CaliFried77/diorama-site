@@ -993,53 +993,119 @@ const CREATURE_PROFILES = Object.freeze({
                     pRect(f.x, f.y, f.w, f.h, isLightMode ? 'rgba(15, 55, 65, 0.35)' : f.shade);
 
                 } else if (f.type === 'canopy_vine') {
-                    // Hanging lianas with alternating paired leaves.
+                    // Thick, winding lianas with paired leaves and occasional side tendrils.
                     for (let y = 0; y < f.len; y++) {
-                        const sway = Math.sin(time * 0.0011 + f.phase + y * 0.045) * (y / f.len) * 4;
-                        const px = f.x + sway;
+                        const progress = y / f.len;
+                        const sway = Math.sin(time * 0.0011 + f.phase + y * 0.035) * (2 + progress * 5);
+                        const px = f.x + sway + Math.sin(progress * 3.2 + f.phase) * 2;
                         const py = f.startY + y;
-                        pRect(px, py, 1, 1, f.hue);
-                        if (y > 5 && y % 9 === 0) {
-                            const leaf = y % 18 === 0 ? '#4ade80' : '#22c55e';
-                            pRect(px - 3, py, 3, 2, leaf);
-                            pRect(px + 1, py - 2, 3, 2, leaf);
-                            pRect(px - 2, py - 1, 1, 1, '#a3e635');
+                        pRect(px, py, 2, 1, f.hue);
+                        if (y > 6 && y % 8 === 0) {
+                            const side = Math.sin(y * 0.19 + f.phase) >= 0 ? 1 : -1;
+                            const leaf = y % 16 === 0 ? '#4ade80' : '#22a65c';
+                            pRect(px + side * 2, py - 1, side * 4, 2, leaf);
+                            pRect(px - side * 3, py + 1, side * 3, 2, isLightMode ? '#15803d' : '#0c7049');
+                            pRect(px + side * 4, py - 2, 2, 1, '#86efac');
+                        }
+                        if (y % 29 === 0 && y > 10) {
+                            pRect(px + 2, py + 1, 1, 5, isLightMode ? '#15803d' : '#0f5138');
+                            pRect(px + 1, py + 5, 3, 1, '#22a65c');
                         }
                     }
 
                 } else if (f.type === 'tropical_leaf') {
-                    // Tall elephant-ear / banana foliage with broad alternating blades.
-                    const stemShade = isLightMode ? '#166534' : '#0f513c';
-                    for (let y = 0; y < f.h; y++) {
-                        const sway = Math.sin(time * 0.0014 + f.phase + y * 0.05) * (y / f.h) * 3;
-                        const px = f.x + sway;
-                        const py = ph - y;
-                        pRect(px, py, 1, 1, stemShade);
-                        if (y > 8 && y % 5 === 0) {
-                            const side = ((y / 5) % 2 === 0 ? 1 : -1) * f.dir;
-                            const span = Math.round(3 + Math.sin((y / f.h) * Math.PI) * 7);
-                            for (let leaf = 0; leaf < span; leaf++) {
-                                const leafX = px + side * leaf;
-                                const leafY = py - Math.round(leaf * 0.38);
-                                pRect(leafX, leafY, 2, 1, f.hue);
-                                if (leaf % 3 === 0) pRect(leafX, leafY - 1, 1, 1, '#4ade80');
+                    // Broad, overlapping elephant-ear fronds radiate from a heavy central stalk.
+                    const stem = isLightMode ? '#166534' : '#0b4636';
+                    const baseY = ph - 2;
+                    pRect(f.x - 2, baseY - 5, 4, 6, stem);
+                    for (let blade = -3; blade <= 3; blade++) {
+                        const direction = blade === 0 ? f.dir : Math.sign(blade) * f.dir;
+                        const length = f.h * (0.58 + (3 - Math.abs(blade)) * 0.115);
+                        const reach = blade * (5.5 + (3 - Math.abs(blade)) * 1.6);
+                        for (let step = 0; step < length; step++) {
+                            const t = step / length;
+                            const centerX = f.x + reach * t + Math.sin(time * 0.0012 + f.phase + blade) * t * 2.2;
+                            const centerY = baseY - length * t;
+                            const halfWidth = Math.max(0, Math.round(Math.sin(t * Math.PI) * (3.2 + (3 - Math.abs(blade)) * 0.65)));
+                            for (let edge = -halfWidth; edge <= halfWidth; edge++) {
+                                const leafX = centerX + edge * direction * 0.74;
+                                const leafY = centerY + Math.abs(edge) * 0.22;
+                                const color = edge === 0 ? (isLightMode ? '#4ade80' : '#2dd4a0')
+                                    : edge * direction < 0 ? f.hue : (isLightMode ? '#15803d' : '#0c6246');
+                                pRect(leafX, leafY, 1, 1, color);
                             }
-                            pRect(px + side * span, py - Math.round(span * 0.38), 2, 1, '#86efac');
+                            if (step % 7 === 0 && halfWidth > 1) {
+                                pRect(centerX - halfWidth, centerY + 1, 2, 1, isLightMode ? '#22c55e' : '#14784e');
+                            }
                         }
                     }
+
+                } else if (f.type === 'jungle_fern') {
+                    // Large tree-fern rosettes with feathery, curved pinnae.
+                    for (let frond = -2; frond <= 2; frond++) {
+                        const direction = frond < 0 ? -1 : 1;
+                        const length = f.h * (0.68 + (2 - Math.abs(frond)) * 0.16);
+                        for (let step = 0; step < length; step++) {
+                            const t = step / length;
+                            const curve = direction * Math.pow(t, 1.35) * (10 + Math.abs(frond) * 3);
+                            const px = f.x + curve + Math.sin(time * 0.0014 + f.phase + frond) * t * 1.8;
+                            const py = ph - step;
+                            pRect(px, py, 1, 1, isLightMode ? '#166534' : '#0d593d');
+                            if (step > 3 && step % 2 === 0) {
+                                const span = Math.max(1, Math.round((1 - t) * 4));
+                                const side = frond === 0 ? (step % 4 === 0 ? -1 : 1) : direction;
+                                pRect(px - span * side, py, span, 1, isLightMode ? '#22a65a' : '#128052');
+                                pRect(px + span * side, py - 1, span, 1, isLightMode ? '#15803d' : '#0c7049');
+                            }
+                        }
+                    }
+
+                } else if (f.type === 'heliconia') {
+                    // Tropical lobster-claw flower spikes with alternating red and golden bracts.
+                    const sway = Math.sin(time * 0.0015 + f.phase) * 2;
+                    const topY = ph - f.h;
+                    for (let y = 0; y < f.h; y++) {
+                        const px = f.x + sway * (y / f.h);
+                        const py = ph - y;
+                        pRect(px, py, 2, 1, isLightMode ? '#166534' : '#0e5038');
+                        if (y % 8 === 3 && y > f.h * 0.35) {
+                            const side = (Math.floor(y / 8) % 2 === 0) ? -1 : 1;
+                            pRect(px + side * 2, py - 1, 4, 3, f.hue);
+                            pRect(px + side * 3, py - 2, 2, 1, '#facc15');
+                            pRect(px + side * 4, py + 1, 1, 1, '#fef08a');
+                        }
+                    }
+                    pRect(f.x - 4, topY + 3, 3, 2, isLightMode ? '#22a65a' : '#14784e');
+                    pRect(f.x + 2, topY + 8, 4, 2, isLightMode ? '#15803d' : '#0d593d');
+
+                } else if (f.type === 'epiphyte') {
+                    // Orchid and bromeliad clusters perched halfway up living branches.
+                    const sway = Math.sin(time * 0.0012 + f.phase) * 1.5;
+                    const x = f.x + sway;
+                    const y = f.y;
+                    pRect(x - 5, y + 2, 11, 2, isLightMode ? '#166534' : '#0d5138');
+                    pRect(x - 2, y - 1, 5, 3, isLightMode ? '#15803d' : '#0f6b46');
+                    pRect(x - 8, y, 4, 2, isLightMode ? '#22a65a' : '#14784e');
+                    pRect(x + 5, y - 1, 4, 2, isLightMode ? '#22a65a' : '#14784e');
+                    pRect(x - 1, y - 4, 3, 2, f.hue);
+                    pRect(x - 4, y - 3, 3, 2, f.hue);
+                    pRect(x + 2, y - 3, 3, 2, f.hue);
+                    pRect(x - 1, y - 2, 2, 2, '#fef08a');
+                    pRect(x - 1, y + 4, 1, 3, 'rgba(45, 212, 191, 0.48)');
 
                 } else if (f.type === 'bromeliad') {
                     // Rosette leaves and a vivid central tropical flower.
                     const centerX = f.x;
                     const centerY = ph - f.h;
-                    for (let blade = -3; blade <= 3; blade++) {
-                        const lean = blade * 2.1;
-                        const bladeHeight = f.h * (0.72 + (3 - Math.abs(blade)) * 0.08);
+                    for (let blade = -4; blade <= 4; blade++) {
+                        const lean = blade * 2.4;
+                        const bladeHeight = f.h * (0.62 + (4 - Math.abs(blade)) * 0.11);
                         for (let y = 0; y < bladeHeight; y++) {
                             const progress = y / bladeHeight;
                             const x = centerX + lean * progress + Math.sin(time * 0.001 + f.phase + blade) * progress;
-                            pRect(x, ph - y, 2, 1, blade % 2 === 0 ? '#15803d' : '#0f766e');
-                            if (y % 5 === 0 && y > 4) pRect(x + (blade < 0 ? -2 : 2), ph - y, 2, 1, '#4ade80');
+                            const width = Math.max(1, Math.round(Math.sin(progress * Math.PI) * 2));
+                            pRect(x - width, ph - y, width * 2 + 1, 1, blade % 2 === 0 ? '#15803d' : '#0f766e');
+                            pRect(x, ph - y, 1, 1, '#4ade80');
                         }
                     }
                     pRect(centerX - 3, centerY - 3, 7, 4, f.hue);
