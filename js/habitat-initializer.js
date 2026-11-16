@@ -13,7 +13,7 @@ import { populateHabitatFlora } from './habitat-flora-generator.js';
 
 // ============================================================================
 // BÖLÜM BAŞI: CANLI PROFİLLERİ VE HABİTATIN İLK KURULUMU
-// Katalogdaki profile göre bitki, partikül ve canlı dizilerini hazırlar.
+// Ortak durumu sıfırlar, flora üreticisini çağırır ve katalogdaki canlı profilini kurar.
 // ============================================================================
 
 const CREATURE_PROFILES = Object.freeze({
