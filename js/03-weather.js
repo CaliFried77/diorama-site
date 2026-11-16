@@ -30,7 +30,12 @@ import { registerWeatherPreviewRenderer } from './services.js';
             56: 'Dondurucu çise', 57: 'Dondurucu çise', 61: 'Hafif yağmur', 63: 'Yağmur', 65: 'Şiddetli yağmur', 66: 'Dondurucu yağmur', 67: 'Dondurucu yağmur',
             71: 'Hafif kar', 73: 'Kar yağışı', 75: 'Yoğun kar', 77: 'Kar taneleri', 80: 'Hafif sağanak', 81: 'Sağanak', 82: 'Şiddetli sağanak',
             85: 'Hafif kar sağanağı', 86: 'Kar sağanağı', 95: 'Gök gürültülü fırtına', 96: 'Dolulu fırtına', 99: 'Şiddetli dolulu fırtına' };
-        function wxKind(c) {
+        // ============================================================================
+// BÖLÜM BAŞI: HAVA DURUMU SINIFLANDIRMASI, İKONLAR VE AY EVRESİ
+// API'den gelen hava kodları bu bölümde arayüz ve sahne profillerine çevrilir.
+// ============================================================================
+
+function wxKind(c) {
             if (c <= 1) return 'clear'; if (c === 2) return 'partly'; if (c === 3) return 'cloud'; if (c === 45 || c === 48) return 'fog';
             if (c >= 95) return 'thunder'; if ((c >= 71 && c <= 77) || c === 85 || c === 86) return 'snow'; return 'rain';
         }
@@ -157,7 +162,12 @@ import { registerWeatherPreviewRenderer } from './services.js';
                 && Number.isFinite(current.pm2_5) && Number.isFinite(current.pm10));
         }
 
-        function renderWeatherPanel() {
+        // ============================================================================
+// BÖLÜM SONU: HAVA GÖRSELİ VE ÖNİZLEME YARDIMCILARI
+// BÖLÜM BAŞI: HAVA PANELİNİN HTML/ARIA GÖRÜNÜMÜ
+// ============================================================================
+
+function renderWeatherPanel() {
             const d = WX.data, c = d.current, dy = d.daily, hr = d.hourly;
             const kind = wxKind(c.weather_code), isDay = !!c.is_day;
             document.getElementById('wxBigIcon').innerHTML = pxIcon(kind, isDay, 64);
@@ -288,7 +298,12 @@ import { registerWeatherPreviewRenderer } from './services.js';
             }).join('');
         }
 
-        function parseWeatherLocalTime(value) {
+        // ============================================================================
+// BÖLÜM SONU: HAVA PANELİ GÖRÜNÜMÜ
+// BÖLÜM BAŞI: SERVİS YANITLARI, ÖNBELLEK VE HAVA VERİSİ İSTEKLERİ
+// ============================================================================
+
+function parseWeatherLocalTime(value) {
             if (typeof value !== 'string' || !value) return new Date(NaN);
             // Open-Meteo returns wall-clock ISO values for timezone=auto. Keeping them
             // on one neutral timeline makes sun-progress differences independent of
@@ -509,7 +524,12 @@ import { registerWeatherPreviewRenderer } from './services.js';
         renderWxPreviewButtons();
 
         /* ---- Sahne parçacıkları ---- */
-        function ensureWx() {
+        // ============================================================================
+// BÖLÜM SONU: HAVA VERİSİ İSTEKLERİ VE ÖNBELLEK
+// BÖLÜM BAŞI: SAHNEDE GÜNEŞ, AY, BULUT VE HAVA EFEKTLERİ
+// ============================================================================
+
+function ensureWx() {
             const key = `${Math.round(WX.cloud / 10)}|${WX.rain}|${WX.snow}|${WX.fog}`;
             if (WX.key === key && WX.w === pw && WX.h === ph) return;
             WX.key = key; WX.w = pw; WX.h = ph;
@@ -634,3 +654,7 @@ import { registerWeatherPreviewRenderer } from './services.js';
 
         
 registerWeatherPreviewRenderer(renderWxPreviewButtons);
+
+// ============================================================================
+// BÖLÜM SONU: SAHNEDE HAVA EFEKTLERİ
+// ============================================================================
