@@ -1,4 +1,4 @@
-import { pw, ph, frameScale, frameChance, pRect, frameSmoothing } from './07-habitat-state.js';
+import { pw, ph, ctx, frameScale, frameChance, pRect, frameSmoothing } from './07-habitat-state.js';
 import { findAvailableStimulus } from './creature-utils.js';
 import { getGroundY, getKoiWaterSurfaceY } from './habitat-geometry.js';
 
@@ -139,6 +139,11 @@ export class PixelKoi {
     }
 
     draw() {
+        const swimBounds = getKoiSwimBounds(this.x);
+        const depth = (this.y - swimBounds.minY) / Math.max(1, swimBounds.maxY - swimBounds.minY);
+        ctx.save();
+        ctx.globalAlpha = 0.92 - Math.max(0, Math.min(1, depth)) * 0.08;
+
         const cos = Math.cos(this.angle);
         const sin = Math.sin(this.angle);
         const perpX = -sin;
@@ -147,7 +152,8 @@ export class PixelKoi {
         for (let i = 1; i < 14; i++) {
             const pt = this.spine[i];
             if (Math.abs(pt.x - this.x) > 45) continue;
-            pRect(pt.x + 2, pt.y + 5, 4, 3, 'rgba(2, 10, 18, 0.30)');
+            // Avoid a hard black "ground shadow" that makes submerged koi look airborne.
+            pRect(pt.x + 1, pt.y + 3, 3, 1, 'rgba(4, 39, 47, 0.10)');
         }
 
         const pecNode = this.spine[3];
@@ -252,6 +258,8 @@ export class PixelKoi {
                 pRect(snoutX + Math.cos(a) * r, snoutY + Math.sin(a) * r, 1, 1, 'rgba(255, 255, 255, 0.45)');
             }
         }
+
+        ctx.restore();
     }
 }
 
