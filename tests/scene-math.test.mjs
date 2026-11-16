@@ -48,3 +48,16 @@ test('the removed generic horizon silhouette is not part of habitat state or ren
     assert.doesNotMatch(source, /bgSilhouettes|createBackgroundSilhouettes/);
   }
 });
+
+
+test('viewport resize scales flora branch anchors and vertical lengths', () => {
+  const willow = { type: 'willow_frond', x: 40, startY: 12, len: 64, phase: 1 };
+  const wisteria = { type: 'wisteria_cluster', x: 80, branchY: 18, len: 52, hue: '#c084fc' };
+  const pistia = { type: 'pistia', x: 120, y: 30, rootLen: 20, r: 6 };
+
+  scaleSceneCollections([[willow, wisteria, pistia]], 1.5, 2);
+
+  assert.deepEqual(willow, { type: 'willow_frond', x: 60, startY: 24, len: 128, phase: 1 });
+  assert.deepEqual(wisteria, { type: 'wisteria_cluster', x: 120, branchY: 36, len: 104, hue: '#c084fc' });
+  assert.deepEqual(pistia, { type: 'pistia', x: 180, y: 60, rootLen: 40, r: 6 });
+});
