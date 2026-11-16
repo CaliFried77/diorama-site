@@ -17,7 +17,7 @@ GitHub Actions; Node.js modül/import kontrollerini, testleri, güvenlik denetim
 ## Tarayıcı ve işlev kontrolleri
 
 - İlk açılışta saat, tarih, habitat ve arama alanı görünür.
-- Altı habitatın her birine geçiş yapılır; tema, hava ve canlı davranışları tutarlıdır.
+- Sekiz habitatın her birine geçiş yapılır; tema, hava ve canlı davranışları tutarlıdır.
 - Pencere yeniden boyutlandırıldığında canlılar kaybolmadan sahne uyarlanır.
 - Haber kartları kompakt açılır; karta basınca özet görünür, ayrı kaynak düğmesi yayıncı sitesini yeni sekmede açar.
 - Takvim aylar arasında gezinir; etkinlik ekleme/silme ve tarayıcı yenilemesinden sonra kalıcılık kontrol edilir.
@@ -45,7 +45,7 @@ GitHub Actions; Node.js modül/import kontrollerini, testleri, güvenlik denetim
 ## Performans ve çevrimdışı
 
 - `?debug=perf` ile FPS, çizim süresi ve destekleniyorsa JS heap değerlerini izle.
-- Altı habitatı en az 30 saniye izleyerek FPS düşüşü, büyüyen heap veya yüksek cam maliyeti ara.
+- Sekiz habitatı en az 30 saniye izleyerek FPS düşüşü, büyüyen heap veya yüksek cam maliyeti ara.
 - Sekmeyi arka plana alıp geri dön; animasyon takılmadan devam etmeli.
 - `prefers-reduced-motion` ve düşük güç/veri tasarrufu tercihlerini kontrol et.
 - İlk çevrimiçi ziyaretin ardından Service Worker kurulur; ağ kesildiğinde arayüz, CSS, modüller, fontlar ve habitat açılır.
