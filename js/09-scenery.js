@@ -83,7 +83,7 @@ export function initHabitat(idx) {
         });
     }
 
-  if (hab.sceneProfile === 'meadow') {
+    if (hab.sceneProfile === 'meadow') {
         // Rich Wildflower Meadow: Sunflowers, Foxgloves, Lavender, Poppies, Daisies & Buttercups
         for (let x = 12; x < pw - 12; x += 6 + Math.floor(Math.random() * 4)) {
             const nx = x / Math.max(1, pw);
@@ -123,7 +123,7 @@ export function initHabitat(idx) {
                 });
             }
         }
-      
+
     } else if (hab.sceneProfile === 'betta-aquarium') {
         // 1. Takashi Amano U-Shaped Concave Stem-Plant Layout (Tall lush sides, open central river-sand canyon)
         for (let x = 10; x < pw - 10; x += 8 + Math.floor(Math.random() * 5)) {
@@ -184,6 +184,7 @@ export function initHabitat(idx) {
                 shade: inSand ? ['#94a3b8', '#64748b'][i % 2] : ['#0f293a', '#16384c', '#1e4959', '#091d2b'][i % 4]
             });
         }
+
     } else if (hab.sceneProfile === 'wetland') {
         const reach = Math.min(145, Math.round(pw * 0.26));
         const willowZones = [
@@ -428,8 +429,8 @@ export function initHabitat(idx) {
                 });
             }
         }
+
     } else if (hab.sceneProfile === 'koi-pond') {
-        // 1. Cascading Crimson Japanese Maple (Momiji) Leaf Clusters along the top-left bough
         const mapleReach = Math.min(150, Math.round(pw * 0.30));
         for (let x = 8; x <= mapleReach - 4; x += 6 + Math.floor(Math.random() * 4)) {
             const t = x / mapleReach;
@@ -445,7 +446,6 @@ export function initHabitat(idx) {
             });
         }
 
-        // 2. Swaying Arashiyama Bamboo Stalks framing the Right Courtyard Bank
         const bambooStart = Math.max(pw - 86, Math.round(pw * 0.78));
         for (let x = bambooStart; x < pw - 6; x += 7 + Math.floor(Math.random() * 4)) {
             const baseY = getGroundY(x, 'koi-pond') - 2;
@@ -459,7 +459,6 @@ export function initHabitat(idx) {
             });
         }
 
-        // 3. Shoreline Water Irises & Horsetail Reeds (Equisetum) along the Left & Upper-Left Mossy Rocks
         for (let x = 10; x < pw * 0.28; x += 8 + Math.floor(Math.random() * 6)) {
             const baseY = getGroundY(x, 'koi-pond') - 1;
             if (Math.random() < 0.55) {
@@ -482,7 +481,6 @@ export function initHabitat(idx) {
             }
         }
 
-        // 4. Submerged Smooth River Cobbles across the deep pond bed
         for (let i = 0; i < 36; i++) {
             flora.push({
                 type: 'pebble',
@@ -494,7 +492,6 @@ export function initHabitat(idx) {
             });
         }
 
-        // 5. Floating Suiren (Water Lily Pads) & Blooming Pink/White/Gold Lotus Flowers
         for (let i = 0; i < 14; i++) {
             const lx = 26 + Math.random() * (pw - 95);
             const ly = 36 + Math.random() * (ph - 58);
@@ -561,7 +558,7 @@ export function initHabitat(idx) {
             }
         }
 
-       // Epiphytes locked onto the exact trunk curves & branch crotches (zero floating flowers!)
+        // Epiphytes locked onto the exact trunk curves & branch crotches (zero floating flowers!)
         const treeSpecs = [
             { baseX: Math.floor(pw * 0.14), top: Math.floor(ph * 0.24), idx: 0, prog: 0.42 },
             { baseX: Math.floor(pw * 0.27), top: Math.floor(ph * 0.36), idx: 1, prog: 0.46 },
@@ -569,13 +566,13 @@ export function initHabitat(idx) {
             { baseX: Math.floor(pw * 0.86), top: Math.floor(ph * 0.22), idx: 3, prog: 0.48 }
         ];
         const epiphyteAnchors = [
-            { x: 16, y: Math.round(ph * 0.45) }, // Left giant trunk edge
+            { x: 16, y: Math.round(ph * 0.45) },
             ...treeSpecs.map(t => {
                 const y = Math.round(t.top + t.prog * (ph - t.top));
                 const curve = Math.sin(t.prog * Math.PI * 1.2 + t.idx) * 2.5;
                 return { x: Math.round(t.baseX + curve), y };
             }),
-            { x: pw - 18, y: Math.round(ph * 0.52) } // Right giant trunk edge
+            { x: pw - 18, y: Math.round(ph * 0.52) }
         ];
         epiphyteAnchors.forEach((pt, i) => {
             flora.push({
@@ -586,7 +583,7 @@ export function initHabitat(idx) {
                 phase: i * 1.1
             });
         });
-      
+
         const vineXPositions = [
             pw * 0.07, pw * 0.16, pw * 0.28, pw * 0.73, pw * 0.84, pw * 0.93
         ];
@@ -621,16 +618,16 @@ function buildStaticEnvironmentLayer(hab) {
         sCtx.fillRect(Math.round(x), Math.round(y), Math.round(w), Math.round(h));
     };
 
-    // 1. Distant Mountain / Reef Horizon Silhouette
-    const silCol = isLightMode ? 'rgba(15, 42, 62, 0.20)' : 'rgba(3, 8, 18, 0.42)';
+    // 1. Distant Mountain / Reef Horizon Silhouette (4px width fixes vertical comb gaps!)
+    const silCol = isLightMode ? 'rgba(15, 42, 62, 0.18)' : 'rgba(3, 8, 18, 0.42)';
     bgSilhouettes.forEach(sil => {
-        sRect(sil.x, ph - sil.h, 3, sil.h, silCol);
+        sRect(sil.x, ph - sil.h, 4, sil.h, silCol);
     });
 
     const mistCol = isLightMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(148, 163, 184, 0.035)';
     sRect(0, ph - 28, pw, 10, mistCol);
 
-   // 2. MEADOW STATIC SCENERY (Harmonious Left Orchard Grove, Right Blossoming Tree & Grand 3-Tier Artisan Apiary)
+    // 2. MEADOW STATIC SCENERY (Harmonious Left Orchard Grove, Right Blossoming Tree & Grand 3-Tier Artisan Apiary)
     if (hab.sceneProfile === 'meadow') {
         const trunkDark = isLightMode ? '#451a03' : '#181014';
         const trunkMid = isLightMode ? '#78350f' : '#291b22';
@@ -639,7 +636,6 @@ function buildStaticEnvironmentLayer(hab) {
         const leafMid = isLightMode ? '#15803d' : '#10382e';
         const leafHi = isLightMode ? '#22c55e' : '#1b5442';
 
-        // Helper for soft, layered pixel-art foliage clouds with natural scalloped rims
         const drawLeafCluster = (cx, cy, rx, ry, blossoms = false, blossomCol = '#fda4af') => {
             for (let dy = -ry; dy <= ry; dy++) {
                 const ratio = 1 - (dy * dy) / (ry * ry);
@@ -659,7 +655,6 @@ function buildStaticEnvironmentLayer(hab) {
             }
         };
 
-        // Helper to draw an organic forked tree with root flare & reaching boughs
         const drawOrchardTree = (baseX, baseY, height, baseWidth, leanDir, blossoms, blossomCol) => {
             const topY = baseY - height;
             for (let y = topY; y < baseY; y++) {
@@ -672,7 +667,6 @@ function buildStaticEnvironmentLayer(hab) {
                 sRect(left + Math.floor(w * 0.35), y, Math.max(1, Math.floor(w * 0.35)), 1, trunkMid);
                 sRect(left + (leanDir >= 0 ? w - 2 : 1), y, 1, 1, trunkHi);
             }
-            // Forked left & right upper limbs supporting the canopy clouds
             [-1, 1].forEach(dir => {
                 const reach = Math.round(height * (dir === leanDir ? 0.34 : 0.25));
                 for (let s = 0; s < reach; s++) {
@@ -685,7 +679,6 @@ function buildStaticEnvironmentLayer(hab) {
                 }
             });
 
-            // Multi-lobed organic tree crown
             const rx = Math.round(height * 0.34);
             const ry = Math.round(height * 0.20);
             drawLeafCluster(baseX - Math.round(rx * 0.65), topY + 8, Math.round(rx * 0.82), Math.round(ry * 0.82), false);
@@ -694,7 +687,7 @@ function buildStaticEnvironmentLayer(hab) {
             drawLeafCluster(baseX + leanDir * 8, topY - 10, Math.round(rx * 0.75), Math.round(ry * 0.72), blossoms, blossomCol);
         };
 
-        // A. Smooth Distant Rolling Hills (1px continuous fill — zero vertical comb stripes!)
+        // A. Smooth Distant Rolling Hills
         const hillCol = isLightMode ? 'rgba(22, 101, 52, 0.18)' : 'rgba(13, 56, 44, 0.42)';
         for (let x = 0; x < pw; x++) {
             const nx = x / Math.max(1, pw);
@@ -703,13 +696,13 @@ function buildStaticEnvironmentLayer(hab) {
             sRect(x, gy - h, 1, h, hillCol);
         }
 
-        // B. Harmonious Left Orchard Grove (Two naturally proportioned, overlapping trees: 116px & 90px)
+        // B. Harmonious Left Orchard Grove
         const leftTree1X = 24;
         const leftTree2X = Math.round(pw * 0.19);
         drawOrchardTree(leftTree2X, getGroundY(leftTree2X, 'meadow') + 2, 90, 9, 1, true, '#fbbf24');
         drawOrchardTree(leftTree1X, getGroundY(leftTree1X, 'meadow') + 3, 116, 13, 1, true, '#fda4af');
 
-        // C. Right-Edge Blossoming Hawthorn/Apple Tree sheltering the Grand Apiary (102px tall)
+        // C. Right-Edge Blossoming Hawthorn/Apple Tree sheltering the Grand Apiary
         const rightTreeX = pw - 20;
         drawOrchardTree(rightTreeX, getGroundY(rightTreeX, 'meadow') + 3, 102, 11, -1, true, '#fda4af');
 
@@ -722,27 +715,23 @@ function buildStaticEnvironmentLayer(hab) {
             sRect(x, gy, 1, 2, turfTop);
         }
 
-        // E. GRAND ARTISAN APIARY SANCTUARY on the Right Hillside (~52px tall architectural focal point)
+        // E. GRAND ARTISAN APIARY SANCTUARY on the Right Hillside
         const hx = Math.round(pw * 0.84);
         const hgy = getGroundY(hx, 'meadow') + 1;
 
-        // 1. Lush Wild Rose & Lavender Bushes flanking the Grand Apiary
         drawLeafCluster(hx - 20, hgy - 11, 14, 10, true, '#c084fc');
         drawLeafCluster(hx + 19, hgy - 13, 16, 11, true, '#fb7185');
 
-        // 2. Cobblestone & Timber Foundation Stand
         const stoneDark = isLightMode ? '#475569' : '#1e293b';
         const stoneHi = isLightMode ? '#94a3b8' : '#475569';
-        sRect(hx - 19, hgy, 38, 3, 'rgba(2, 10, 14, 0.45)'); // Ground shadow
+        sRect(hx - 19, hgy, 38, 3, 'rgba(2, 10, 14, 0.45)');
         sRect(hx - 17, hgy - 5, 34, 6, stoneDark);
         for (let sx = hx - 15; sx <= hx + 11; sx += 6) {
-            sRect(sx, hgy - 4, 4, 3, stoneHi); // Individual stone blocks
+            sRect(sx, hgy - 4, 4, 3, stoneHi);
         }
-        // Heavy oak landing board jutting out at hgy - 7
         sRect(hx - 16, hgy - 7, 32, 2, trunkDark);
         sRect(hx - 15, hgy - 7, 30, 1, trunkHi);
 
-        // 3. Tall 3-Story Artisan Wooden Hive Body (Brood Box + 2 Honey Supers: 26px wide, 30px tall)
         const boxLight = isLightMode ? '#fef3c7' : '#eab308';
         const boxMid = isLightMode ? '#fde68a' : '#ca8a04';
         const boxShadow = isLightMode ? '#f59e0b' : '#a16207';
@@ -750,44 +739,37 @@ function buildStaticEnvironmentLayer(hab) {
         const bodyH = 30;
 
         sRect(hx - 13, bodyTop, 26, bodyH, boxLight);
-        sRect(hx + 7, bodyTop, 6, bodyH, boxMid); // Right-side 3D shading
-        // Corner timber framing posts
+        sRect(hx + 7, bodyTop, 6, bodyH, boxMid);
         sRect(hx - 13, bodyTop, 2, bodyH, trunkMid);
         sRect(hx + 11, bodyTop, 2, bodyH, trunkDark);
 
-        // Horizontal tier seams dividing the 3 stacked honey boxes + recessed side handles
         [hgy - 17, hgy - 27].forEach(seamY => {
             sRect(hx - 13, seamY, 26, 2, trunkDark);
             sRect(hx - 12, seamY, 24, 1, trunkHi);
-            sRect(hx - 4, seamY + 4, 6, 1, boxShadow); // Carved wooden box grip
+            sRect(hx - 4, seamY + 4, 6, 1, boxShadow);
         });
 
-        // Glowing Golden Honeycomb Inspection Window in the middle super
         sRect(hx - 5, hgy - 24, 8, 5, trunkDark);
         sRect(hx - 4, hgy - 23, 6, 3, '#f59e0b');
         sRect(hx - 3, hgy - 22, 4, 1, '#fef08a');
 
-        // Arched Hive Entrance Slot & Golden Pollen Landing Threshold at bottom brood box
         sRect(hx - 6, hgy - 10, 10, 3, '#181014');
         sRect(hx - 5, hgy - 11, 8, 1, trunkMid);
         sRect(hx - 4, hgy - 8, 6, 1, '#fef08a');
 
-        // 4. Steep Overhanging Cedar-Shingle Gable Roof with Carved Finial (hx - 18 to hx + 18)
         for (let r = 0; r <= 11; r++) {
             const halfW = 18 - Math.floor(r * 1.45);
             const ry = bodyTop - 1 - r;
             const roofCol = r % 3 === 0 ? trunkDark : (r % 2 === 0 ? trunkHi : trunkMid);
             sRect(hx - halfW, ry, halfW * 2, 1, roofCol);
         }
-        // Roof peak finial spire
         sRect(hx - 1, bodyTop - 15, 2, 4, trunkDark);
         sRect(hx, bodyTop - 15, 1, 3, '#fbbf24');
 
-        // 5. Side Timber Arm on Left of Roof for the Hanging Brass Apiary Lantern
         sRect(hx - 19, bodyTop + 2, 7, 2, trunkDark);
         sRect(hx - 19, bodyTop + 2, 6, 1, trunkHi);
     }
-    
+
     // 3. WETLAND STATIC SCENERY
     if (hab.sceneProfile === 'wetland') {
         const waterHorizonY = ph - 52;
@@ -909,7 +891,7 @@ function buildStaticEnvironmentLayer(hab) {
         }
     }
 
-   // 4. BETTA AQUARIUM STATIC SCENERY (Takashi Amano Nature Aquascape: Dragon Stone Triad, Twin Spiderwood Arches, Sloped Aquasoil, Sand Path, Marimo Balls & Catappa Litter)
+    // 4. BETTA AQUARIUM STATIC SCENERY
     if (hab.sceneProfile === 'betta-aquarium') {
         const soilY = (x) => {
             const nx = x / Math.max(1, pw);
@@ -917,7 +899,6 @@ function buildStaticEnvironmentLayer(hab) {
             return Math.round(ph - 4 - mound - Math.sin(x * 0.04) * 2);
         };
 
-        // A. Distant Background Stem-Plant Forest Silhouette (Rotala & Vallisneria Wall on Left/Right)
         const bgPlantCol = isLightMode ? 'rgba(15, 82, 72, 0.24)' : 'rgba(6, 48, 44, 0.48)';
         for (let x = 0; x < pw; x += 3) {
             const nx = x / Math.max(1, pw);
@@ -926,16 +907,15 @@ function buildStaticEnvironmentLayer(hab) {
             sRect(x, soilY(x) - stemH, 2, stemH, bgPlantCol);
         }
 
-        // B. Right-Side Iwagumi Dragon Stone (Ohko Rock) Triad with Diagonal Eroded Pockets
         const stoneDark = isLightMode ? '#1e293b' : '#09111e';
         const stoneMid = isLightMode ? '#334155' : '#132033';
         const stoneHi = isLightMode ? '#64748b' : '#243854';
         const mossPocket = isLightMode ? '#16a34a' : '#0d9488';
 
         const dragonStones = [
-            { bx: pw - 58, topY: ph - 68, baseW: 38, lean: -0.22 }, // Main Oyaishi Master Stone
-            { bx: pw - 82, topY: ph - 44, baseW: 26, lean: -0.30 }, // Companion Stone Left
-            { bx: pw - 28, topY: ph - 52, baseW: 28, lean: 0.15 }   // Companion Stone Right
+            { bx: pw - 58, topY: ph - 68, baseW: 38, lean: -0.22 },
+            { bx: pw - 82, topY: ph - 44, baseW: 26, lean: -0.30 },
+            { bx: pw - 28, topY: ph - 52, baseW: 28, lean: 0.15 }
         ];
         dragonStones.forEach((st, sIdx) => {
             const bY = ph;
@@ -948,7 +928,6 @@ function buildStaticEnvironmentLayer(hab) {
                 sRect(left, st.topY + y, w, 1, stoneDark);
                 sRect(left + 1, st.topY + y, Math.max(2, Math.floor(w * 0.55)), 1, stoneMid);
                 sRect(left + 1, st.topY + y, 2, 1, stoneHi);
-                // Characteristic Ohko Dragon Stone diagonal clay & bioluminescent moss pockets
                 if (y > 6 && y % 7 === 0 && w > 12) {
                     const holeX = left + 4 + ((y * 3 + sIdx * 5) % Math.max(2, w - 9));
                     sRect(holeX, st.topY + y, 4, 2, '#040811');
@@ -960,13 +939,11 @@ function buildStaticEnvironmentLayer(hab) {
             }
         });
 
-        // C. Grand Multi-Limb Sunken Spiderwood / Mangrove Root Centerpiece (Left & Upper Canopy Roots)
         const woodDark = isLightMode ? '#3f1d0b' : '#1a1014';
         const woodMid = isLightMode ? '#5c2d16' : '#2c1a21';
         const woodHi = isLightMode ? '#854d0e' : '#4a2c36';
         const maxTrunkX = Math.min(190, Math.floor(pw * 0.46));
 
-        // 1. Primary sweeping driftwood arch & secondary upper/lower roots from Left Mound
         for (let x = 0; x < maxTrunkX; x++) {
             const t = x / maxTrunkX;
             const archY = Math.round(ph - 18 - Math.sin(t * Math.PI * 0.88) * 54 + Math.cos(t * 4) * 3);
@@ -975,7 +952,6 @@ function buildStaticEnvironmentLayer(hab) {
             sRect(x, archY + 1, 2, Math.max(1, thick - 3), woodMid);
             sRect(x, archY, 2, 2, woodHi);
 
-            // Upper reaching bough with Java Moss carpet
             if (t > 0.18 && t < 0.84) {
                 const subT = (t - 0.18) / 0.66;
                 const upperY = Math.round(archY - 12 - Math.sin(subT * Math.PI) * 24);
@@ -987,7 +963,6 @@ function buildStaticEnvironmentLayer(hab) {
                 }
             }
 
-            // Lower anchor root leg plunging into the aquasoil mound
             if (t > 0.12 && t < 0.48) {
                 const legT = (t - 0.12) / 0.36;
                 const legY = Math.round(archY + thick + legT * (ph - (archY + thick)));
@@ -997,7 +972,6 @@ function buildStaticEnvironmentLayer(hab) {
             }
         }
 
-        // 2. Right-side counter-balancing Spiderwood root emerging from the Dragon Stone cliff
         const rightRootSpan = Math.min(95, Math.floor(pw * 0.24));
         for (let s = 0; s < rightRootSpan; s++) {
             const t = s / rightRootSpan;
@@ -1011,7 +985,6 @@ function buildStaticEnvironmentLayer(hab) {
             }
         }
 
-        // D. Sloped Volcanic Aquasoil Mounds & Winding Central White-Gold River Sand Path
         const soilDark = isLightMode ? '#1e1b18' : '#090d16';
         const soilMid = isLightMode ? '#292524' : '#131c2b';
         const soilRim = isLightMode ? '#15803d' : '#0f5138';
@@ -1034,7 +1007,6 @@ function buildStaticEnvironmentLayer(hab) {
             }
         }
 
-        // E. Velvety Green Marimo Moss Balls (Cladophora) & Dried Catappa (Ketapang) Almond Leaves on the Substrate
         const marimoBalls = [
             { x: Math.round(pw * 0.36), r: 5 },
             { x: Math.round(pw * 0.39), r: 4 },
@@ -1051,7 +1023,6 @@ function buildStaticEnvironmentLayer(hab) {
             }
         });
 
-        // Dried amber-brown Catappa leaves resting along the sand edge
         [Math.round(pw * 0.43), Math.round(pw * 0.56)].forEach((lx, idx) => {
             const ly = soilY(lx);
             sRect(lx - 5, ly - 1, 10, 2, '#78350f');
@@ -1207,13 +1178,12 @@ function buildStaticEnvironmentLayer(hab) {
         }
     }
 
-   // 6. REEF STATIC SCENERY (Natural Sloped Coral Bommies, Distant Seamounts & Sunken Atlantean Columns)
+    // 6. REEF STATIC SCENERY
     if (hab.sceneProfile === 'reef') {
         const rockDark = isLightMode ? '#0f2942' : '#090d24';
         const rockMid = isLightMode ? '#163e5c' : '#13193b';
         const rockHi = isLightMode ? '#1e5678' : '#232d5e';
 
-        // A. Distant Underwater Seamounts & Sunken Atlantean Columns in the Abyssal Haze
         const colShade = isLightMode ? 'rgba(15, 42, 68, 0.38)' : 'rgba(17, 14, 48, 0.62)';
         const colHi = isLightMode ? 'rgba(56, 189, 248, 0.24)' : 'rgba(139, 92, 246, 0.22)';
         const ruinX = Math.round(pw * 0.26);
@@ -1239,7 +1209,6 @@ function buildStaticEnvironmentLayer(hab) {
         sRect(ruinX - 17, ruinBaseY - 54, 22, 3, colShade);
         sRect(ruinX - 17, ruinBaseY - 54, 20, 1, colHi);
 
-        // B. Grounded Left & Right Coral Reef Bommies (Natural stepped rock mounds rising from the seabed)
         const bommies = [
             { cx: Math.round(pw * 0.06), rx: Math.round(pw * 0.18), h: 52 },
             { cx: Math.round(pw * 0.17), rx: Math.round(pw * 0.12), h: 32 },
@@ -1265,7 +1234,6 @@ function buildStaticEnvironmentLayer(hab) {
             }
         });
 
-        // C. Continuous Terraced Coral Reef Floor across the bottom
         for (let x = 0; x < pw; x++) {
             const nx = x / Math.max(1, pw);
             const sideMound = nx < 0.26 ? Math.pow((0.26 - nx) / 0.26, 1.5) * 34
@@ -1279,8 +1247,8 @@ function buildStaticEnvironmentLayer(hab) {
             }
         }
     }
-    
-    // 7. KOI POND STATIC SCENERY (Kyoto Zen Courtyard, Momiji Red Maple Tree, Arched Taiko Bridge, Mossy Boulders & Yukimi Lantern)
+
+    // 7. KOI POND STATIC SCENERY
     if (hab.sceneProfile === 'koi-pond') {
         const stoneDark = isLightMode ? '#334155' : '#0f172a';
         const stoneMid = isLightMode ? '#475569' : '#1e293b';
@@ -1289,17 +1257,15 @@ function buildStaticEnvironmentLayer(hab) {
         const mossMid = isLightMode ? '#15803d' : '#0d4a36';
         const mossHi = isLightMode ? '#22c55e' : '#10b981';
 
-        // A. Upper Shoreline Raked Zen Sand Terrace & Mossy Bank Edge (frames the top of the pond)
         for (let x = 0; x < pw; x++) {
             const bankH = Math.round(18 + Math.sin(x * 0.03) * 4 + Math.cos(x * 0.08) * 2);
             sRect(x, 0, 1, bankH, isLightMode ? '#1e293b' : '#09131c');
             if (x % 3 === 0) sRect(x, bankH - 5, 2, 2, mossDark);
             sRect(x, bankH - 3, 1, 2, stoneDark);
             sRect(x, bankH - 1, 1, 1, stoneHi);
-            sRect(x, bankH, 1, 3, 'rgba(2, 8, 16, 0.42)'); // Waterline shadow under top bank
+            sRect(x, bankH, 1, 3, 'rgba(2, 8, 16, 0.42)');
         }
 
-        // B. Traditional Vermilion Arched Wooden Courtyard Bridge (Taiko-bashi) in Upper-Right Distance
         const brStart = Math.round(pw * 0.60);
         const brWidth = Math.min(88, Math.round(pw * 0.20));
         const redDark = isLightMode ? '#991b1b' : '#7f1d1d';
@@ -1311,19 +1277,16 @@ function buildStaticEnvironmentLayer(hab) {
             const arch = Math.round(Math.sin(t * Math.PI) * 9);
             const wx = brStart + bx;
             const wy = 21 - arch;
-            // Bridge reflection in water below
             sRect(wx, 25 + Math.floor(arch * 0.5), 1, 2, 'rgba(185, 28, 28, 0.22)');
-            // Curved wooden deck & vermilion handrail
             sRect(wx, wy + 4, 1, 3, '#451a03');
             sRect(wx, wy, 1, 2, redMid);
             sRect(wx, wy, 1, 1, redHi);
             if (bx % 9 === 0 || bx === brWidth) {
                 sRect(wx, wy - 2, 2, 6, redDark);
-                sRect(wx, wy - 2, 2, 1, '#fef08a'); // Brass post cap (Giboshi)
+                sRect(wx, wy - 2, 2, 1, '#fef08a');
             }
         }
 
-        // C. Left-Side Ancient Japanese Red Maple Tree (Momiji / Acer palmatum)
         const mapleReach = Math.min(150, Math.round(pw * 0.30));
         const trunkDark = isLightMode ? '#3b1d14' : '#181014';
         const trunkMid = isLightMode ? '#5c2d1e' : '#291b21';
@@ -1333,7 +1296,6 @@ function buildStaticEnvironmentLayer(hab) {
         const mapleHi = isLightMode ? '#f87171' : '#dc2626';
         const mapleGold = '#f59e0b';
 
-        // Gnarled Momiji Trunk rooted into the left mossy bank
         const leftBankY = getGroundY(0, 'koi-pond') + 2;
         for (let y = 0; y < leftBankY; y++) {
             const prog = y / leftBankY;
@@ -1346,7 +1308,6 @@ function buildStaticEnvironmentLayer(hab) {
             sRect(tx + tw - 1, y, 1, 1, trunkHi);
         }
 
-        // Overlapping Momiji Crimson Canopy Clouds hugging the top-left frame (zero floating gaps!)
         [0.06, 0.28, 0.50, 0.72, 0.90].forEach((tNode, idx) => {
             const cx = Math.round(tNode * mapleReach);
             const branchY = Math.round(6 + Math.pow(tNode, 1.2) * 14);
@@ -1363,7 +1324,6 @@ function buildStaticEnvironmentLayer(hab) {
             }
         });
 
-        // Overhanging Momiji Bough supporting the foliage
         for (let s = 0; s <= mapleReach; s++) {
             const t = s / Math.max(1, mapleReach);
             const by = Math.round(6 + Math.pow(t, 1.2) * 14 + Math.sin(s * 0.09) * 1.5);
@@ -1372,10 +1332,9 @@ function buildStaticEnvironmentLayer(hab) {
             sRect(s, by + Math.ceil(thick * 0.5) - 1, 1, 1, trunkHi);
         }
 
-        // D. Foreground Left & Right Mossy Zen Shoreline Banks & Stepping Stones
         for (let x = 0; x < pw; x++) {
             const nx = x / Math.max(1, pw);
-            if (nx > 0.28 && nx < 0.70) continue; // Keep center pond open for Koi
+            if (nx > 0.28 && nx < 0.70) continue;
             const gy = getGroundY(x, 'koi-pond');
             sRect(x, gy - 2, 1, 3, 'rgba(2, 8, 16, 0.45)');
             sRect(x, gy, 1, ph - gy, mossDark);
@@ -1383,7 +1342,6 @@ function buildStaticEnvironmentLayer(hab) {
             if (x % 5 === 0) sRect(x, gy - 1, 2, 1, mossHi);
         }
 
-        // Sculpted Zen Garden Boulders along the Left & Right Pond Corners
         [
             { cx: 22, cy: ph - 10, rx: 14, ry: 7 },
             { cx: 46, cy: ph - 6, rx: 11, ry: 5 },
@@ -1397,14 +1355,12 @@ function buildStaticEnvironmentLayer(hab) {
             }
         });
 
-        // E. Right-Side Sanctuary Island with Yukimi-dōrō (Stone Lantern) & Shishi-odoshi Base
         const bx = pw - 42;
         const by = ph - 18;
         sRect(bx - 20, by + 6, 56, 12, isLightMode ? '#1e3a3a' : '#0a1720');
         sRect(bx - 16, by + 4, 46, 4, mossDark);
         sRect(bx - 12, by + 3, 36, 2, mossHi);
 
-        // Stone Lantern Pedestal & Roof Structure (Light box is animated in dynamic pass)
         sRect(bx - 6, by, 13, 4, stoneDark);
         sRect(bx - 3, by - 10, 7, 10, stoneMid);
         sRect(bx - 2, by - 10, 2, 10, stoneHi);
@@ -1414,7 +1370,6 @@ function buildStaticEnvironmentLayer(hab) {
         sRect(bx - 5, by - 23, 11, 2, stoneHi);
         sRect(bx - 1, by - 25, 3, 2, stoneHi);
 
-        // Bamboo Shishi-odoshi (Water Spout) Pipe & Support Post
         sRect(bx - 22, by - 4, 12, 2, '#65a30d');
         sRect(bx - 22, by - 4, 12, 1, '#a3e635');
         sRect(bx - 14, by - 8, 2, 12, '#4d7c0f');
@@ -1628,7 +1583,6 @@ export function drawHabitatEnvironment(time) {
         const lx = hx - 18 + sway;
         const ly = bodyTop + 4;
 
-        // Hanging brass lantern chain & warm glowing glass lamp on the Grand Apiary
         pRect(hx - 18, bodyTop + 4, 1, 3, '#475569');
         pRect(lx - 2, ly + 3, 5, 1, '#451a03');
         pRect(lx - 2, ly + 4, 5, 4, '#fef08a');
@@ -1636,11 +1590,9 @@ export function drawHabitatEnvironment(time) {
         pRect(lx - 4, ly + 2, 9, 8, 'rgba(253, 224, 71, 0.22)');
         pRect(lx - 2, ly + 8, 5, 1, '#451a03');
 
-        // Subtle golden honey-glow pulsing inside the hive inspection window
         const winPulse = (0.65 + 0.3 * Math.sin(time * 0.003)).toFixed(2);
         pRect(hx - 4, hgy - 23, 6, 3, `rgba(254, 240, 138, ${winPulse})`);
 
-        // Soft drifting white dandelion fluff seeds floating across the meadow breeze
         for (let d = 0; d < 6; d++) {
             const dx = Math.round(((d * 97 + time * (0.008 + (d % 3) * 0.002)) % (pw + 40)) - 20);
             const dy = Math.round(ph * 0.35 + (d * 19) % Math.floor(ph * 0.45) + Math.sin(time * 0.002 + d) * 8);
@@ -1650,25 +1602,77 @@ export function drawHabitatEnvironment(time) {
         }
     }
 
-    // 2. BETTA AQUARIUM: Swaying Anubias Rosettes & Rising Oxygen Bubbles
+    // 2. BETTA AQUARIUM: Surface Bubble Nest, Flowering Bucephalandra & Anubias, Red Cryptocoryne & CO2 Pearling Stream
     if (hab.sceneProfile === 'betta-aquarium') {
-        const maxTrunkX = Math.min(185, Math.floor(pw * 0.48));
-        for (let x = 24; x < maxTrunkX - 18; x += 24) {
+        for (let s = 0; s < 10; s++) {
+            const sx = Math.round(((s * 79 + Math.sin(time * 0.001 + s) * 14) % (pw - 40)) + 20);
+            pRect(sx, 1, 10 + (s % 3) * 6, 1, isLightMode ? 'rgba(255, 255, 255, 0.55)' : 'rgba(125, 211, 252, 0.25)');
+        }
+        pRect(22, 2, 14, 2, '#b45309');
+        pRect(24, 1, 10, 1, '#f59e0b');
+        for (let b = 0; b < 14; b++) {
+            const bx = 24 + (b * 2) + Math.sin(time * 0.002 + b) * 0.6;
+            const by = 2 + (b % 3);
+            pRect(bx, by, 2, 2, 'rgba(240, 249, 255, 0.75)');
+            pRect(bx, by, 1, 1, '#ffffff');
+        }
+
+        const maxTrunkX = Math.min(190, Math.floor(pw * 0.46));
+        for (let x = 22; x < maxTrunkX - 16; x += 22) {
             const t = x / maxTrunkX;
-            const archY = Math.round(ph - 14 - Math.sin(t * Math.PI * 0.88) * 54 + Math.cos(t * 4) * 3);
+            const archY = Math.round(ph - 18 - Math.sin(t * Math.PI * 0.88) * 54 + Math.cos(t * 4) * 3);
             const rhizomeY = archY - 2;
+            const isBuce = (x % 44 === 0);
+
             pRect(x - 3, rhizomeY, 7, 2, '#064e3b');
             [-6, -3, 0, 3, 6].forEach((lx, lIdx) => {
                 const sway = Math.sin(time * 0.002 + x + lIdx) * 1.2;
                 const leafX = Math.round(x + lx + sway);
                 const leafY = rhizomeY - 5 - (lIdx % 2) * 3;
                 pRect(x + lx * 0.4, rhizomeY - 2, 1, 2, '#14532d');
-                pRect(leafX - 2, leafY - 2, 5, 4, isLightMode ? '#15803d' : '#065f46');
-                pRect(leafX - 1, leafY - 3, 3, 5, isLightMode ? '#22c55e' : '#10b981');
-                if (!isLightMode) {
-                    pRect(leafX, leafY - 3, 1, 1, '#6ee7b7');
+                if (isBuce) {
+                    pRect(leafX - 2, leafY - 2, 4, 4, isLightMode ? '#0f766e' : '#115e59');
+                    pRect(leafX - 1, leafY - 3, 3, 4, isLightMode ? '#14b8a6' : '#0d9488');
+                    pRect(leafX, leafY - 2, 1, 1, '#c084fc');
+                    pRect(leafX - 1, leafY - 3, 1, 1, '#67e8f9');
+                } else {
+                    pRect(leafX - 2, leafY - 2, 5, 4, isLightMode ? '#15803d' : '#065f46');
+                    pRect(leafX - 1, leafY - 3, 3, 5, isLightMode ? '#22c55e' : '#10b981');
+                    if (!isLightMode) pRect(leafX, leafY - 3, 1, 1, '#6ee7b7');
                 }
             });
+
+            if (isBuce) {
+                const flX = x + Math.round(Math.sin(time * 0.0025 + x) * 1.5);
+                const flY = rhizomeY - 12;
+                pRect(x, rhizomeY - 9, 1, 6, '#10b981');
+                pRect(flX - 1, flY, 3, 3, '#f8fafc');
+                pRect(flX, flY - 1, 1, 2, '#fef08a');
+                pRect(flX - 2, flY - 1, 5, 5, 'rgba(224, 242, 254, 0.22)');
+            }
+        }
+
+        [Math.round(pw * 0.32), Math.round(pw * 0.66)].forEach((cx, cIdx) => {
+            const nx = cx / Math.max(1, pw);
+            const baseY = Math.round(ph - 4 - Math.pow(Math.abs(nx - 0.50) * 1.95, 1.45) * 18);
+            for (let blade = -2; blade <= 2; blade++) {
+                const sway = Math.sin(time * 0.0018 + blade + cIdx) * 1.5;
+                const bx = cx + blade * 3 + sway;
+                const bh = 9 + (2 - Math.abs(blade)) * 3;
+                pRect(bx - 1, baseY - bh, 3, bh, blade % 2 === 0 ? '#881337' : '#9f1239');
+                pRect(bx, baseY - bh - 1, 1, bh, '#fb7185');
+            }
+        });
+
+        const diffX = pw - 18;
+        const diffY = ph - 26;
+        pRect(diffX - 2, diffY, 5, 4, 'rgba(224, 242, 254, 0.55)');
+        pRect(diffX - 1, diffY, 3, 1, '#ffffff');
+        for (let m = 0; m < 10; m++) {
+            const mRise = ((time * 0.015 + m * 7) % (diffY - 4));
+            const mx = diffX + Math.sin(time * 0.005 + m * 1.3) * 1.8;
+            const my = diffY - 2 - mRise;
+            pRect(mx, my, 1, 1, 'rgba(224, 242, 254, 0.72)');
         }
 
         for (let i = 0; i < 12; i++) {
@@ -1812,14 +1816,12 @@ export function drawHabitatEnvironment(time) {
 
     // 6. KOI POND: Shimmering Water Caustics, Trickling Shishi-odoshi Bamboo Spout & Warm Yukimi Lantern Glow
     if (hab.sceneProfile === 'koi-pond') {
-        // Subtle horizontal water surface glints & sky reflections across the pond
         for (let s = 0; s < 12; s++) {
             const wy = 34 + s * Math.floor((ph - 46) / 12);
             const sx = Math.round(((s * 73 + Math.sin(time * 0.001 + s) * 16) % (pw * 0.56)) + pw * 0.20);
             pRect(sx, wy, 9 + (s % 3) * 5, 1, isLightMode ? 'rgba(224, 242, 254, 0.32)' : 'rgba(125, 211, 252, 0.12)');
         }
 
-        // Animated Shishi-odoshi Bamboo Water Stream, Splash & Concentric Ripples
         const bx = pw - 42;
         const by = ph - 18;
         const dropOffset = Math.floor((time * 0.022) % 6);
@@ -1829,7 +1831,6 @@ export function drawHabitatEnvironment(time) {
         pRect(bx - 23 - rippleR, by + 5, 2, 1, 'rgba(224, 242, 254, 0.45)');
         pRect(bx - 23 + rippleR, by + 5, 2, 1, 'rgba(224, 242, 254, 0.45)');
 
-        // Pulsing Warm Candlelight inside the Yukimi-dōrō Stone Lantern + Water Reflections
         const glowAlpha = (0.78 + 0.2 * Math.sin(time * 0.004)).toFixed(2);
         pRect(bx - 3, by - 15, 7, 4, `rgba(253, 224, 71, ${glowAlpha})`);
         pRect(bx - 1, by - 14, 3, 2, '#ffffff');
@@ -1867,7 +1868,6 @@ export function drawHabitatEnvironment(time) {
             pRect(f.x, f.y, f.w, f.h, isLightMode ? 'rgba(15, 55, 65, 0.35)' : f.shade);
 
         } else if (f.type === 'maple_bough') {
-            // Hanging Japanese Red Maple (Momiji) Leaf Clusters swaying in the breeze
             for (let y = 0; y < f.len; y += 2) {
                 const prog = y / f.len;
                 const sway = Math.sin(time * 0.0015 + f.phase + y * 0.07) * (1.0 + prog * 3.0);
@@ -1882,7 +1882,6 @@ export function drawHabitatEnvironment(time) {
             }
 
         } else if (f.type === 'bamboo_stalk') {
-            // Segmented Green Bamboo Culms with Nodes & Feathery Leaves on the Right Shore
             const culmCol = isLightMode ? '#15803d' : '#0d593d';
             const nodeCol = isLightMode ? '#86efac' : '#34d399';
             const leafCol = isLightMode ? '#22c55e' : '#10b981';
@@ -1893,7 +1892,7 @@ export function drawHabitatEnvironment(time) {
                 const py = baseGroundY - y;
                 pRect(px, py, 2, 2, culmCol);
                 if (y > 6 && y % 12 === 0) {
-                    pRect(px - 1, py, 4, 1, nodeCol); // Bamboo ring node
+                    pRect(px - 1, py, 4, 1, nodeCol);
                     const side = (y % 24 === 0) ? -1 : 1;
                     pRect(px + side * 2, py - 1, 4 * side, 1, leafCol);
                     pRect(px + side * 3, py - 2, 3 * side, 1, nodeCol);
@@ -2004,13 +2003,16 @@ export function drawHabitatEnvironment(time) {
             }
 
         } else if (f.type === 'epiphyte') {
-            const sway = Math.sin(time * 0.0012 + f.phase) * 1;
-            const x = f.x + sway;
+            const x = f.x;
             const y = f.y;
-            pRect(x - 4, y + 1, 9, 2, isLightMode ? '#166534' : '#0d5138');
-            pRect(x - 2, y - 1, 5, 2, isLightMode ? '#22a65a' : '#14784e');
-            pRect(x - 3, y - 3, 7, 2, f.hue);
-            pRect(x - 1, y - 4, 3, 2, '#fef08a');
+            const petalSway = Math.round(Math.sin(time * 0.0015 + f.phase) * 0.6);
+            // Bark-clasping moss & bromeliad rosette fixed tightly to the tree trunk
+            pRect(x - 3, y + 1, 7, 2, '#2c221e');
+            pRect(x - 4, y, 9, 2, isLightMode ? '#166534' : '#0d5138');
+            pRect(x - 2, y - 1, 5, 2, isLightMode ? '#22c55e' : '#10b981');
+            // Blooming tropical orchid/bromeliad crown
+            pRect(x - 3 + petalSway, y - 3, 7, 2, f.hue);
+            pRect(x - 1 + petalSway, y - 4, 3, 2, '#fef08a');
 
         } else if (f.type === 'bromeliad') {
             const centerX = f.x;
@@ -2061,13 +2063,17 @@ export function drawHabitatEnvironment(time) {
                     else if (d2 <= hr * hr + 2) pRect(topX + dx, topY + dy, 1, 1, (dx + dy) % 2 === 0 ? '#facc15' : '#f59e0b');
                 }
             }
+            f.tipX = topX;
+            f.tipY = topY;
 
         } else if (f.type === 'foxglove' || f.type === 'loosestrife') {
             const stemShade = isLightMode ? '#15803d' : '#115e59';
+            let topX = f.x;
             for (let y = 0; y < f.h; y++) {
                 const sway = Math.sin(time * 0.0017 + f.phase + y * 0.05) * (y / f.h) * 2.8;
                 const px = f.x + sway;
                 const py = baseGroundY - y;
+                topX = px;
                 pRect(px, py, 1, 1, stemShade);
                 if (y > f.h * 0.38 && y % 3 === 0) {
                     const side = (y % 6 === 0) ? -2 : 1;
@@ -2075,6 +2081,8 @@ export function drawHabitatEnvironment(time) {
                     if (y % 6 === 0) pRect(px, py - 1, 1, 1, '#fdf4ff');
                 }
             }
+            f.tipX = topX;
+            f.tipY = baseGroundY - f.h;
 
         } else if (f.type === 'buddleia') {
             const stemCol = isLightMode ? '#15803d' : '#0d4a3a';
@@ -2116,10 +2124,12 @@ export function drawHabitatEnvironment(time) {
 
         } else if (f.type === 'meadow') {
             const stemShade = isLightMode ? '#15803d' : '#14332a';
+            let topX = f.x;
             for (let y = 0; y < f.h; y++) {
                 const sway = Math.sin(time * 0.0018 + f.phase + y * 0.07) * (y / f.h) * 2.8;
                 const px = f.x + sway;
                 const py = baseGroundY - y;
+                topX = px;
                 pRect(px, py, 1, 1, stemShade);
                 if (f.hasBloom && y > f.h - 8) {
                     if (f.kind === 'lavender' && y % 2 === 0) {
@@ -2139,6 +2149,8 @@ export function drawHabitatEnvironment(time) {
                     }
                 }
             }
+            f.tipX = topX;
+            f.tipY = baseGroundY - f.h;
 
         } else if (f.type === 'hornwort') {
             for (let y = 0; y < f.h; y++) {
@@ -2361,7 +2373,7 @@ export function drawHabitatEnvironment(time) {
         }
     });
 
-    // Ambient Floating Particles (Drifting Momiji Maple Leaves & Sakura Petals in Koi Pond)
+    // Ambient Floating Particles
     ambientParticles.forEach((pt, idx) => {
         if (hab.sceneProfile === 'koi-pond') {
             pt.y += pt.speed * 0.65 * frameScale;
@@ -2383,18 +2395,53 @@ export function drawHabitatEnvironment(time) {
         const s = stimuli[i];
         s.life -= frameScale;
 
-       } else if (f.type === 'epiphyte') {
-            const x = f.x;
-            const y = f.y;
-            const petalSway = Math.round(Math.sin(time * 0.0015 + f.phase) * 0.6);
-            // Bark-clasping moss & bromeliad rosette fixed tightly to the tree trunk
-            pRect(x - 3, y + 1, 7, 2, '#2c221e');
-            pRect(x - 4, y, 9, 2, isLightMode ? '#166534' : '#0d5138');
-            pRect(x - 2, y - 1, 5, 2, isLightMode ? '#22c55e' : '#10b981');
-            // Blooming tropical orchid/bromeliad crown
-            pRect(x - 3 + petalSway, y - 3, 7, 2, f.hue);
-            pRect(x - 1 + petalSway, y - 4, 3, 2, '#fef08a');
-        
+        if (s.type === 'tropical_fruit') {
+            s.phase += 0.08 * frameScale;
+            const fx = Math.round(s.x + Math.sin(s.phase * 0.7) * 0.8);
+            const fy = Math.round(s.baseY + Math.sin(s.phase) * 1.6);
+            s.y = fy;
+
+            // Soft golden tropical aroma sparkle orbiting the fruit
+            const sparkX = fx + Math.round(Math.cos(s.phase * 1.4) * 6);
+            const sparkY = fy + Math.round(Math.sin(s.phase * 1.4) * 4);
+            pRect(sparkX, sparkY, 1, 1, 'rgba(254, 240, 138, 0.75)');
+
+            if (s.kind === 'mango' || (!s.kind && i % 3 === 0)) {
+                // 1. Sun-Ripened Blush Mango with Twin Emerald Leaves
+                pRect(fx - 3, fy - 1, 7, 5, '#f97316');
+                pRect(fx - 2, fy - 2, 5, 2, '#ef4444');
+                pRect(fx - 2, fy + 2, 6, 2, '#facc15');
+                pRect(fx + 2, fy + 1, 3, 2, '#fde047');
+                pRect(fx - 2, fy - 1, 2, 1, 'rgba(255, 255, 255, 0.75)');
+                pRect(fx - 1, fy - 4, 1, 2, '#78350f');
+                pRect(fx - 4, fy - 4, 3, 2, '#16a34a');
+                pRect(fx, fy - 4, 3, 2, '#22c55e');
+                pRect(fx + 1, fy - 5, 2, 1, '#86efac');
+
+            } else if (s.kind === 'guava' || (!s.kind && i % 3 === 1)) {
+                // 2. Sliced Tropical Pink Guava / Dragonfruit Wedge with Seeds & Green Rind
+                pRect(fx - 4, fy + 1, 9, 2, '#16a34a');
+                pRect(fx - 3, fy + 2, 7, 1, '#15803d');
+                pRect(fx - 3, fy - 2, 7, 3, '#f43f5e');
+                pRect(fx - 2, fy - 3, 5, 2, '#fb7185');
+                pRect(fx - 2, fy - 1, 1, 1, '#fef08a');
+                pRect(fx, fy - 2, 1, 1, '#1e293b');
+                pRect(fx + 2, fy - 1, 1, 1, '#fef08a');
+                pRect(fx - 1, fy, 1, 1, '#1e293b');
+                pRect(fx - 2, fy - 3, 2, 1, '#ffe4e6');
+
+            } else {
+                // 3. Golden Rainforest Banana Cluster
+                pRect(fx - 3, fy - 3, 3, 2, '#65a30d');
+                pRect(fx - 4, fy - 1, 3, 5, '#eab308');
+                pRect(fx - 1, fy - 1, 3, 6, '#facc15');
+                pRect(fx + 2, fy - 1, 3, 5, '#fde047');
+                pRect(fx, fy, 1, 3, '#fef9c3');
+                pRect(fx - 3, fy + 4, 2, 1, '#78350f');
+                pRect(fx, fy + 5, 2, 1, '#78350f');
+                pRect(fx + 3, fy + 4, 2, 1, '#78350f');
+            }
+
         } else if (s.type === 'honey_nectar') {
             s.phase += 0.12 * frameScale;
             s.y = s.baseY + Math.sin(s.phase) * 1.6;
