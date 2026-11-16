@@ -19,6 +19,7 @@ const floraGeneratorModule = await readFile(new URL('../js/habitat-flora-generat
 const backgroundsModule = await readFile(new URL('../js/habitat-backgrounds.js', import.meta.url), 'utf8');
 const floraModule = await readFile(new URL('../js/habitat-flora-renderer.js', import.meta.url), 'utf8');
 const creatureModule = await readFile(new URL('../js/08-creatures.js', import.meta.url), 'utf8');
+const creatureParrotModule = await readFile(new URL('../js/creature-parrot.js', import.meta.url), 'utf8');
 const interactionModule = await readFile(new URL('../js/habitat-interactions.js', import.meta.url), 'utf8');
 const habitatCatalog = await readFile(new URL('../config/habitat-catalog.js', import.meta.url), 'utf8');
 const cssBuilder = await readFile(new URL('../scripts/build-css.mjs', import.meta.url), 'utf8');
@@ -180,10 +181,11 @@ test('rainforest habitat connects its layered canopy, flora, parrot flock and ed
   assert.ok(interactionModule.includes("s.type === 'tropical_fruit'"));
   assert.ok(interactionModule.includes('export function drawHabitatStimuli()'));
   assert.ok(sceneryModule.includes('drawHabitatStimuli()'));
-  assert.ok(creatureModule.includes('export class PixelParrot'));
-  assert.ok(creatureModule.includes('this.palette'));
-  assert.ok(creatureModule.includes('const tailLen = 19'));
-  assert.ok(creatureModule.includes('p.beakUpper'));
+  assert.ok(creatureModule.includes("export { PixelParrot } from './creature-parrot.js';"));
+  assert.ok(creatureParrotModule.includes('export class PixelParrot'));
+  assert.ok(creatureParrotModule.includes('this.palette'));
+  assert.ok(creatureParrotModule.includes('const tailLen = 19'));
+  assert.ok(creatureParrotModule.includes('p.beakUpper'));
 });
 
 test('existing habitat improvements preserve bespoke scene layers', () => {
@@ -274,4 +276,24 @@ test('search input does not steal focus on page load', () => {
   const end = html.indexOf('>', inputIdIndex);
   assert.ok(start >= 0 && end > inputIdIndex, 'search input tag should be complete');
   assert.equal(/\bautofocus\b/i.test(html.slice(start, end + 1)), false);
+});
+
+test('creature facade reexports every independently maintained species module', async () => {
+  const facade = await readFile(new URL('../js/08-creatures.js', import.meta.url), 'utf8');
+  const species = [
+    ['PixelBee', 'creature-bee.js'],
+    ['PixelKoi', 'creature-koi.js'],
+    ['PixelBetta', 'creature-betta.js'],
+    ['PixelDragonfly', 'creature-dragonfly.js'],
+    ['PixelButterfly', 'creature-butterfly.js'],
+    ['PixelJellyfish', 'creature-jellyfish.js'],
+    ['PixelParrot', 'creature-parrot.js'],
+    ['PixelArcticFox', 'creature-arctic-fox.js'],
+  ];
+
+  for (const [className, path] of species) {
+    assert.match(facade, new RegExp(`export \\{ ${className} \\} from '\\\\./${path.replaceAll('.', '\\\\.')}';`));
+    const implementation = await readFile(new URL(`../js/${path}`, import.meta.url), 'utf8');
+    assert.match(implementation, new RegExp(`export class ${className} \\{`));
+  }
 });
