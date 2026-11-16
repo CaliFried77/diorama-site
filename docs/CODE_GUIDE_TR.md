@@ -15,7 +15,9 @@ Bu belge, projeyi ileride düzenlerken doğru dosyayı bulmayı ve değişiklikl
 | `js/05-workspace.js` | Görevler ve notlar | Görev/not arayüzü veya saklanan veriler değişirken |
 | `js/06-data-manager.js` | JSON yedek alma, geri yükleme ve veri doğrulama | Yedekleme biçimi veya veri taşıma davranışı değişirken |
 | `js/07-habitat-state.js` | Sahne canvas'ı, ortak sahne dizileri, aktif habitat ve kare/zaman ölçekleri | Bütün habitatların paylaştığı temel durum değişirken |
-| `js/08-creatures.js` | Canlı sınıfları ve canlıların güncellenmesi/çizimi | Hayvan davranışı veya görünümü değişirken |
+| `js/08-creatures.js` | Hayvan sınıflarının sabit dışa aktarma kapısı; diğer modüller bu dosyadan import etmeye devam eder | Yeni hayvan dosyasını sisteme tanıtırken |
+| `js/creature-bee.js`, `creature-koi.js`, `creature-betta.js`, `creature-dragonfly.js`, `creature-butterfly.js`, `creature-jellyfish.js`, `creature-parrot.js`, `creature-arctic-fox.js` | Her türün kendi hareket, etkileşim, durum ve piksel çizim kodu | Belirli bir hayvanın davranışını veya görünümünü değiştirirken |
+| `js/creature-utils.js` | Birden fazla türün kullandığı ortak yem hedefleme yardımcısı | Tüm canlıların ortak yem sahiplenme davranışını değiştirirken |
 | `js/habitat-interactions.js` | Canvas tıklamalarını yem/uyarana çevirir; yemlerin animasyon, çizim ve ömür döngüsünü yürütür | Yeni yem türü, tıklama etkileşimi veya yem çizimi eklerken |
 | `js/arctic-geometry.js` | Kutup platform koordinatları, tilki rotaları ve böğürtlen iniş yüzeyleri; DOM/canvas bağımlılığı olmayan saf geometri | Kutup platformlarının boyutu, konumu veya tilki rotaları değişirken |
 | `js/habitat-geometry.js` | Tüm habitat profillerinin zemin eğrileri; sahne boyutlarını parametre olarak alan saf hesaplamalar | Bir habitatın zemin eğrisi veya yükseklik formülü değişirken |
@@ -36,7 +38,7 @@ Bu belge, projeyi ileride düzenlerken doğru dosyayı bulmayı ve değişiklikl
 ### Özellikle dikkat edilmesi gereken dosyalar
 
 - `js/07-habitat-state.js` ortak durum deposudur. Buradaki değişiklik çok sayıda sahne modülünü etkileyebilir.
-- `js/08-creatures.js` canlı sınıflarını ve yem/uyaran etkileşimini birlikte barındırır. Bir canlıyı değiştirirken başka türlerin ortak davranışlarını bozmamaya dikkat et.
+- Her hayvanın kodu kendi `js/creature-*.js` dosyasındadır. `js/08-creatures.js` yalnızca geriye dönük uyumlu dışa aktarma kapısıdır; sınıfı doğrudan burada tanımlama. Ortak yem bulma davranışı `js/creature-utils.js` içindedir.
 - `js/09-scenery.js` artık sahne çizim orkestrasyonunu yapar; gerçek flora, statik çevre ve yem çizimleri ayrı modüllerdedir. Yeni çizim katmanı eklerken sıralamayı burada güncelle.
 - `js/10-glass-renderer.js` animasyon döngüsünü yönetir. Burada küçük görünen değişiklikler FPS, pil tüketimi ve çizim sırasını etkileyebilir.
 - `js/02-news.js` kaynak önbelleği, isteklerin eşzamanlılığı ve yeniden deneme kurallarını içerir. Sadece görünümü değiştirirken istek/önbellek mantığına dokunma.
