@@ -450,7 +450,7 @@ const CREATURE_PROFILES = Object.freeze({
                 }
             }
 
-            drawWxSky(time, hab.weatherSky === true);
+            drawWxSky(time, hab.weatherSky === true, hab.sceneProfile === 'rainforest');
 
             // Distant Mountain / Reef Horizon Silhouette
             const silCol = isLightMode ? 'rgba(15, 42, 62, 0.22)' : 'rgba(3, 7, 16, 0.42)';
