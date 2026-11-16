@@ -141,7 +141,7 @@ test('lunar phases render as original crisp pixel art without a decorative frame
   assert.ok(weatherModule.includes('shape-rendering="crispEdges"'));
   assert.ok(weatherModule.includes('wx-pixel-moon'));
   assert.ok(!weatherModule.includes('moonGlyphs'));
-  assert.match(widgetsCss, /\\.wx-moon-art\\s*\\{[^}]*border:\\s*0;[^}]*background:\\s*transparent;[^}]*box-shadow:\\s*none;/s);
+  const moonArtStyles = widgetsCss.split('.wx-moon-art {')[1]?.split('}')[0] || '';\n  assert.ok(moonArtStyles.includes('border: 0;'));\n  assert.ok(moonArtStyles.includes('background: transparent;'));\n  assert.ok(moonArtStyles.includes('box-shadow: none;'));
 });
 
 test('rainforest scenery suppresses generic cloud slabs but keeps foreground weather effects', () => {
@@ -164,7 +164,7 @@ test('rainforest habitat connects its scenery, parrot flock and edible fruit int
   assert.ok(creatureModule.includes("findAvailableStimulus(this, 'tropical_fruit'"));
   assert.ok(creatureModule.includes("interactionProfile === 'fruit'"));
   assert.ok(sceneryModule.includes('const canopyShades = isLightMode'));
-  assert.ok(sceneryModule.includes('Wide buttress-root trees'));
+  assert.ok(sceneryModule.includes('Three buttress-root trees have irregular bark'));
   assert.ok(sceneryModule.includes("f.type === 'jungle_fern'"));
   assert.ok(sceneryModule.includes("f.type === 'heliconia'"));
   assert.ok(sceneryModule.includes("f.type === 'epiphyte'"));
