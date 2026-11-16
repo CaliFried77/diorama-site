@@ -154,6 +154,16 @@ async def mock_external_request(route):
     await route.continue_()
 
 
+async def ensure_habitat_popover_open(page):
+    """Open the habitat picker only when it is currently closed."""
+    is_open = await page.locator("#habitatPopover").evaluate(
+        "(panel) => panel.classList.contains('open')"
+    )
+    if not is_open:
+        await page.locator("#habitatMenuBtn").click()
+    await page.locator("#habitatPopover.open").wait_for(state="visible")
+
+
 async def assert_app_smoke(browser_type, name: str, base_url: str):
     browser = await browser_type.launch(headless=True)
     context = await browser.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=1)
@@ -214,9 +224,8 @@ async def assert_app_smoke(browser_type, name: str, base_url: str):
     ARTIFACTS.mkdir(exist_ok=True)
     await page.screenshot(path=str(ARTIFACTS / f"{name}-rainforest-1440x900.png"), full_page=True)
 
-    # The habitat popover is still open after the rainforest capture; select Kyoto directly.
-    # This covers the koi pond's dedicated pixel-art environment in browser QA.
-    await page.locator("#habitatPopover.open").wait_for(state="visible")
+    # Select Kyoto based on the actual popover state; habitat row clicks do not auto-close it.
+    await ensure_habitat_popover_open(page)
     await page.locator("#habitatListContainer button").nth(5).click()
     selected_habitat = await page.locator("#habitatNameLabel").inner_text()
     assert "Kyoto Zen Bahçesi" in selected_habitat, f"{name}: Kyoto habitat selection failed: {selected_habitat!r}"
@@ -224,8 +233,7 @@ async def assert_app_smoke(browser_type, name: str, base_url: str):
     await page.screenshot(path=str(ARTIFACTS / f"{name}-kyoto-1440x900.png"), full_page=True)
 
     # Select the new Arctic habitat and capture it too, so profile registration is tested in-browser.
-    await page.locator("#habitatMenuBtn").click()
-    await page.locator("#habitatPopover.open").wait_for(state="visible")
+    await ensure_habitat_popover_open(page)
     await page.locator("#habitatListContainer button").nth(7).click()
     selected_habitat = await page.locator("#habitatNameLabel").inner_text()
     assert "Kuzey Işıkları" in selected_habitat, f"{name}: Arctic habitat selection failed: {selected_habitat!r}"
