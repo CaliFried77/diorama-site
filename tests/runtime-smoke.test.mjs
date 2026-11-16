@@ -13,9 +13,12 @@ class FakeElement {
   constructor(tag = 'div') {
     this.tagName = tag.toUpperCase(); this.children = []; this.dataset = {}; this.style = new Proxy({}, { get: (o, k) => o[k] ?? '', set: (o, k, v) => (o[k] = v, true) });
     this.classList = new ClassList(); this.attributes = {}; this.value = ''; this.textContent = ''; this.innerHTML = '';
-    this.width = 1; this.height = 1; this.files = []; this.parentElement = null; this.isConnected = true;
+    this.width = 1; this.height = 1; this.files = []; this.parentElement = null; this.isConnected = true; this.listeners = new Map();
   }
-  addEventListener() {} removeEventListener() {} appendChild(child) { this.children.push(child); child.parentElement = this; return child; }
+  addEventListener(type, callback) { const callbacks = this.listeners.get(type) || []; callbacks.push(callback); this.listeners.set(type, callbacks); }
+  dispatchEvent(type, event) { for (const callback of this.listeners.get(type) || []) callback(event); }
+  removeEventListener(type, callback) { this.listeners.set(type, (this.listeners.get(type) || []).filter((entry) => entry !== callback)); }
+  appendChild(child) { this.children.push(child); child.parentElement = this; return child; }
   append(...children) { children.forEach((child) => this.appendChild(child)); }
   replaceChildren(...children) { this.children = []; this.append(...children); }
   remove() {} click() {} focus() {} blur() {} reset() {} setAttribute(k,v) { this.attributes[k] = String(v); }
@@ -75,3 +78,32 @@ Object.assign(globalThis, {
    assert.ok(getElement('heroClock'));
    assert.ok(getElement('habitatCanvas').width > 0);
  });
+
+ 
+test('canvas clicks create the correct food stimulus for all eight habitats', async () => {
+  await import('../js/main.js');
+  const state = await import('../js/07-habitat-state.js');
+  const { HABITATS } = await import('../config/habitat-catalog.js');
+  const canvas = getElement('habitatCanvas');
+  const expected = {
+    nectar: { type: 'honey_nectar', count: 3 },
+    blossom: { type: 'floating_blossom', count: 2 },
+    bloodworm: { type: 'bloodworm', count: 3 },
+    midge: { type: 'midge', count: 3 },
+    plankton: { type: 'plankton_swarm', count: 2 },
+    pellet: { type: 'koi_pellet', count: 3 },
+    fruit: { type: 'tropical_fruit', count: 3 },
+    cloudberry: { type: 'cloudberry', count: 2 },
+  };
+
+  for (const [index, habitat] of HABITATS.entries()) {
+    state.setCurrentHabitatIndex(index);
+    state.stimuli.length = 0;
+    canvas.dispatchEvent('pointerdown', { clientX: 600, clientY: 390 });
+    assert.equal(state.stimuli.length, expected[habitat.interactionProfile].count, habitat.id);
+    assert.ok(
+      state.stimuli.every((stimulus) => stimulus.type === expected[habitat.interactionProfile].type),
+      habitat.id + ' should create only its configured food stimulus',
+    );
+  }
+});
