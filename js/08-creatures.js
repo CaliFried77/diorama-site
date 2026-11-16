@@ -124,90 +124,144 @@ canvas.addEventListener('pointerdown', (e) => {
 });
 
 /* ============================================================================
-   CREATURE 1: ARTISAN HONEYBEE & ROYAL BUMBLEBEE
+   CREATURE 1: ARTISAN HONEYBEE, ROYAL BUMBLEBEE & VIOLET CARPENTER BEE
+   Multi-state foraging AI: Visits all meadow wildflowers, fills hind-leg pollen
+   baskets (corbiculae) after sipping nectar, returns to the hanging Skep Hive or
+   Right Apiary Box to deposit pollen, and performs figure-8 hover dances!
    ============================================================================ */
 export class PixelBee {
     constructor() {
-        this.x = Math.random() * pw;
-        this.y = 26 + Math.random() * (ph - 66);
-        this.vx = (Math.random() < 0.5 ? 1 : -1) * (0.28 + Math.random() * 0.20);
-        this.vy = (Math.random() - 0.5) * 0.18;
+        this.x = 24 + Math.random() * (pw - 48);
+        this.y = 28 + Math.random() * (ph - 68);
+        this.dir = Math.random() < 0.5 ? 1 : -1;
+        this.vx = this.dir * (0.32 + Math.random() * 0.18);
+        this.vy = (Math.random() - 0.5) * 0.16;
         this.phase = Math.random() * Math.PI * 2;
-        this.isBumble = Math.random() > 0.42;
-        this.rgb = [251, 191, 36];
+
+        const roll = Math.random();
+        // 'honey' (Bal Arısı), 'bumble' (Tombul Bombus), 'carpenter' (Mor Kanatlı Marangoz Arısı)
+        this.species = roll < 0.50 ? 'honey' : (roll < 0.85 ? 'bumble' : 'carpenter');
+        this.isBumble = this.species !== 'honey';
+        this.rgb = this.species === 'carpenter' ? [192, 132, 252] : [251, 191, 36];
+
         this.sipTimer = 0;
         this.eatCooldown = 0;
         this.perchedFlower = null;
+        this.hasPollen = Math.random() < 0.4;
+        this.visitingHive = null;
         this.trail = [];
     }
 
     update(t) {
-        this.phase += 0.36 * frameScale;
+        this.phase += (this.sipTimer > 0 ? 0.12 : 0.38) * frameScale;
         if (this.eatCooldown > 0) this.eatCooldown = Math.max(0, this.eatCooldown - frameScale);
 
+        // 1. Currently perched on a flower or at the hive entrance
         if (this.sipTimer > 0) {
             this.sipTimer = Math.max(0, this.sipTimer - frameScale);
-            this.vx *= Math.pow(0.82, frameScale);
-            this.vy *= Math.pow(0.82, frameScale);
+            this.vx *= Math.pow(0.80, frameScale);
+            this.vy *= Math.pow(0.80, frameScale);
+
             if (this.perchedFlower) {
-                const sway = Math.sin(t * 0.0018 + (this.perchedFlower.phase || 0)) * 2.5;
-                this.x = this.perchedFlower.x + sway;
-                this.y = (ph - this.perchedFlower.h) - 8;
+                const tx = this.perchedFlower.tipX !== undefined ? this.perchedFlower.tipX : this.perchedFlower.x;
+                const ty = this.perchedFlower.tipY !== undefined ? this.perchedFlower.tipY : (ph - (this.perchedFlower.h || 24));
+                this.x = tx;
+                this.y = ty - 4;
+            } else if (this.visitingHive) {
+                this.x = this.visitingHive.x;
+                this.y = this.visitingHive.y;
             }
+
             if (this.sipTimer === 0) {
+                if (this.perchedFlower) this.hasPollen = true; // Pollen basket is now full!
+                if (this.visitingHive) this.hasPollen = false;  // Delivered pollen to hive!
                 this.perchedFlower = null;
-                const awayAngle = -Math.PI * 0.5 + (Math.random() - 0.5) * 1.6;
-                this.vx = Math.cos(awayAngle) * 0.52;
-                this.vy = Math.sin(awayAngle) * 0.42;
-                this.eatCooldown = 115;
+                this.visitingHive = null;
+
+                const awayAngle = -Math.PI * 0.5 + (Math.random() - 0.5) * 1.5;
+                this.vx = Math.cos(awayAngle) * 0.48;
+                this.vy = Math.sin(awayAngle) * 0.38;
+                this.dir = this.vx >= 0 ? 1 : -1;
+                this.eatCooldown = 95;
             }
             return;
         }
 
-        const nectar = findAvailableStimulus(this, 'honey_nectar', 145);
+        // 2. Priority: Seek user-dropped Golden Honey Nectar anywhere on screen!
+        const nectar = findAvailableStimulus(this, 'honey_nectar', Math.max(350, pw * 0.8));
         if (nectar) {
             const dx = nectar.x - this.x;
             const dy = nectar.y - this.y;
-            const dist = Math.hypot(dx, dy);
+            const dist = Math.max(1, Math.hypot(dx, dy));
             if (dist < 6) {
                 nectar.life = 0;
-                this.sipTimer = 20;
+                this.hasPollen = true;
+                this.sipTimer = 24;
                 return;
             }
-            this.vx += (dx / dist) * 0.036 * frameScale;
-            this.vy += (dy / dist) * 0.036 * frameScale;
-        } else {
-            if (this.eatCooldown === 0 && frameChance(0.008)) {
-                const sunflowers = flora.filter(f => f.type === 'sunflower');
-                if (sunflowers.length > 0) {
-                    const sf = sunflowers[Math.floor(Math.random() * sunflowers.length)];
-                    const dx = sf.x - this.x;
-                    const dy = (ph - sf.h - 8) - this.y;
-                    if (Math.hypot(dx, dy) < 95) {
-                        this.vx += (dx / 95) * 0.08 * frameScale;
-                        this.vy += (dy / 95) * 0.08 * frameScale;
-                        if (Math.hypot(dx, dy) < 9) {
-                            this.perchedFlower = sf;
-                            this.sipTimer = 32;
-                            return;
-                        }
+            this.vx += (dx / dist) * 0.045 * frameScale;
+            this.vy += (dy / dist) * 0.045 * frameScale;
+        } else if (this.eatCooldown === 0 && this.hasPollen && frameChance(0.008)) {
+            // 3. If carrying pollen, occasionally fly back to the Left Skep Hive or Right Apiary Box!
+            const skepY = Math.round(ph * 0.42) + 13;
+            const apiaryX = Math.round(pw * 0.86);
+            const apiaryY = ph - 26;
+            const hiveTargets = [
+                { x: 64, y: skepY },
+                { x: apiaryX - 5, y: apiaryY }
+            ];
+            const target = hiveTargets[Math.floor(Math.random() * hiveTargets.length)];
+            const dx = target.x - this.x;
+            const dy = target.y - this.y;
+            const dist = Math.hypot(dx, dy);
+            if (dist < 130) {
+                this.vx += (dx / dist) * 0.065 * frameScale;
+                this.vy += (dy / dist) * 0.065 * frameScale;
+                if (dist < 8) {
+                    this.visitingHive = target;
+                    this.sipTimer = 28;
+                    return;
+                }
+            }
+        } else if (this.eatCooldown === 0 && frameChance(0.014)) {
+            // 4. Foraging: Visit Sunflowers, Foxgloves, or Blooming Meadow Flowers (Lavender/Poppy/Daisy)
+            const flowers = flora.filter(f => f.type === 'sunflower' || f.type === 'foxglove' || (f.type === 'meadow' && f.hasBloom));
+            if (flowers.length > 0) {
+                const fl = flowers[Math.floor(Math.random() * flowers.length)];
+                const fx = fl.tipX !== undefined ? fl.tipX : fl.x;
+                const fy = (fl.tipY !== undefined ? fl.tipY : (ph - fl.h)) - 4;
+                const dx = fx - this.x;
+                const dy = fy - this.y;
+                const dist = Math.hypot(dx, dy);
+                if (dist < 110) {
+                    this.vx += (dx / dist) * 0.075 * frameScale;
+                    this.vy += (dy / dist) * 0.075 * frameScale;
+                    if (dist < 8) {
+                        this.perchedFlower = fl;
+                        this.sipTimer = 36 + Math.floor(Math.random() * 30);
+                        return;
                     }
                 }
             }
-            this.vx += (Math.random() - 0.5) * 0.03 * frameScale;
-            this.vy += ((Math.random() - 0.5) * 0.024 + Math.sin(this.phase * 0.14) * 0.009) * frameScale;
+        } else {
+            // 5. Gentle figure-8 waggle & meadow cruising
+            this.vx += (Math.random() - 0.5) * 0.028 * frameScale;
+            this.vy += ((Math.random() - 0.5) * 0.022 + Math.sin(this.phase * 0.16) * 0.011) * frameScale;
         }
 
+        const maxSpd = nectar ? 0.72 : 0.56;
         const spd = Math.hypot(this.vx, this.vy);
-        if (spd > 0.58) {
-            this.vx = (this.vx / spd) * 0.58;
-            this.vy = (this.vy / spd) * 0.58;
+        if (spd > maxSpd) {
+            this.vx = (this.vx / spd) * maxSpd;
+            this.vy = (this.vy / spd) * maxSpd;
         } else if (spd < 0.22) {
-            this.vx *= Math.pow(1.15, frameScale);
+            this.vx += this.dir * 0.04 * frameScale;
         }
 
-        if (this.y < 24) this.vy += 0.035 * frameScale;
-        if (this.y > ph - 44) this.vy -= 0.035 * frameScale;
+        if (Math.abs(this.vx) > 0.06) this.dir = this.vx >= 0 ? 1 : -1;
+
+        if (this.y < 24) this.vy += 0.038 * frameScale;
+        if (this.y > ph - 38) this.vy -= 0.038 * frameScale;
 
         this.x += this.vx * frameScale;
         this.y += this.vy * frameScale;
@@ -226,20 +280,28 @@ export class PixelBee {
     }
 
     draw() {
-        const dir = this.vx >= 0 ? 1 : -1;
+        const dir = this.dir;
         const bx = Math.round(this.x);
         const by = Math.round(this.y);
-        const tilt = this.sipTimer > 0 ? 0 : 1;
+        const isPerched = this.sipTimer > 0;
+        const tilt = isPerched ? 0 : 1;
 
+        // Golden pollen mote trail
         for (let i = 0; i < this.trail.length; i++) {
             const tr = this.trail[i];
-            pRect(tr.x - dir * 6, tr.y, 1, 1, `rgba(253, 224, 71, ${(tr.life / 18).toFixed(2)})`);
+            const tCol = this.species === 'carpenter'
+                ? `rgba(216, 180, 254, ${(tr.life / 18).toFixed(2)})`
+                : `rgba(253, 224, 71, ${(tr.life / 18).toFixed(2)})`;
+            pRect(tr.x - dir * 6, tr.y, 1, 1, tCol);
         }
 
-        const flap = this.sipTimer > 0 ? 0 : Math.round(Math.sin(this.phase * 2.1) * 3);
+        // 1. Back Wing (translucent ice-blue or violet-iridescent shimmer)
+        const flap = isPerched ? 0 : Math.round(Math.sin(this.phase * 2.2) * 3);
         const wingH = 4 + Math.abs(flap);
-        pRect(bx - dir * 3, by - 2 - wingH, 4, wingH, 'rgba(186, 230, 253, 0.48)');
+        const backWingCol = this.species === 'carpenter' ? 'rgba(192, 132, 252, 0.52)' : 'rgba(186, 230, 253, 0.48)';
+        pRect(bx - dir * 3, by - 2 - wingH, 4, wingH, backWingCol);
 
+        // 2. Plump Banded Abdomen (Rear section: -7 to -2 along dir)
         const abLen = this.isBumble ? 7 : 6;
         for (let s = -abLen; s <= -2; s++) {
             const yOff = by + (s < -4 ? tilt : 0);
@@ -247,8 +309,12 @@ export class PixelBee {
             for (let dy = -halfH; dy <= halfH; dy++) {
                 let col = '#18181b';
                 const band = Math.abs(s);
-                if (band === 3 || band === 4 || (this.isBumble && band === 6)) {
+                if (this.species === 'carpenter') {
+                    col = dy === -halfH ? '#6b21a8' : '#1e1b4b';
+                } else if (band === 3 || band === 4 || (this.isBumble && band === 6)) {
                     col = dy < 0 ? '#fde047' : '#f59e0b';
+                } else if (this.species === 'bumble' && band === 7) {
+                    col = '#f8fafc'; // Characteristic white tail-tuft of Bombus terrestris!
                 } else if (dy === -halfH) {
                     col = '#3f3f46';
                 }
@@ -257,14 +323,19 @@ export class PixelBee {
         }
         pRect(bx - (abLen + 1) * dir, by + tilt, 1, 1, '#09090b');
 
+        // 3. Fuzzy Thorax (Center section: -1 to +2 along dir)
         for (let s = -1; s <= 2; s++) {
             for (let dy = -3; dy <= 2; dy++) {
                 if ((s === -1 || s === 2) && Math.abs(dy) === 3) continue;
-                const col = dy <= -1 ? '#fbbf24' : (dy === 0 ? '#d97706' : '#78350f');
+                let col = dy <= -1 ? '#fbbf24' : (dy === 0 ? '#d97706' : '#78350f');
+                if (this.species === 'carpenter') {
+                    col = dy <= -1 ? '#4c1d95' : '#1e1b4b';
+                }
                 pRect(bx + s * dir, by + dy, 1, 1, col);
             }
         }
 
+        // 4. Sculpted Head, Glossy Compound Eye & Bent Antennae
         for (let s = 3; s <= 4; s++) {
             for (let dy = -2; dy <= 1; dy++) {
                 pRect(bx + s * dir, by + dy, 1, 1, '#18181b');
@@ -275,17 +346,21 @@ export class PixelBee {
         pRect(bx + 5 * dir, by - 2, 1, 1, '#27272a');
         pRect(bx + 6 * dir, by - 3, 1, 1, '#fbbf24');
 
+        // 5. Hanging Legs & Hind-Leg Pollen Basket (Corbicula swells with golden pollen when hasPollen is true!)
         pRect(bx + 1 * dir, by + 3, 1, 2, '#18181b');
         pRect(bx - 2 * dir, by + 3, 1, 2, '#18181b');
-        pRect(bx - 3 * dir, by + 3, 2, 2, '#fde047');
-        pRect(bx - 2 * dir, by + 4, 1, 1, '#f59e0b');
+        if (this.hasPollen) {
+            pRect(bx - 3 * dir, by + 3, 2, 2, '#fde047');
+            pRect(bx - 2 * dir, by + 4, 1, 1, '#f59e0b');
+        }
 
+        // 6. Forewing (Crisp veined translucent foreground wing)
         const fwY = by - 3 - Math.abs(flap);
-        pRect(bx - dir * 1, fwY, 5, 3, 'rgba(240, 249, 255, 0.82)');
-        pRect(bx, fwY - 1, 3, 1, 'rgba(255, 255, 255, 0.92)');
+        const foreWingCol = this.species === 'carpenter' ? 'rgba(233, 213, 255, 0.78)' : 'rgba(240, 249, 255, 0.84)';
+        pRect(bx - dir * 1, fwY, 5, 3, foreWingCol);
+        pRect(bx, fwY - 1, 3, 1, 'rgba(255, 255, 255, 0.94)');
     }
 }
-
 /* ============================================================================
    CREATURE 6: MAJESTIC ARTICULATED NISHIKIGOI (Japon Zen Koi Balığı)
    18-node fluid S-curve spine, 5 authentic Japanese Nishikigoi varieties
