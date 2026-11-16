@@ -9,7 +9,7 @@ Diorama is a local-first personal new-tab experience with living pixel-art habit
 ## Project structure
 
 - `index.html` — application markup and native ES-module entrypoint
-- `js/` — browser features, habitat interactions, state, geometry and rendering
+- `js/` — browser features, habitat interactions, state, geometry, cached backgrounds and rendering
 - `css/` — hand-authored styles and generated utility stylesheet
 - `config/` — habitat and news-source catalogs
 - `server/` — platform-independent RSS parser and API handlers
