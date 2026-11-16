@@ -229,6 +229,8 @@ async def assert_app_smoke(browser_type, name: str, base_url: str):
     await page.locator("#habitatListContainer button").nth(5).click()
     selected_habitat = await page.locator("#habitatNameLabel").inner_text()
     assert "Kyoto Zen Bahçesi" in selected_habitat, f"{name}: Kyoto habitat selection failed: {selected_habitat!r}"
+    # Close the picker so the exported screenshot shows the complete habitat artwork.
+    await page.locator("#habitatMenuBtn").click()
     await page.wait_for_timeout(450)
     await page.screenshot(path=str(ARTIFACTS / f"{name}-kyoto-1440x900.png"), full_page=True)
 
