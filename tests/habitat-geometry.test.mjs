@@ -51,7 +51,7 @@ test('all habitat scene modules pass viewport dimensions to ground geometry', ()
     assert.ok(calls.length > 0, `${file} contains ground geometry calls`);
 
     for (const [, args] of calls) {
-      assert.match(args, /,\\s*pw\\s*,\\s*ph\\s*$/, `${file}: getGroundY(${args})`);
+      assert.match(args, /,\s*pw\s*,\s*ph\s*$/, `${file}: getGroundY(${args})`);
     }
   }
 });
