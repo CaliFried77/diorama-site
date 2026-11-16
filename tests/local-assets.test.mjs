@@ -14,6 +14,7 @@ const calendarModule = await readFile(new URL('../js/11-calendar.js', import.met
 const coreUiModule = await readFile(new URL('../js/01-core-ui.js', import.meta.url), 'utf8');
 const dataManagerModule = await readFile(new URL('../js/06-data-manager.js', import.meta.url), 'utf8');
 const sceneryModule = await readFile(new URL('../js/09-scenery.js', import.meta.url), 'utf8');
+const backgroundsModule = await readFile(new URL('../js/habitat-backgrounds.js', import.meta.url), 'utf8');
 const creatureModule = await readFile(new URL('../js/08-creatures.js', import.meta.url), 'utf8');
 const interactionModule = await readFile(new URL('../js/habitat-interactions.js', import.meta.url), 'utf8');
 const habitatCatalog = await readFile(new URL('../config/habitat-catalog.js', import.meta.url), 'utf8');
@@ -162,10 +163,10 @@ test('rainforest habitat connects its layered canopy, flora, parrot flock and ed
   assert.ok(habitatCatalog.includes("interactionProfile: 'fruit'"));
   assert.ok(sceneryModule.includes('new PixelParrot()'));
   assert.ok(sceneryModule.includes("hab.sceneProfile === 'rainforest'"));
-  assert.ok(sceneryModule.includes('const midgroundTrees = ['));
-  assert.ok(sceneryModule.includes('const edgeGiants = ['));
-  assert.ok(sceneryModule.includes('const canopyDomes = ['));
-  assert.ok(sceneryModule.includes('rootFlare = prog > 0.78'));
+  assert.ok(backgroundsModule.includes('const midgroundTrees = ['));
+  assert.ok(backgroundsModule.includes('const edgeGiants = ['));
+  assert.ok(backgroundsModule.includes('const canopyDomes = ['));
+  assert.ok(backgroundsModule.includes('rootFlare = prog > 0.78'));
   assert.ok(sceneryModule.includes("f.type === 'canopy_vine'"));
   assert.ok(sceneryModule.includes("f.type === 'jungle_fern'"));
   assert.ok(sceneryModule.includes("f.type === 'heliconia'"));
@@ -181,8 +182,8 @@ test('rainforest habitat connects its layered canopy, flora, parrot flock and ed
 });
 
 test('existing habitat improvements preserve bespoke scene layers', () => {
-  assert.ok(sceneryModule.includes('const drawOrchardTree ='));
-  assert.ok(sceneryModule.includes('const leftTree1X = 24'));
+  assert.ok(backgroundsModule.includes('const drawOrchardTree ='));
+  assert.ok(backgroundsModule.includes('const leftTree1X = 24'));
   assert.ok(sceneryModule.includes('const willowZones = ['));
   assert.ok(sceneryModule.includes("type: 'willow_frond'"));
   assert.ok(sceneryModule.includes("type: 'pebble'"));
