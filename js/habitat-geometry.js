@@ -39,19 +39,6 @@ export function getGroundY(x, profile, width, height) {
     return height;
 }
 
-/**
- * The visible waterline of the Kyoto koi pond.
- * Keep this shared with the background renderer and koi movement so fish
- * always stay below the exact shoreline drawn into the static scene.
- */
-export function getKoiWaterSurfaceY(x, width, height) {
-    return Math.round(
-        height * 0.225
-        + Math.sin(x * 0.016) * 2.2
-        + Math.cos(x * 0.039) * 1.2
-    );
-}
-
 // ============================================================================
 // BÖLÜM SONU: HABİTAT ZEMİN EĞRİLERİ
 // ============================================================================

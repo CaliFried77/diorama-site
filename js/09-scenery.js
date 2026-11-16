@@ -1,119 +1,11 @@
 import { currentHabitatIdx, HABITATS, ambientParticles, shootingStars, pw, ph, lerpHex, ctx, pRect, frameChance, frameScale } from './07-habitat-state.js';
 import { drawHabitatStimuli } from './habitat-interactions.js';
-import { getGroundY, getKoiWaterSurfaceY } from './habitat-geometry.js';
+import { getGroundY } from './habitat-geometry.js';
 import { buildStaticEnvironmentLayer } from './habitat-backgrounds.js';
 import { drawHabitatFlora } from './habitat-flora-renderer.js';
 import { isLightMode } from './01-core-ui.js';
 import { wxFxOn, drawWxSky } from './03-weather.js';
 import { sceneCache } from './scene-state.js';
-
-/**
- * Draw the viewer-facing layer of the Kyoto pond after koi sprites.
- * The low-opacity depth veil, moving caustics and broken surface highlights
- * make the fish read as submerged rather than pasted on top of the water.
- */
-export function drawKoiWaterOptics(time) {
-    const hab = HABITATS[currentHabitatIdx];
-    if (hab.sceneProfile !== 'koi-pond') return;
-
-    let cache = sceneCache.koiWaterOpticsCache;
-    const cacheInvalid = !cache || cache.hab !== hab.id || cache.light !== isLightMode ||
-        cache.width !== pw || cache.height !== ph;
-
-    if (cacheInvalid) {
-        const layer = document.createElement('canvas');
-        layer.width = pw;
-        layer.height = ph;
-        cache = {
-            canvas: layer,
-            ctx: layer.getContext('2d'),
-            hab: hab.id,
-            light: isLightMode,
-            width: pw,
-            height: ph,
-            updatedAt: -Infinity,
-        };
-        sceneCache.koiWaterOpticsCache = cache;
-    }
-
-    // Moving refraction is rasterized into a tiny offscreen layer at 20 Hz.
-    // The main 60 Hz loop then performs one drawImage instead of 180+ fillRects.
-    if (time - cache.updatedAt >= 50) {
-        const waterCtx = cache.ctx;
-        const waterRect = (x, y, width, height, color) => {
-            waterCtx.fillStyle = color;
-            waterCtx.fillRect(Math.round(x), Math.round(y), Math.round(width), Math.round(height));
-        };
-        const waterSurfaceAt = (x) => getKoiWaterSurfaceY(x, pw, ph);
-        const pondFloorAt = (x) => getGroundY(x, 'koi-pond', pw, ph);
-
-        waterCtx.clearRect(0, 0, pw, ph);
-        waterCtx.save();
-        waterCtx.beginPath();
-        waterCtx.moveTo(0, waterSurfaceAt(0) + 7);
-        for (let x = 2; x < pw; x += 2) {
-            waterCtx.lineTo(x, waterSurfaceAt(x) + 7);
-        }
-        waterCtx.lineTo(pw, waterSurfaceAt(pw) + 7);
-        waterCtx.lineTo(pw, pondFloorAt(pw));
-        for (let x = pw - 2; x > 0; x -= 2) {
-            waterCtx.lineTo(x, pondFloorAt(x));
-        }
-        waterCtx.lineTo(0, pondFloorAt(0));
-        waterCtx.closePath();
-        waterCtx.clip();
-
-        const depthVeil = waterCtx.createLinearGradient(0, ph * 0.23, 0, ph);
-        if (isLightMode) {
-            depthVeil.addColorStop(0, 'rgba(105, 190, 178, 0.075)');
-            depthVeil.addColorStop(0.45, 'rgba(31, 119, 128, 0.14)');
-            depthVeil.addColorStop(1, 'rgba(5, 43, 58, 0.22)');
-        } else {
-            depthVeil.addColorStop(0, 'rgba(76, 169, 164, 0.09)');
-            depthVeil.addColorStop(0.48, 'rgba(20, 105, 119, 0.18)');
-            depthVeil.addColorStop(1, 'rgba(2, 35, 51, 0.27)');
-        }
-        waterCtx.fillStyle = depthVeil;
-        waterCtx.fillRect(0, 0, pw, ph);
-
-        waterCtx.globalCompositeOperation = 'screen';
-        for (let lane = 0; lane < 19; lane++) {
-            const baseY = Math.round(ph * (0.34 + (lane % 7) * 0.083));
-            const speed = 0.003 + (lane % 4) * 0.0011;
-            const drift = (time * speed + lane * 43) % (pw + 70) - 35;
-            const phase = time * 0.0012 + lane * 1.7;
-            for (let segment = 0; segment < 6; segment++) {
-                const x = drift + segment * (5 + lane % 3);
-                const y = baseY + Math.sin(phase + segment * 0.72) * 2.4;
-                const alpha = isLightMode ? 0.21 : 0.17;
-                waterRect(x, y, 3 + (segment % 3), 1, 'rgba(193, 245, 222, ' + alpha + ')');
-                if (segment % 2 === 0) waterRect(x + 2, y + 2, 2, 1, 'rgba(115, 207, 190, 0.09)');
-            }
-        }
-
-        for (let ray = 0; ray < 5; ray++) {
-            const topX = (ray * 89 + Math.sin(time * 0.00045 + ray) * 10 + pw * 0.08) % pw;
-            for (let step = 0; step < 7; step++) {
-                const y = ph * 0.27 + step * (ph * 0.075);
-                const x = topX + Math.sin(time * 0.0006 + step * 0.45 + ray) * (2 + step);
-                const alpha = Math.max(0.025, 0.075 - step * 0.007);
-                waterRect(x, y, 1, 5 + (step % 4), 'rgba(186, 239, 217, ' + alpha + ')');
-                if (step < 4) waterRect(x + 1, y + 2, 1, 3, 'rgba(111, 204, 188, 0.045)');
-            }
-        }
-
-        for (let segment = 0; segment < Math.ceil(pw / 9); segment++) {
-            const x = segment * 9 + Math.sin(time * 0.001 + segment) * 1.5;
-            const y = waterSurfaceAt(x) + 7;
-            if (segment % 3 !== 1) waterRect(x, y, 4 + (segment % 3), 1, 'rgba(211, 246, 229, 0.20)');
-            if (segment % 5 === 0) waterRect(x + 2, y + 2, 3, 1, 'rgba(71, 152, 146, 0.20)');
-        }
-        waterCtx.restore();
-        cache.updatedAt = time;
-    }
-
-    ctx.drawImage(cache.canvas, 0, 0);
-}
 
 // BÖLÜM BAŞI: ANİMASYONLU SAHNE VE HABİTAT EFEKTLERİ
 // ============================================================================
@@ -436,53 +328,28 @@ export function drawHabitatEnvironment(time) {
     }
 
     if (hab.sceneProfile === 'koi-pond') {
-        // Su yüzeyinde farklı hızlarda kayan ışık kırıkları ve küçük dalga çizgileri.
-        for (let band = 0; band < 18; band++) {
-            const lane = band % 9;
-            const wy = Math.round(ph * (0.29 + lane * 0.073));
-            const speed = 0.004 + (band % 4) * 0.0011;
-            const drift = (time * speed + band * 47) % (pw + 52);
-            const sx = Math.round(drift - 26 + Math.sin(time * 0.0008 + band) * 5);
-            const length = 8 + (band % 5) * 4;
-            const glintAlpha = 0.08 + (band % 3) * 0.035;
-            pRect(sx, wy, length, 1, isLightMode
-                ? 'rgba(255, 255, 235, 0.26)'
-                : 'rgba(190, 240, 220, ' + glintAlpha.toFixed(2) + ')');
-            pRect(sx + 4, wy + 2, Math.max(3, length - 7), 1, isLightMode
-                ? 'rgba(224, 250, 233, 0.16)'
-                : 'rgba(85, 176, 158, 0.11)');
+        for (let s = 0; s < 12; s++) {
+            const wy = 34 + s * Math.floor((ph - 46) / 12);
+            const sx = Math.round(((s * 73 + Math.sin(time * 0.001 + s) * 16) % (pw * 0.56)) + pw * 0.20);
+            pRect(sx, wy, 9 + (s % 3) * 5, 1, isLightMode ? 'rgba(224, 242, 254, 0.32)' : 'rgba(125, 211, 252, 0.12)');
         }
 
-        // Uzak köprü ve ağaçların suya düşen, parçalı yansımaları.
-        for (let i = 0; i < 10; i++) {
-            const x = Math.round(pw * 0.12 + i * pw * 0.075);
-            const y = Math.round(ph * 0.39 + Math.sin(time * 0.0015 + i * 0.8) * 3);
-            const width = 5 + (i % 4) * 3;
-            pRect(x, y, width, 1, i % 2 === 0
-                ? 'rgba(214, 105, 82, 0.12)'
-                : 'rgba(129, 192, 153, 0.12)');
-            if (i % 3 === 0) pRect(x + 2, y + 3, width - 2, 1, 'rgba(210, 226, 195, 0.09)');
-        }
-
-        // Sağ kıyıdaki fenerden suya düşen sıcak ışık ve damla halkaları.
-        const bx = Math.round(pw * 0.91);
-        const by = getGroundY(bx, 'koi-pond', pw, ph) - 15;
+        const bx = pw - 42;
+        const by = ph - 18;
         const dropOffset = Math.floor((time * 0.022) % 6);
-        pRect(bx - 5, by - 2 + dropOffset, 1, 3, '#bae6fd');
-        pRect(bx - 5, by + 3, 1, 1, '#e0f2fe');
-        const rippleR = (time * 0.014) % 11;
-        pRect(bx - 5 - rippleR, by + 5, 3, 1, 'rgba(224, 242, 254, 0.42)');
-        pRect(bx - 5 + rippleR, by + 5, 3, 1, 'rgba(224, 242, 254, 0.42)');
+        pRect(bx - 23, by - 2 + dropOffset, 1, 3, '#bae6fd');
+        pRect(bx - 23, by + 3, 1, 1, '#e0f2fe');
+        const rippleR = (time * 0.014) % 9;
+        pRect(bx - 23 - rippleR, by + 5, 2, 1, 'rgba(224, 242, 254, 0.45)');
+        pRect(bx - 23 + rippleR, by + 5, 2, 1, 'rgba(224, 242, 254, 0.45)');
 
-        // The warm pulse sits in the lantern window, with a short reflection on the pond.
-        const glowAlpha = (0.72 + 0.22 * Math.sin(time * 0.0035)).toFixed(2);
-        pRect(bx - 3, by - 1, 7, 4, 'rgba(255, 196, 104, ' + glowAlpha + ')');
-        pRect(bx - 1, by, 3, 3, '#fff2c5');
-        pRect(bx - 8, by - 4, 17, 10, 'rgba(251, 191, 36, 0.12)');
-        for (let ry = 0; ry < 6; ry++) {
-            const drift = Math.sin(time * 0.0025 + ry * 1.2) * 3.2;
-            pRect(bx - 3 + drift, by + 10 + ry * 2, 7 - ry, 1,
-                'rgba(251, 191, 36, ' + (0.28 - ry * 0.035).toFixed(2) + ')');
+        const glowAlpha = (0.78 + 0.2 * Math.sin(time * 0.004)).toFixed(2);
+        pRect(bx - 3, by - 15, 7, 4, `rgba(253, 224, 71, ${glowAlpha})`);
+        pRect(bx - 1, by - 14, 3, 2, '#ffffff');
+        pRect(bx - 6, by - 17, 13, 8, 'rgba(251, 191, 36, 0.15)');
+        for (let ry = 0; ry < 5; ry++) {
+            const drift = Math.sin(time * 0.003 + ry * 1.4) * 2.5;
+            pRect(bx - 3 + drift, by + 10 + ry * 2, 6 - ry, 1, `rgba(251, 191, 36, ${(0.32 - ry * 0.05).toFixed(2)})`);
         }
     }
 
@@ -535,40 +402,7 @@ export function drawHabitatEnvironment(time) {
         }
     }
 
-    if (hab.sceneProfile === 'koi-pond') {
-        // Bamboo, iris and lily movement is cached at 20 Hz. The main scene and
-        // koi remain full-rate; drawing one small bitmap avoids hundreds of
-        // per-stem fillRect calls on every animation frame.
-        let cache = sceneCache.koiFloraCache;
-        const cacheInvalid = !cache || cache.hab !== hab.id || cache.light !== isLightMode ||
-            cache.width !== pw || cache.height !== ph;
-        const refreshFlora = cacheInvalid || time - cache.updatedAt >= 50;
-
-        if (refreshFlora) {
-            if (cacheInvalid) {
-                const layer = document.createElement('canvas');
-                layer.width = pw;
-                layer.height = ph;
-                cache = {
-                    canvas: layer,
-                    ctx: layer.getContext('2d'),
-                    hab: hab.id,
-                    light: isLightMode,
-                    width: pw,
-                    height: ph,
-                    updatedAt: 0,
-                };
-                sceneCache.koiFloraCache = cache;
-            } else {
-                cache.ctx.clearRect(0, 0, pw, ph);
-            }
-            drawHabitatFlora(time, hab, cache.ctx);
-            cache.updatedAt = time;
-        }
-        ctx.drawImage(cache.canvas, 0, 0);
-    } else {
-        drawHabitatFlora(time, hab);
-    }
+    drawHabitatFlora(time, hab);
 
     ambientParticles.forEach((pt, idx) => {
         if (hab.sceneProfile === 'koi-pond') {

@@ -2,7 +2,7 @@ import { recordRenderFrame } from './performance-monitor.js';
 import { cachedGlassCards, popovers, setPopoverOpen, shortcutModal, closeShortcutModal, toggleZenMode, refreshGlassCardCache } from './01-core-ui.js';
 import { pw, ph, canvas, HABITATS, currentHabitatIdx, creatures, pinnedHabitatId, prefersReducedMotion, BASE_FRAME_MS, MAX_FRAME_DELTA_MS, REDUCED_MOTION_QUERY, setPinnedHabitatId, setFrameScale, setPrefersReducedMotion } from './07-habitat-state.js';
 import { initHabitat } from './habitat-initializer.js';
-import { drawHabitatEnvironment, drawKoiWaterOptics } from './09-scenery.js';
+import { drawHabitatEnvironment } from './09-scenery.js';
 import { drawWxFront } from './03-weather.js';
 import { lsPut, esc } from './storage.js';
 
@@ -28,12 +28,13 @@ import { lsPut, esc } from './storage.js';
             const winH = window.innerHeight;
             if (!winW || !winH || !cachedGlassCards.length) return;
 
-            const defaultRGB = HABITATS[currentHabitatIdx].rgb;
             for (let idx = 0; idx < cachedGlassCards.length; idx++) {
                 const card = cachedGlassCards[idx];
                 const el = card.el;
                 const lens = card.lens;
 
+                // Closed popovers are transparent and cannot be interacted with; do not
+                // spend GPU/CPU time repainting their hidden lens canvases.
                 const hiddenPopover = el.closest('.popover-panel');
                 if (hiddenPopover && !hiddenPopover.classList.contains('open')) continue;
                 if (!el.isConnected) continue;
@@ -41,6 +42,7 @@ import { lsPut, esc } from './storage.js';
                 const rect = el.getBoundingClientRect();
                 if (rect.width < 1 || rect.height < 1 || rect.right <= 0 || rect.bottom <= 0 || rect.left >= winW || rect.top >= winH) continue;
 
+                // Convert the card's CSS-pixel rectangle into the low-resolution scene canvas.
                 const sx = (rect.left / winW) * pw;
                 const sy = (rect.top / winH) * ph;
                 const sw = (rect.width / winW) * pw;
@@ -50,6 +52,7 @@ import { lsPut, esc } from './storage.js';
                 const lw = Math.max(16, Math.round(sw));
                 const lh = Math.max(12, Math.round(sh));
                 if (lens.width !== lw || lens.height !== lh) {
+                    // Setting canvas dimensions clears it and resets its drawing state.
                     lens.width = lw;
                     lens.height = lh;
                     card.width = lw;
@@ -59,56 +62,59 @@ import { lsPut, esc } from './storage.js';
                 const lctx = card.ctx;
                 if (!lctx) continue;
 
-                // One scene sample is enough; the former second full-card sample
-                // duplicated canvas bandwidth for a bevel already supplied by CSS.
                 lctx.clearRect(0, 0, lw, lh);
+                // Main refracted sample. Keep the subtle second pass for the glass bevel,
+                // but avoid re-fetching the context or reallocating the backing canvas.
                 lctx.drawImage(canvas, sx, sy, sw, sh, 0, 0, lw, lh);
+                lctx.globalAlpha = 0.35;
+                lctx.drawImage(canvas, sx - 1, sy - 1, sw + 2, sh + 2, 0, 0, lw, lh);
+                lctx.globalAlpha = 1;
 
-                // Find the strongest nearby creature first, then render one glow.
-                // Multiple radial gradients per card were a disproportionate GPU cost.
+                // Preserve multi-creature bioluminescence while limiting work to creatures
+                // close enough to influence this card.
                 let bestGlow = 0;
-                let glowRGB = defaultRGB;
+                let glowRGB = HABITATS[currentHabitatIdx].rgb;
                 let localGlowX = -200;
                 let localGlowY = -200;
-                let bestLX = 0;
-                let bestLY = 0;
                 const pad = 18;
 
+                lctx.save();
+                lctx.globalCompositeOperation = 'lighter';
                 for (let i = 0; i < creatures.length; i++) {
-                    const creature = creatures[i];
-                    if (creature.x < sx - pad || creature.x > sx + sw + pad ||
-                        creature.y < sy - pad || creature.y > sy + sh + pad) continue;
+                    const c = creatures[i];
+                    if (c.x < sx - pad || c.x > sx + sw + pad || c.y < sy - pad || c.y > sy + sh + pad) continue;
 
-                    const dx = creature.x < sx ? sx - creature.x : (creature.x > sx + sw ? creature.x - (sx + sw) : 0);
-                    const dy = creature.y < sy ? sy - creature.y : (creature.y > sy + sh ? creature.y - (sy + sh) : 0);
+                    const dx = c.x < sx ? sx - c.x : (c.x > sx + sw ? c.x - (sx + sw) : 0);
+                    const dy = c.y < sy ? sy - c.y : (c.y > sy + sh ? c.y - (sy + sh) : 0);
                     const intensity = Math.max(0, 1 - Math.hypot(dx, dy) / pad);
-                    if (intensity <= bestGlow) continue;
+                    if (intensity <= 0) continue;
 
-                    bestGlow = intensity;
-                    glowRGB = creature.rgb || defaultRGB;
-                    bestLX = ((creature.x - sx) / sw) * lw;
-                    bestLY = ((creature.y - sy) / sh) * lh;
-                    localGlowX = ((creature.x - sx) / sw) * rect.width;
-                    localGlowY = ((creature.y - sy) / sh) * rect.height;
-                }
-
-                if (bestGlow > 0) {
+                    const rgb = c.rgb || HABITATS[currentHabitatIdx].rgb;
+                    const lx = ((c.x - sx) / sw) * lw;
+                    const ly = ((c.y - sy) / sh) * lh;
                     const bloomR = Math.max(10, Math.min(lw, lh) * 0.7);
-                    const grad = lctx.createRadialGradient(bestLX, bestLY, 0, bestLX, bestLY, bloomR);
-                    grad.addColorStop(0, 'rgba(' + glowRGB[0] + ', ' + glowRGB[1] + ', ' + glowRGB[2] + ', ' + (bestGlow * 0.52) + ')');
-                    grad.addColorStop(0.55, 'rgba(' + glowRGB[0] + ', ' + glowRGB[1] + ', ' + glowRGB[2] + ', ' + (bestGlow * 0.22) + ')');
-                    grad.addColorStop(1, 'rgba(' + glowRGB[0] + ', ' + glowRGB[1] + ', ' + glowRGB[2] + ', 0)');
-                    lctx.save();
-                    lctx.globalCompositeOperation = 'lighter';
+                    const grad = lctx.createRadialGradient(lx, ly, 0, lx, ly, bloomR);
+                    grad.addColorStop(0, `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${intensity * 0.52})`);
+                    grad.addColorStop(0.55, `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${intensity * 0.22})`);
+                    grad.addColorStop(1, `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0)`);
                     lctx.fillStyle = grad;
                     lctx.fillRect(0, 0, lw, lh);
-                    lctx.restore();
-                }
 
-                const glowState = localGlowX.toFixed(1) + '|' + localGlowY.toFixed(1) + '|' + glowRGB.join(',') + '|' + (bestGlow * 0.48).toFixed(2);
+                    if (intensity > bestGlow) {
+                        bestGlow = intensity;
+                        glowRGB = rgb;
+                        localGlowX = ((c.x - sx) / sw) * rect.width;
+                        localGlowY = ((c.y - sy) / sh) * rect.height;
+                    }
+                }
+                lctx.restore();
+
+                // Avoid writing identical CSS variables every glass frame; repeated style
+                // mutations can otherwise trigger needless style recalculation.
+                const glowState = `${localGlowX.toFixed(1)}|${localGlowY.toFixed(1)}|${glowRGB.join(',')}|${(bestGlow * 0.48).toFixed(2)}`;
                 if (glowState !== card.glowState) {
-                    el.style.setProperty('--creature-x', localGlowX.toFixed(1) + 'px');
-                    el.style.setProperty('--creature-y', localGlowY.toFixed(1) + 'px');
+                    el.style.setProperty('--creature-x', `${localGlowX.toFixed(1)}px`);
+                    el.style.setProperty('--creature-y', `${localGlowY.toFixed(1)}px`);
                     el.style.setProperty('--glow-r', glowRGB[0]);
                     el.style.setProperty('--glow-g', glowRGB[1]);
                     el.style.setProperty('--glow-b', glowRGB[2]);
@@ -228,12 +234,10 @@ import { lsPut, esc } from './storage.js';
                 creatures[i].draw();
             }
 
-            // The water surface is the foreground optical layer: draw it over koi sprites.
-            drawKoiWaterOptics(sceneTime);
             drawWxFront(sceneTime);
 
-            // Refresh optical glass at 10 Hz; the scene and creatures remain at full animation cadence.
-            const glassInterval = prefersReducedMotion ? 150 : 100;
+            // The refractive lens is expensive; 30 Hz is visually smooth for this pixel-art UI.
+            const glassInterval = prefersReducedMotion ? 100 : 1000 / 30;
             let glassMs = 0;
             if (!document.body.classList.contains('zen-active') && timestamp - lastGlassUpdateTime >= glassInterval) {
                 const glassStartedAt = performance.now();

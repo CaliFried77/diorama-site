@@ -154,18 +154,6 @@ async def mock_external_request(route):
     await route.continue_()
 
 
-async def ensure_habitat_popover_open(page):
-    """Open the habitat picker only when it is currently closed."""
-    is_open = await page.locator("#habitatPopover").evaluate(
-        "(panel) => panel.classList.contains('open')"
-    )
-    if not is_open:
-        # Dispatch the button's click handler directly; Playwright's navigation
-        # auto-wait can time out on this persistent single-page popover.
-        await page.locator("#habitatMenuBtn").dispatch_event("click")
-    await page.locator("#habitatPopover.open").wait_for(state="visible")
-
-
 async def assert_app_smoke(browser_type, name: str, base_url: str):
     browser = await browser_type.launch(headless=True)
     context = await browser.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=1)
@@ -213,67 +201,23 @@ async def assert_app_smoke(browser_type, name: str, base_url: str):
     assert re.search(r"\d+°C", weather_text), f"{name}: mocked weather data did not render: {weather_text!r}"
 
     # Habitat picker and cycle.
-    await page.locator("#habitatMenuBtn").dispatch_event("click")
+    await page.locator("#habitatMenuBtn").click()
     await page.locator("#habitatPopover.open").wait_for(state="visible")
     assert await page.locator("#habitatListContainer button").count() == 8
-    await page.locator("#habitatListContainer button").nth(6).dispatch_event("click")
+    await page.locator("#habitatListContainer button").nth(6).click()
     selected_habitat = await page.locator("#habitatNameLabel").inner_text()
     assert "Yağmur Ormanı" in selected_habitat, f"{name}: rainforest habitat selection failed: {selected_habitat!r}"
     # Capture the actual rainforest composition before cycling to the next habitat.
-    await page.locator("#habitatMenuBtn").dispatch_event("click")
+    await page.locator("#habitatMenuBtn").click()
     await page.set_viewport_size({"width": 1440, "height": 900})
     await page.wait_for_timeout(450)
     ARTIFACTS.mkdir(exist_ok=True)
     await page.screenshot(path=str(ARTIFACTS / f"{name}-rainforest-1440x900.png"), full_page=True)
 
-    # Select Kyoto based on the actual popover state; habitat row clicks do not auto-close it.
-    await ensure_habitat_popover_open(page)
-    await page.locator("#habitatListContainer button").nth(5).dispatch_event("click")
-    selected_habitat = await page.locator("#habitatNameLabel").inner_text()
-    assert "Kyoto Zen Bahçesi" in selected_habitat, f"{name}: Kyoto habitat selection failed: {selected_habitat!r}"
-    # Close the picker so the exported screenshot shows the complete habitat artwork.
-    await page.locator("#habitatMenuBtn").dispatch_event("click")
-    await page.wait_for_timeout(450)
-    await page.screenshot(path=str(ARTIFACTS / f"{name}-kyoto-1440x900.png"), full_page=True)
-
-    # Capture real animation cadence and long tasks while the optimized Kyoto scene runs.
-    perf_sample = await page.evaluate("""async () => {
-        const timestamps = [];
-        let longTasks = 0;
-        let observer = null;
-        if ('PerformanceObserver' in window) {
-            try {
-                observer = new PerformanceObserver((entries) => { longTasks += entries.getEntries().length; });
-                observer.observe({ type: 'longtask', buffered: true });
-            } catch { /* Long-task entries are not supported by every browser. */ }
-        }
-        const started = performance.now();
-        await new Promise((resolve) => {
-            const tick = (now) => {
-                timestamps.push(now);
-                if (now - started < 1500) requestAnimationFrame(tick);
-                else resolve();
-            };
-            requestAnimationFrame(tick);
-        });
-        observer?.disconnect();
-        const intervals = timestamps.slice(1).map((value, index) => value - timestamps[index]).sort((a, b) => a - b);
-        const percentile = (fraction) => intervals[Math.min(intervals.length - 1, Math.floor(intervals.length * fraction))] || 0;
-        const elapsed = Math.max(1, timestamps[timestamps.length - 1] - timestamps[0]);
-        return {
-            frames: timestamps.length,
-            measuredFps: Number(((timestamps.length - 1) * 1000 / elapsed).toFixed(1)),
-            medianFrameMs: Number(percentile(0.5).toFixed(2)),
-            p95FrameMs: Number(percentile(0.95).toFixed(2)),
-            longTasks,
-        };
-    }""")
-    (ARTIFACTS / f"{name}-kyoto-performance.json").write_text(json.dumps(perf_sample, indent=2), encoding="utf-8")
-    print(f"{name}: Kyoto performance sample {json.dumps(perf_sample, sort_keys=True)}")
-
     # Select the new Arctic habitat and capture it too, so profile registration is tested in-browser.
-    await ensure_habitat_popover_open(page)
-    await page.locator("#habitatListContainer button").nth(7).dispatch_event("click")
+    await page.locator("#habitatMenuBtn").click()
+    await page.locator("#habitatPopover.open").wait_for(state="visible")
+    await page.locator("#habitatListContainer button").nth(7).click()
     selected_habitat = await page.locator("#habitatNameLabel").inner_text()
     assert "Kuzey Işıkları" in selected_habitat, f"{name}: Arctic habitat selection failed: {selected_habitat!r}"
     await page.wait_for_timeout(450)

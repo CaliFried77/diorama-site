@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
-import { getGroundY, getKoiWaterSurfaceY } from '../js/habitat-geometry.js';
+import { getGroundY } from '../js/habitat-geometry.js';
 
 const SCENE_PROFILES = [
   'meadow',
@@ -54,22 +54,4 @@ test('all habitat scene modules pass viewport dimensions to ground geometry', ()
       assert.match(args, /,\s*pw\s*,\s*ph\s*$/, `${file}: getGroundY(${args})`);
     }
   }
-});
-
-
-test('Kyoto koi waterline remains above the ground and follows the scene dimensions', () => {
-  const width = 480;
-  const height = 300;
-
-  for (const x of [0, width * 0.15, width * 0.5, width * 0.85, width]) {
-    const surface = getKoiWaterSurfaceY(x, width, height);
-    const ground = getGroundY(x, 'koi-pond', width, height);
-    assert.ok(Number.isFinite(surface), `waterline is finite at x=${x}`);
-    assert.ok(surface > 0 && surface < ground, `waterline sits above the pond bed at x=${x}`);
-    assert.ok(Math.abs(surface - height * 0.225) < 5, `waterline stays close to the designed horizon at x=${x}`);
-  }
-
-  const small = getKoiWaterSurfaceY(120, 420, 240);
-  const large = getKoiWaterSurfaceY(240, 840, 480);
-  assert.ok(large > small, 'waterline scales with scene height');
 });
