@@ -12,7 +12,7 @@ import { refreshWeatherPreviewButtons, refreshDataManagerStats } from './service
 // BÖLÜM BAŞI: ORTAK SVG İKON KATALOĞU
 // ============================================================================
 
-export const SVG_ICONS = {
+        export const SVG_ICONS = {
             google: `<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2c2.7 0 5.15 1.07 6.95 2.81L16.1 7.66C15.05 6.64 13.6 6 12 6c-3.31 0-6 2.69-6 6s2.69 6 6 6c2.97 0 5.43-2.16 5.91-5H12v-4h9.86c.09.65.14 1.32.14 2 0 5.523-4.477 10-10 10z"/></svg>`,
             duckduckgo: `<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M9 10a1 1 0 100-2 1 1 0 000 2z"/><path d="M15 10c1.5 0 2.5.5 2.5 1.5S16.5 13 15 13H9c-1.5 0-2-.5-2-1.5"/></svg>`,
             youtube: `<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="5" width="20" height="14" rx="4"/><polygon points="10 9 15 12 10 15 10 9" fill="currentColor"/></svg>`,
@@ -121,7 +121,7 @@ export const SVG_ICONS = {
 // BÖLÜM BAŞI: SAAT, TARİH VE GÜNÜN SELAMLAMASI
 // ============================================================================
 
-const heroClock = document.getElementById('heroClock');
+        const heroClock = document.getElementById('heroClock');
         const heroDate = document.getElementById('heroDate');
         const greetingLabel = document.getElementById('greetingLabel');
         const editableUserName = document.getElementById('editableUserName');
