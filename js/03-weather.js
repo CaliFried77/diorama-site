@@ -34,7 +34,7 @@ import { registerWeatherPreviewRenderer } from './services.js';
 // API'den gelen hava kodları bu bölümde arayüz ve sahne profillerine çevrilir.
 // ============================================================================
 
-function wxKind(c) {
+        function wxKind(c) {
             if (c <= 1) return 'clear'; if (c === 2) return 'partly'; if (c === 3) return 'cloud'; if (c === 45 || c === 48) return 'fog';
             if (c >= 95) return 'thunder'; if ((c >= 71 && c <= 77) || c === 85 || c === 86) return 'snow'; return 'rain';
         }
@@ -166,7 +166,7 @@ function wxKind(c) {
 // BÖLÜM BAŞI: HAVA PANELİNİN HTML/ARIA GÖRÜNÜMÜ
 // ============================================================================
 
-function renderWeatherPanel() {
+        function renderWeatherPanel() {
             const d = WX.data, c = d.current, dy = d.daily, hr = d.hourly;
             const kind = wxKind(c.weather_code), isDay = !!c.is_day;
             document.getElementById('wxBigIcon').innerHTML = pxIcon(kind, isDay, 64);
@@ -302,7 +302,7 @@ function renderWeatherPanel() {
 // BÖLÜM BAŞI: SERVİS YANITLARI, ÖNBELLEK VE HAVA VERİSİ İSTEKLERİ
 // ============================================================================
 
-function parseWeatherLocalTime(value) {
+        function parseWeatherLocalTime(value) {
             if (typeof value !== 'string' || !value) return new Date(NaN);
             // Open-Meteo returns wall-clock ISO values for timezone=auto. Keeping them
             // on one neutral timeline makes sun-progress differences independent of
@@ -528,7 +528,7 @@ function parseWeatherLocalTime(value) {
 // BÖLÜM BAŞI: SAHNEDE GÜNEŞ, AY, BULUT VE HAVA EFEKTLERİ
 // ============================================================================
 
-function ensureWx() {
+        function ensureWx() {
             const key = `${Math.round(WX.cloud / 10)}|${WX.rain}|${WX.snow}|${WX.fog}`;
             if (WX.key === key && WX.w === pw && WX.h === ph) return;
             WX.key = key; WX.w = pw; WX.h = ph;
