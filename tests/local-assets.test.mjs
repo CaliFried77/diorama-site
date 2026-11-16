@@ -15,6 +15,7 @@ const coreUiModule = await readFile(new URL('../js/01-core-ui.js', import.meta.u
 const dataManagerModule = await readFile(new URL('../js/06-data-manager.js', import.meta.url), 'utf8');
 const sceneryModule = await readFile(new URL('../js/09-scenery.js', import.meta.url), 'utf8');
 const creatureModule = await readFile(new URL('../js/08-creatures.js', import.meta.url), 'utf8');
+const interactionModule = await readFile(new URL('../js/habitat-interactions.js', import.meta.url), 'utf8');
 const habitatCatalog = await readFile(new URL('../config/habitat-catalog.js', import.meta.url), 'utf8');
 const cssBuilder = await readFile(new URL('../scripts/build-css.mjs', import.meta.url), 'utf8');
 const newsCss = await readFile(new URL('../css/news.css', import.meta.url), 'utf8');
@@ -170,7 +171,9 @@ test('rainforest habitat connects its layered canopy, flora, parrot flock and ed
   assert.ok(sceneryModule.includes("f.type === 'heliconia'"));
   assert.ok(sceneryModule.includes("f.type === 'epiphyte'"));
   assert.ok(sceneryModule.includes("f.type === 'orchid'"));
-  assert.ok(sceneryModule.includes("s.type === 'tropical_fruit'"));
+  assert.ok(interactionModule.includes("s.type === 'tropical_fruit'"));
+  assert.ok(interactionModule.includes('export function drawHabitatStimuli()'));
+  assert.ok(sceneryModule.includes('drawHabitatStimuli()'));
   assert.ok(creatureModule.includes('export class PixelParrot'));
   assert.ok(creatureModule.includes('this.palette'));
   assert.ok(creatureModule.includes('const tailLen = 19'));
