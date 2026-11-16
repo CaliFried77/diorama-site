@@ -14,6 +14,7 @@ const calendarModule = await readFile(new URL('../js/11-calendar.js', import.met
 const coreUiModule = await readFile(new URL('../js/01-core-ui.js', import.meta.url), 'utf8');
 const dataManagerModule = await readFile(new URL('../js/06-data-manager.js', import.meta.url), 'utf8');
 const sceneryModule = await readFile(new URL('../js/09-scenery.js', import.meta.url), 'utf8');
+const initializerModule = await readFile(new URL('../js/habitat-initializer.js', import.meta.url), 'utf8');
 const backgroundsModule = await readFile(new URL('../js/habitat-backgrounds.js', import.meta.url), 'utf8');
 const floraModule = await readFile(new URL('../js/habitat-flora-renderer.js', import.meta.url), 'utf8');
 const creatureModule = await readFile(new URL('../js/08-creatures.js', import.meta.url), 'utf8');
@@ -162,7 +163,7 @@ test('rainforest habitat connects its layered canopy, flora, parrot flock and ed
   assert.ok(habitatCatalog.includes("sceneProfile: 'rainforest'"));
   assert.ok(habitatCatalog.includes("creatureProfile: 'parrot'"));
   assert.ok(habitatCatalog.includes("interactionProfile: 'fruit'"));
-  assert.ok(sceneryModule.includes('new PixelParrot()'));
+  assert.ok(initializerModule.includes('new PixelParrot()'));
   assert.ok(sceneryModule.includes("hab.sceneProfile === 'rainforest'"));
   assert.ok(backgroundsModule.includes('const midgroundTrees = ['));
   assert.ok(backgroundsModule.includes('const edgeGiants = ['));
