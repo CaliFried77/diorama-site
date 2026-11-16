@@ -2,7 +2,7 @@ import { invalidateBackgroundCache } from './scene-state.js';
 import { HABITATS, HABITAT_IDS } from '../config/habitat-catalog.js';
 export { HABITATS };
 import { lsRaw, lsPut } from './storage.js';
-import { calculateFrameChance, calculateFrameSmoothing, scaleSceneCollections } from './scene-math.js';
+import { calculateFrameChance, calculateFrameSmoothing, scaleSceneCollections, createBackgroundSilhouettes } from './scene-math.js';
 
 /* HABITAT STATE — Living Pixel Diorama
    Canvas dimensions, frame timing and shared scene collections for all habitats. */
@@ -52,10 +52,7 @@ import { calculateFrameChance, calculateFrameSmoothing, scaleSceneCollections } 
                     ph / previousHeight,
                 );
                 bgSilhouettes.length = 0;
-                for (let x = 0; x < pw; x += 4) {
-                    const height = 22 + Math.sin(x * 0.018) * 12 + Math.cos(x * 0.045) * 6;
-                    bgSilhouettes.push({ x, h: height });
-                }
+                bgSilhouettes.push(...createBackgroundSilhouettes(pw));
             }
         }
         window.addEventListener('resize', resizePixelCanvas, { passive: true });
