@@ -21,7 +21,7 @@ import { lsPut, esc } from './storage.js';
 // Sahne canvas'ından cam kartlarına örnek alır; maliyetli işlem ayrı aralıkla çalışır.
 // ============================================================================
 
-function updateOpticalLiquidGlass() {
+        function updateOpticalLiquidGlass() {
             if (document.body.classList.contains('zen-active')) return;
             const winW = window.innerWidth;
             const winH = window.innerHeight;
@@ -128,7 +128,7 @@ function updateOpticalLiquidGlass() {
 // BÖLÜM BAŞI: HABİTAT SEÇİM MENÜSÜ VE SABİTLEME
 // ============================================================================
 
-const habitatListContainer = document.getElementById('habitatListContainer');
+        const habitatListContainer = document.getElementById('habitatListContainer');
         const pinHabitatBtn = document.getElementById('pinHabitatBtn');
         const pinHabitatText = document.getElementById('pinHabitatText');
 
@@ -197,7 +197,7 @@ const habitatListContainer = document.getElementById('habitatListContainer');
 // BÖLÜM BAŞI: SAHNE BAŞLANGICI, ANİMASYON DÖNGÜSÜ VE KLAVYE KISAYOLLARI
 // ============================================================================
 
-initHabitat(currentHabitatIdx);
+        initHabitat(currentHabitatIdx);
         renderHabitatMenu();
 
         let animationFrameId = null;
