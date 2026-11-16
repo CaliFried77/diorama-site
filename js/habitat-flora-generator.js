@@ -11,6 +11,7 @@ import { getGroundY } from './habitat-geometry.js';
 
 export function populateHabitatFlora(hab) {
     if (hab.sceneProfile === 'meadow') {
+        // BÖLÜM BAŞI: ÇAYIR BAŞLANGIÇ FLORASI
         for (let x = 12; x < pw - 12; x += 6 + Math.floor(Math.random() * 4)) {
             const nx = x / Math.max(1, pw);
             if (nx > 0.78 && nx < 0.90) continue;
@@ -49,7 +50,9 @@ export function populateHabitatFlora(hab) {
             }
         }
 
+        // BÖLÜM SONU: ÇAYIR BAŞLANGIÇ FLORASI
     } else if (hab.sceneProfile === 'betta-aquarium') {
+        // BÖLÜM BAŞI: BETTA AKVARYUMU BAŞLANGIÇ FLORASI
         for (let x = 10; x < pw - 10; x += 8 + Math.floor(Math.random() * 5)) {
             const nx = x / Math.max(1, pw);
             const inCenterPath = nx > 0.42 && nx < 0.58;
@@ -105,7 +108,9 @@ export function populateHabitatFlora(hab) {
             });
         }
 
+        // BÖLÜM SONU: BETTA AKVARYUMU BAŞLANGIÇ FLORASI
     } else if (hab.sceneProfile === 'wetland') {
+        // BÖLÜM BAŞI: SULAK ALAN BAŞLANGIÇ FLORASI
         const reach = Math.min(145, Math.round(pw * 0.26));
         const willowZones = [
             { startX: 6, endX: reach - 4, isLeft: true },
@@ -195,7 +200,9 @@ export function populateHabitatFlora(hab) {
             });
         }
 
+        // BÖLÜM SONU: SULAK ALAN BAŞLANGIÇ FLORASI
     } else if (hab.sceneProfile === 'botanical') {
+        // BÖLÜM BAŞI: BOTANİK BAHÇE BAŞLANGIÇ FLORASI
         const reach = Math.min(155, Math.round(pw * 0.30));
         const boughZones = [
             { startX: 6, endX: reach - 4, isLeft: true },
@@ -284,7 +291,9 @@ export function populateHabitatFlora(hab) {
             }
         }
 
+        // BÖLÜM SONU: BOTANİK BAHÇE BAŞLANGIÇ FLORASI
     } else if (hab.sceneProfile === 'reef') {
+        // BÖLÜM BAŞI: MERCAN RESİFİ BAŞLANGIÇ FLORASI
         for (let x = 10; x < pw - 10; x += 9 + Math.floor(Math.random() * 6)) {
             const nx = x / Math.max(1, pw);
             const sideMound = nx < 0.26 ? Math.pow((0.26 - nx) / 0.26, 1.5) * 34
@@ -349,7 +358,9 @@ export function populateHabitatFlora(hab) {
             }
         }
 
+        // BÖLÜM SONU: MERCAN RESİFİ BAŞLANGIÇ FLORASI
     } else if (hab.sceneProfile === 'koi-pond') {
+        // BÖLÜM BAŞI: KOİ GÖLETİ BAŞLANGIÇ FLORASI
         const mapleReach = Math.min(150, Math.round(pw * 0.30));
         for (let x = 8; x <= mapleReach - 4; x += 6 + Math.floor(Math.random() * 4)) {
             const t = x / mapleReach;
@@ -425,7 +436,9 @@ export function populateHabitatFlora(hab) {
             });
         }
 
+        // BÖLÜM SONU: KOİ GÖLETİ BAŞLANGIÇ FLORASI
     } else if (hab.sceneProfile === 'rainforest') {
+        // BÖLÜM BAŞI: YAĞMUR ORMANI BAŞLANGIÇ FLORASI
         for (let x = 8; x < pw - 8; x += 9 + Math.floor(Math.random() * 8)) {
             const nx = x / Math.max(1, pw);
             const inCenterValley = nx > 0.34 && nx < 0.66;
@@ -516,7 +529,9 @@ export function populateHabitatFlora(hab) {
             });
         });
 
+        // BÖLÜM SONU: YAĞMUR ORMANI BAŞLANGIÇ FLORASI
     } else if (hab.sceneProfile === 'arctic-tundra') {
+        // BÖLÜM BAŞI: KUTUP TUNDURASI BAŞLANGIÇ FLORASI
         const ledges = getArcticLedges(pw, ph);
         ledges.forEach(l => {
             for (let x = l.x1 + 8; x < l.x2 - 8; x += 12 + Math.floor(Math.random() * 10)) {
@@ -532,6 +547,7 @@ export function populateHabitatFlora(hab) {
                 }
             }
         });
+        // BÖLÜM SONU: KUTUP TUNDURASI BAŞLANGIÇ FLORASI
     }
 }
 
