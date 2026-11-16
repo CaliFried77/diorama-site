@@ -201,7 +201,7 @@ test('habitat input is separated from creature classes and Arctic food uses the 
   assert.ok(arcticGeometryModule.includes('export const ARCTIC_LEDGE_LINKS'));
   assert.ok(creatureModule.includes('//#region CANLI: PixelParrot'));
   assert.ok(sceneryModule.includes('//#region STATİK ÇEVRE ÇİZİMİ'));
-  assert.ok(interactions.includes('//#region YEM ETKİLEŞİMİ'));
+  assert.ok(interactionModule.includes('//#region YEM ETKİLEŞİMİ'));
   assert.ok(arcticGeometryModule.includes('//#region KUTUP SAHNESİ GEOMETRİSİ'));
 });
 
