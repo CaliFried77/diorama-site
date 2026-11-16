@@ -141,7 +141,10 @@ test('lunar phases render as original crisp pixel art without a decorative frame
   assert.ok(weatherModule.includes('shape-rendering="crispEdges"'));
   assert.ok(weatherModule.includes('wx-pixel-moon'));
   assert.ok(!weatherModule.includes('moonGlyphs'));
-  const moonArtStyles = widgetsCss.split('.wx-moon-art {')[1]?.split('}')[0] || '';\n  assert.ok(moonArtStyles.includes('border: 0;'));\n  assert.ok(moonArtStyles.includes('background: transparent;'));\n  assert.ok(moonArtStyles.includes('box-shadow: none;'));
+  const moonArtStyles = widgetsCss.split('.wx-moon-art {')[1]?.split('}')[0] || '';
+  assert.ok(moonArtStyles.includes('border: 0;'));
+  assert.ok(moonArtStyles.includes('background: transparent;'));
+  assert.ok(moonArtStyles.includes('box-shadow: none;'));
 });
 
 test('rainforest scenery suppresses generic cloud slabs but keeps foreground weather effects', () => {
