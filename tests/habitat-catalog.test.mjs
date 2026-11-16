@@ -16,9 +16,10 @@ test('Arctic Aurora registers its scene, creature, and interaction profiles', as
   assert.ok(HABITAT_CREATURE_PROFILES.includes(arctic.creatureProfile));
   assert.ok(HABITAT_INTERACTION_PROFILES.includes(arctic.interactionProfile));
 
-  const [scenery, creatures, interactions, entrypoint, initializer] = await Promise.all([
+  const [scenery, creatures, arcticFox, interactions, entrypoint, initializer] = await Promise.all([
     readFile(new URL('../js/09-scenery.js', import.meta.url), 'utf8'),
     readFile(new URL('../js/08-creatures.js', import.meta.url), 'utf8'),
+    readFile(new URL('../js/creature-arctic-fox.js', import.meta.url), 'utf8'),
     readFile(new URL('../js/habitat-interactions.js', import.meta.url), 'utf8'),
     readFile(new URL('../js/main.js', import.meta.url), 'utf8'),
     readFile(new URL('../js/habitat-initializer.js', import.meta.url), 'utf8'),
@@ -27,7 +28,8 @@ test('Arctic Aurora registers its scene, creature, and interaction profiles', as
   assert.match(scenery, /hab\.sceneProfile === 'arctic-tundra'/);
   assert.match(initializer, /new PixelArcticFox\(\)/);
   assert.match(initializer, /export function initHabitat\(idx\)/);
-  assert.match(creatures, /export class PixelArcticFox/);
+  assert.match(creatures, /export \{ PixelArcticFox \} from '\.\/creature-arctic-fox\.js';/);
+  assert.match(arcticFox, /export class PixelArcticFox/);
   assert.match(interactions, /interactionProfile === 'cloudberry'/);
   assert.match(interactions, /canvas\.addEventListener\('pointerdown'/);
   assert.match(interactions, /export function drawHabitatStimuli\(\)/);
