@@ -16,7 +16,12 @@ import { lsPut, esc } from './storage.js';
                 bloom directly onto the lens canvas for EVERY creature simultaneously
                 passing underneath or near the glass card (not just the single closest!).
            ============================================================================ */
-        function updateOpticalLiquidGlass() {
+        // ============================================================================
+// BÖLÜM BAŞI: CAM YÜZEYİ KIRILMA VE IŞIK EFEKTİ
+// Sahne canvas'ından cam kartlarına örnek alır; maliyetli işlem ayrı aralıkla çalışır.
+// ============================================================================
+
+function updateOpticalLiquidGlass() {
             if (document.body.classList.contains('zen-active')) return;
             const winW = window.innerWidth;
             const winH = window.innerHeight;
@@ -118,7 +123,12 @@ import { lsPut, esc } from './storage.js';
             }
         }
 
-        const habitatListContainer = document.getElementById('habitatListContainer');
+        // ============================================================================
+// BÖLÜM SONU: CAM YÜZEYİ EFEKTİ
+// BÖLÜM BAŞI: HABİTAT SEÇİM MENÜSÜ VE SABİTLEME
+// ============================================================================
+
+const habitatListContainer = document.getElementById('habitatListContainer');
         const pinHabitatBtn = document.getElementById('pinHabitatBtn');
         const pinHabitatText = document.getElementById('pinHabitatText');
 
@@ -182,7 +192,12 @@ import { lsPut, esc } from './storage.js';
             renderHabitatMenu();
         });
 
-        initHabitat(currentHabitatIdx);
+        // ============================================================================
+// BÖLÜM SONU: HABİTAT SEÇİM MENÜSÜ
+// BÖLÜM BAŞI: SAHNE BAŞLANGICI, ANİMASYON DÖNGÜSÜ VE KLAVYE KISAYOLLARI
+// ============================================================================
+
+initHabitat(currentHabitatIdx);
         renderHabitatMenu();
 
         let animationFrameId = null;
@@ -309,3 +324,7 @@ import { lsPut, esc } from './storage.js';
             refreshGlassCardCache();
             startAnimationLoop();
         }, { once: true });
+
+// ============================================================================
+// BÖLÜM SONU: SAHNE BAŞLANGICI, ANİMASYON DÖNGÜSÜ VE KLAVYE KISAYOLLARI
+// ============================================================================
