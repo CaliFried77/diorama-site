@@ -34,9 +34,12 @@ function getGroundY(x, profile) {
         return Math.round(ph - 5 - terrace - Math.sin(x * 0.032) * 2.5);
     }
     if (profile === 'reef') {
-        // Tiered coral canyon shelves rising on left & right, framing a deeper central abyssal trench
         const shelfLift = Math.pow(Math.abs(nx - 0.5) * 1.95, 1.5) * 22;
         return Math.round(ph - 5 - shelfLift - Math.sin(x * 0.045) * 2.5 - Math.cos(x * 0.11) * 1.5);
+    }
+    if (profile === 'koi-pond') {
+        const cornerBank = Math.max(0, Math.abs(nx - 0.48) - 0.24) / 0.28;
+        return Math.round(ph - 4 - Math.pow(cornerBank, 1.4) * 18 - Math.sin(x * 0.04) * 2);
     }
     return ph;
 }
@@ -338,7 +341,6 @@ export function initHabitat(idx) {
         }
 
     } else if (hab.sceneProfile === 'reef') {
-        // 1. Bioluminescent Sea Cavern Tendrils hanging from the upper left & right reef arches
         const archReach = Math.min(135, Math.round(pw * 0.25));
         [
             { startX: 6, endX: archReach - 4, isLeft: true },
@@ -358,14 +360,12 @@ export function initHabitat(idx) {
             }
         });
 
-        // 2. Diverse Bioluminescent Reef Biodiversity anchored along the terraced canyon floor
         for (let x = 10; x < pw - 10; x += 9 + Math.floor(Math.random() * 6)) {
             const nx = x / Math.max(1, pw);
             const baseY = getGroundY(x, 'reef') + Math.round((Math.random() - 0.5) * 2);
             const r = Math.random();
             const hue = [285, 325, 190, 165, 45][Math.floor(Math.random() * 5)];
 
-            // Giant Kelp forests frame the outer left and right canyon walls
             if ((nx < 0.22 || nx > 0.78) && r < 0.36) {
                 flora.push({
                     type: 'kelp',
@@ -375,7 +375,6 @@ export function initHabitat(idx) {
                     phase: Math.random() * Math.PI * 2
                 });
             } else if (r < 0.24) {
-                // Branching Staghorn Coral (Acropora / Geyik Boynuzu Mercanı)
                 flora.push({
                     type: 'staghorn_coral',
                     x,
@@ -424,24 +423,83 @@ export function initHabitat(idx) {
         }
 
     } else if (hab.sceneProfile === 'koi-pond') {
-        for (let i = 0; i < 28; i++) {
+        // 1. Cascading Crimson Japanese Maple (Momiji) Leaf Clusters along the top-left bough
+        const mapleReach = Math.min(150, Math.round(pw * 0.30));
+        for (let x = 8; x <= mapleReach - 4; x += 6 + Math.floor(Math.random() * 4)) {
+            const t = x / mapleReach;
+            const branchY = Math.round(6 + Math.pow(t, 1.2) * 14 + Math.sin(x * 0.09) * 1.5);
+            const len = Math.round((1 - t * 0.55) * 26 + 8 + Math.random() * 10);
             flora.push({
-                type: 'pebble',
-                x: Math.random() * pw,
-                y: 45 + Math.random() * (ph - 55),
-                w: 3 + Math.floor(Math.random() * 5),
-                h: 2 + Math.floor(Math.random() * 3),
-                shade: ['#0f2938', '#16384a', '#1e4659'][i % 3]
+                type: 'maple_bough',
+                x: Math.round(x),
+                branchY,
+                len,
+                col: ['#ef4444', '#dc2626', '#f97316', '#fb7185'][Math.floor(Math.random() * 4)],
+                phase: Math.random() * Math.PI * 2
             });
         }
-        for (let i = 0; i < 11; i++) {
+
+        // 2. Swaying Arashiyama Bamboo Stalks framing the Right Courtyard Bank
+        const bambooStart = Math.max(pw - 86, Math.round(pw * 0.78));
+        for (let x = bambooStart; x < pw - 6; x += 7 + Math.floor(Math.random() * 4)) {
+            const baseY = getGroundY(x, 'koi-pond') - 2;
+            flora.push({
+                type: 'bamboo_stalk',
+                x,
+                baseY,
+                h: Math.round(ph * 0.58 + Math.random() * (ph * 0.32)),
+                lean: (Math.random() - 0.55) * 0.06,
+                phase: Math.random() * Math.PI * 2
+            });
+        }
+
+        // 3. Shoreline Water Irises & Horsetail Reeds (Equisetum) along the Left & Upper-Left Mossy Rocks
+        for (let x = 10; x < pw * 0.28; x += 8 + Math.floor(Math.random() * 6)) {
+            const baseY = getGroundY(x, 'koi-pond') - 1;
+            if (Math.random() < 0.55) {
+                flora.push({
+                    type: 'iris',
+                    x,
+                    baseY,
+                    h: 20 + Math.random() * 20,
+                    col: Math.random() < 0.65 ? '#c084fc' : '#facc15',
+                    phase: Math.random() * Math.PI * 2
+                });
+            } else {
+                flora.push({
+                    type: 'papyrus',
+                    x,
+                    baseY,
+                    h: 22 + Math.random() * 24,
+                    phase: Math.random() * Math.PI * 2
+                });
+            }
+        }
+
+        // 4. Submerged Smooth River Cobbles across the deep pond bed
+        for (let i = 0; i < 36; i++) {
+            flora.push({
+                type: 'pebble',
+                x: 20 + Math.random() * (pw - 40),
+                y: 36 + Math.random() * (ph - 48),
+                w: 3 + Math.floor(Math.random() * 5),
+                h: 2 + Math.floor(Math.random() * 3),
+                shade: ['#0c2536', '#123347', '#194158', '#081b29'][i % 4]
+            });
+        }
+
+        // 5. Floating Suiren (Water Lily Pads) & Blooming Pink/White/Gold Lotus Flowers
+        for (let i = 0; i < 14; i++) {
+            const lx = 26 + Math.random() * (pw - 95);
+            const ly = 36 + Math.random() * (ph - 58);
             flora.push({
                 type: 'lily',
-                x: 22 + Math.random() * (pw - 70),
-                y: 38 + Math.random() * (ph - 62),
-                r: 8 + Math.floor(Math.random() * 5),
+                x: Math.round(lx),
+                y: Math.round(ly),
+                r: 7 + Math.floor(Math.random() * 5),
                 flower: i % 2 === 0,
-                flowerCol: i % 4 === 0 ? '#f8fafc' : '#f472b6'
+                flowerCol: ['#f472b6', '#f8fafc', '#fde047'][i % 3],
+                phase: Math.random() * Math.PI * 2
             });
         }
 
@@ -946,29 +1004,27 @@ function buildStaticEnvironmentLayer(hab) {
         }
     }
 
-    // 6. REEF STATIC SCENERY (Bioluminescent Coral Canyon, Sea Cavern Overhangs, Sunken Atlantean Sanctuary & Table Acropora)
+    // 6. REEF STATIC SCENERY
     if (hab.sceneProfile === 'reef') {
         const rockDark = isLightMode ? '#0f2942' : '#090d24';
         const rockMid = isLightMode ? '#163e5c' : '#13193b';
         const rockHi = isLightMode ? '#1e5678' : '#232d5e';
         const neonRim = isLightMode ? '#38bdf8' : '#6366f1';
 
-        // A. Distant Sunken Atlantean Sanctuary Arch & Fluted Columns in the Abyssal Haze
         const colShade = isLightMode ? 'rgba(15, 42, 68, 0.42)' : 'rgba(17, 14, 48, 0.68)';
         const colHi = isLightMode ? 'rgba(56, 189, 248, 0.28)' : 'rgba(139, 92, 246, 0.26)';
         const ruinX = Math.round(pw * 0.24);
         const ruinBaseY = getGroundY(ruinX, 'reef') + 2;
 
-        // Pair of sunken classical columns connected by a broken lintel & arch
         [
             { cx: ruinX - 16, ch: 56, broken: false },
             { cx: ruinX + 16, ch: 44, broken: true },
             { cx: Math.round(pw * 0.77), ch: 50, broken: true }
         ].forEach(col => {
             const cy = getGroundY(col.cx, 'reef') + 2;
-            sRect(col.cx - 2, cy - 3, 13, 4, colShade); // Pedestal base
+            sRect(col.cx - 2, cy - 3, 13, 4, colShade);
             sRect(col.cx, cy - col.ch, 9, col.ch, colShade);
-            sRect(col.cx + 1, cy - col.ch, 2, col.ch, colHi); // Fluted highlight
+            sRect(col.cx + 1, cy - col.ch, 2, col.ch, colHi);
             sRect(col.cx + 5, cy - col.ch + 4, 1, col.ch - 6, colHi);
             if (!col.broken) {
                 sRect(col.cx - 2, cy - col.ch - 2, 13, 3, colShade);
@@ -977,11 +1033,9 @@ function buildStaticEnvironmentLayer(hab) {
                 sRect(col.cx, cy - col.ch - 2, 5, 2, colShade);
             }
         });
-        // Broken stone lintel spanning the left sanctuary columns
         sRect(ruinX - 18, ruinBaseY - 58, 24, 3, colShade);
         sRect(ruinX - 18, ruinBaseY - 58, 22, 1, colHi);
 
-        // B. Left & Right Framing Coral Canyon Walls & Upper Sea-Cavern Overhangs
         const archReach = Math.min(135, Math.round(pw * 0.25));
         [
             { isLeft: true, dir: 1 },
@@ -991,7 +1045,6 @@ function buildStaticEnvironmentLayer(hab) {
             for (let y = 0; y < wallH; y++) {
                 const prog = y / wallH;
                 const jag = Math.sin(y * 0.14) * 3 + Math.cos(y * 0.06) * 2;
-                // Wide overhang at the top ceiling, narrowing in the middle, flaring into the reef terrace at bottom
                 const topArch = prog < 0.25 ? Math.pow((0.25 - prog) / 0.25, 1.4) * (archReach - 18) : 0;
                 const botShelf = prog > 0.65 ? Math.pow((prog - 0.65) / 0.35, 1.5) * 26 : 0;
                 const w = Math.max(6, Math.round(12 + topArch + botShelf + jag));
@@ -1004,7 +1057,6 @@ function buildStaticEnvironmentLayer(hab) {
                 }
             }
 
-            // Tiered Table Corals (Acropora) jutting out from the canyon ledges
             [0.46, 0.64, 0.78].forEach((ledgeProg, lIdx) => {
                 const ly = Math.round(ph * ledgeProg);
                 const lw = 18 + (lIdx % 2) * 8;
@@ -1017,7 +1069,6 @@ function buildStaticEnvironmentLayer(hab) {
             });
         });
 
-        // C. Continuous Terraced Coral Reef Floor with Bioluminescent Mineral Veins
         for (let x = 0; x < pw; x++) {
             const gy = getGroundY(x, 'reef');
             sRect(x, gy, 1, ph - gy, rockDark);
@@ -1029,7 +1080,147 @@ function buildStaticEnvironmentLayer(hab) {
         }
     }
 
-    // 7. RAINFOREST STATIC SCENERY
+    // 7. KOI POND STATIC SCENERY (Kyoto Zen Courtyard, Momiji Red Maple Tree, Arched Taiko Bridge, Mossy Boulders & Yukimi Lantern)
+    if (hab.sceneProfile === 'koi-pond') {
+        const stoneDark = isLightMode ? '#334155' : '#0f172a';
+        const stoneMid = isLightMode ? '#475569' : '#1e293b';
+        const stoneHi = isLightMode ? '#64748b' : '#334155';
+        const mossDark = isLightMode ? '#14532d' : '#062e22';
+        const mossMid = isLightMode ? '#15803d' : '#0d4a36';
+        const mossHi = isLightMode ? '#22c55e' : '#10b981';
+
+        // A. Upper Shoreline Raked Zen Sand Terrace & Mossy Bank Edge (frames the top of the pond)
+        for (let x = 0; x < pw; x++) {
+            const bankH = Math.round(18 + Math.sin(x * 0.03) * 4 + Math.cos(x * 0.08) * 2);
+            sRect(x, 0, 1, bankH, isLightMode ? '#1e293b' : '#09131c');
+            if (x % 3 === 0) sRect(x, bankH - 5, 2, 2, mossDark);
+            sRect(x, bankH - 3, 1, 2, stoneDark);
+            sRect(x, bankH - 1, 1, 1, stoneHi);
+            sRect(x, bankH, 1, 3, 'rgba(2, 8, 16, 0.42)'); // Waterline shadow under top bank
+        }
+
+        // B. Traditional Vermilion Arched Wooden Courtyard Bridge (Taiko-bashi) in Upper-Right Distance
+        const brStart = Math.round(pw * 0.60);
+        const brWidth = Math.min(88, Math.round(pw * 0.20));
+        const redDark = isLightMode ? '#991b1b' : '#7f1d1d';
+        const redMid = isLightMode ? '#dc2626' : '#b91c1c';
+        const redHi = isLightMode ? '#fca5a5' : '#ef4444';
+
+        for (let bx = 0; bx <= brWidth; bx++) {
+            const t = bx / brWidth;
+            const arch = Math.round(Math.sin(t * Math.PI) * 9);
+            const wx = brStart + bx;
+            const wy = 21 - arch;
+            // Bridge reflection in water below
+            sRect(wx, 25 + Math.floor(arch * 0.5), 1, 2, 'rgba(185, 28, 28, 0.22)');
+            // Curved wooden deck & vermilion handrail
+            sRect(wx, wy + 4, 1, 3, '#451a03');
+            sRect(wx, wy, 1, 2, redMid);
+            sRect(wx, wy, 1, 1, redHi);
+            if (bx % 9 === 0 || bx === brWidth) {
+                sRect(wx, wy - 2, 2, 6, redDark);
+                sRect(wx, wy - 2, 2, 1, '#fef08a'); // Brass post cap (Giboshi)
+            }
+        }
+
+        // C. Left-Side Ancient Japanese Red Maple Tree (Momiji / Acer palmatum)
+        const mapleReach = Math.min(150, Math.round(pw * 0.30));
+        const trunkDark = isLightMode ? '#3b1d14' : '#181014';
+        const trunkMid = isLightMode ? '#5c2d1e' : '#291b21';
+        const trunkHi = isLightMode ? '#7c3f2a' : '#3d2830';
+        const mapleDark = isLightMode ? '#991b1b' : '#65121b';
+        const mapleMid = isLightMode ? '#dc2626' : '#991b1b';
+        const mapleHi = isLightMode ? '#f87171' : '#dc2626';
+        const mapleGold = '#f59e0b';
+
+        // Gnarled Momiji Trunk rooted into the left mossy bank
+        const leftBankY = getGroundY(0, 'koi-pond') + 2;
+        for (let y = 0; y < leftBankY; y++) {
+            const prog = y / leftBankY;
+            const lean = Math.sin((1 - prog) * Math.PI * 0.5) * 10;
+            const rootFlare = prog > 0.72 ? Math.pow((prog - 0.72) / 0.28, 2) * 16 : 0;
+            const tw = Math.round(12 + prog * 5 + rootFlare);
+            const tx = Math.max(0, Math.round(lean));
+            sRect(tx, y, tw, 1, trunkDark);
+            sRect(tx + tw - 4, y, 3, 1, trunkMid);
+            sRect(tx + tw - 1, y, 1, 1, trunkHi);
+        }
+
+        // Overlapping Momiji Crimson Canopy Clouds hugging the top-left frame (zero floating gaps!)
+        [0.06, 0.28, 0.50, 0.72, 0.90].forEach((tNode, idx) => {
+            const cx = Math.round(tNode * mapleReach);
+            const branchY = Math.round(6 + Math.pow(tNode, 1.2) * 14);
+            const rx = Math.round(29 * (1 - tNode * 0.28));
+            const bottomY = branchY + Math.round(8 * (1 - tNode * 0.28));
+
+            for (let y = 0; y <= bottomY; y++) {
+                const normY = (y - branchY * 0.5) / Math.max(1, bottomY - branchY * 0.5);
+                const ellipse = Math.max(0, 1 - normY * normY);
+                const span = Math.round(rx * (y < branchY * 0.5 ? 1 : Math.sqrt(ellipse)));
+                let col = y < branchY * 0.35 ? mapleHi : (y > branchY ? mapleDark : mapleMid);
+                if ((y + idx) % 6 === 0 && span > 6) col = mapleGold;
+                sRect(cx - span, y, span * 2, 1, col);
+            }
+        });
+
+        // Overhanging Momiji Bough supporting the foliage
+        for (let s = 0; s <= mapleReach; s++) {
+            const t = s / Math.max(1, mapleReach);
+            const by = Math.round(6 + Math.pow(t, 1.2) * 14 + Math.sin(s * 0.09) * 1.5);
+            const thick = Math.max(2, Math.round(8 * (1 - t * 0.75)));
+            sRect(s, by - Math.floor(thick * 0.5), 1, thick, trunkDark);
+            sRect(s, by + Math.ceil(thick * 0.5) - 1, 1, 1, trunkHi);
+        }
+
+        // D. Foreground Left & Right Mossy Zen Shoreline Banks & Stepping Stones
+        for (let x = 0; x < pw; x++) {
+            const nx = x / Math.max(1, pw);
+            if (nx > 0.28 && nx < 0.70) continue; // Keep center pond open for Koi
+            const gy = getGroundY(x, 'koi-pond');
+            sRect(x, gy - 2, 1, 3, 'rgba(2, 8, 16, 0.45)');
+            sRect(x, gy, 1, ph - gy, mossDark);
+            sRect(x, gy, 1, 2, mossMid);
+            if (x % 5 === 0) sRect(x, gy - 1, 2, 1, mossHi);
+        }
+
+        // Sculpted Zen Garden Boulders along the Left & Right Pond Corners
+        [
+            { cx: 22, cy: ph - 10, rx: 14, ry: 7 },
+            { cx: 46, cy: ph - 6, rx: 11, ry: 5 },
+            { cx: pw - 68, cy: ph - 8, rx: 13, ry: 6 }
+        ].forEach(rock => {
+            sRect(rock.cx - rock.rx, rock.cy + 2, rock.rx * 2, 4, 'rgba(2, 8, 16, 0.45)');
+            for (let dy = -rock.ry; dy <= 2; dy++) {
+                const span = Math.round(rock.rx * Math.sqrt(Math.max(0, 1 - (dy * dy) / ((rock.ry + 2) * (rock.ry + 2)))));
+                sRect(rock.cx - span, rock.cy + dy, span * 2, 1, dy < -2 ? stoneHi : (dy > 0 ? stoneDark : stoneMid));
+                if (dy === -rock.ry + 1) sRect(rock.cx - Math.floor(span * 0.6), rock.cy + dy, Math.floor(span * 1.2), 1, mossHi);
+            }
+        });
+
+        // E. Right-Side Sanctuary Island with Yukimi-dōrō (Stone Lantern) & Shishi-odoshi Base
+        const bx = pw - 42;
+        const by = ph - 18;
+        sRect(bx - 20, by + 6, 56, 12, isLightMode ? '#1e3a3a' : '#0a1720');
+        sRect(bx - 16, by + 4, 46, 4, mossDark);
+        sRect(bx - 12, by + 3, 36, 2, mossHi);
+
+        // Stone Lantern Pedestal & Roof Structure (Light box is animated in dynamic pass)
+        sRect(bx - 6, by, 13, 4, stoneDark);
+        sRect(bx - 3, by - 10, 7, 10, stoneMid);
+        sRect(bx - 2, by - 10, 2, 10, stoneHi);
+        sRect(bx - 5, by - 17, 11, 7, stoneDark);
+        sRect(bx - 10, by - 19, 21, 2, stoneDark);
+        sRect(bx - 8, by - 21, 17, 2, stoneMid);
+        sRect(bx - 5, by - 23, 11, 2, stoneHi);
+        sRect(bx - 1, by - 25, 3, 2, stoneHi);
+
+        // Bamboo Shishi-odoshi (Water Spout) Pipe & Support Post
+        sRect(bx - 22, by - 4, 12, 2, '#65a30d');
+        sRect(bx - 22, by - 4, 12, 1, '#a3e635');
+        sRect(bx - 14, by - 8, 2, 12, '#4d7c0f');
+    }
+
+    // 8. RAINFOREST STATIC SCENERY
     if (hab.sceneProfile === 'rainforest') {
         const canopyShades = isLightMode
             ? ['#0b3d2e', '#115e40', '#16784d', '#22995e']
@@ -1378,26 +1569,23 @@ export function drawHabitatEnvironment(time) {
 
     // 5. REEF: Shimmering Surface Caustics, Pulsing Giant Tridacna Clam & Rising Bioluminescent Bubble Streams
     if (hab.sceneProfile === 'reef') {
-        // Wavy ocean surface caustic glints at the very top of the water column
         for (let c = 0; c < 12; c++) {
             const cx = Math.round(((c * 61 + Math.sin(time * 0.001 + c) * 18) % (pw * 0.56)) + pw * 0.22);
             const cy = 3 + (c % 3) * 3;
             pRect(cx, cy, 10 + (c % 4) * 4, 1, isLightMode ? 'rgba(224, 242, 254, 0.55)' : 'rgba(103, 232, 249, 0.24)');
         }
 
-        // Giant Tridacna Clam on the Right-Midground Reef Terrace with pulsing Pearl & Mantle
         const clamX = Math.floor(pw * 0.72);
         const clamY = getGroundY(clamX, 'reef') - 1;
         const openJaw = Math.round(2 + Math.sin(time * 0.0022) * 1.3);
         pRect(clamX - 8, clamY, 17, 4, '#1e1b4b');
-        pRect(clamX - 7, clamY - 2, 15, 2, '#a21caf'); // Lower fluted mantle lip
+        pRect(clamX - 7, clamY - 2, 15, 2, '#a21caf');
         pRect(clamX - 6, clamY - openJaw - 4, 13, 3, '#311042');
-        pRect(clamX - 5, clamY - openJaw - 2, 11, 1, '#e879f9'); // Upper mantle rim
-        pRect(clamX - 2, clamY - 4, 4, 4, '#fef9c3'); // Radiant pearl core
+        pRect(clamX - 5, clamY - openJaw - 2, 11, 1, '#e879f9');
+        pRect(clamX - 2, clamY - 4, 4, 4, '#fef9c3');
         pRect(clamX - 1, clamY - 3, 2, 2, '#ffffff');
         pRect(clamX - 4, clamY - 6, 8, 7, 'rgba(240, 171, 252, 0.28)');
 
-        // Staggered Bioluminescent Micro-Bubble Streams rising from the reef floor
         for (let i = 0; i < 14; i++) {
             const rise = (time * (0.0045 + (i % 3) * 0.0012) + i * 21) % Math.max(40, ph * 0.84);
             const bx = 24 + ((i * 43) % Math.max(24, pw - 48)) + Math.sin(time * 0.0015 + i) * 2;
@@ -1407,44 +1595,33 @@ export function drawHabitatEnvironment(time) {
         }
     }
 
-    // 6. KOI POND: Kyoto Zen Courtyard Details
+    // 6. KOI POND: Shimmering Water Caustics, Trickling Shishi-odoshi Bamboo Spout & Warm Yukimi Lantern Glow
     if (hab.sceneProfile === 'koi-pond') {
-        for (let x = 8; x <= 68; x++) {
-            const arch = Math.round(Math.sin(((x - 8) / 60) * Math.PI) * 10);
-            const by = 26 - arch;
-            pRect(x, by, 1, 2, isLightMode ? '#dc2626' : '#991b1b');
-            if (x % 6 === 0) pRect(x, by - 4, 1, 4, isLightMode ? '#ef4444' : '#b91c1c');
-            pRect(x, by - 4, 1, 1, isLightMode ? '#fca5a5' : '#dc2626');
+        // Subtle horizontal water surface glints & sky reflections across the pond
+        for (let s = 0; s < 12; s++) {
+            const wy = 34 + s * Math.floor((ph - 46) / 12);
+            const sx = Math.round(((s * 73 + Math.sin(time * 0.001 + s) * 16) % (pw * 0.56)) + pw * 0.20);
+            pRect(sx, wy, 9 + (s % 3) * 5, 1, isLightMode ? 'rgba(224, 242, 254, 0.32)' : 'rgba(125, 211, 252, 0.12)');
         }
 
+        // Animated Shishi-odoshi Bamboo Water Stream, Splash & Concentric Ripples
         const bx = pw - 42;
         const by = ph - 18;
-        pRect(bx - 18, by + 6, 52, 12, isLightMode ? '#1e3a3a' : '#0c1922');
-        pRect(bx - 14, by + 4, 42, 4, isLightMode ? '#115e59' : '#132a34');
-        pRect(bx - 10, by + 3, 32, 2, isLightMode ? '#10b981' : '#154236');
-
-        pRect(bx - 22, by - 4, 12, 2, '#65a30d');
-        pRect(bx - 14, by - 8, 2, 12, '#4d7c0f');
-        const dropOffset = Math.floor((time * 0.02) % 6);
+        const dropOffset = Math.floor((time * 0.022) % 6);
         pRect(bx - 23, by - 2 + dropOffset, 1, 3, '#bae6fd');
-        const rippleR = ((time * 0.015) % 8);
-        pRect(bx - 23 - rippleR, by + 5, 1, 1, 'rgba(224, 242, 254, 0.45)');
-        pRect(bx - 23 + rippleR, by + 5, 1, 1, 'rgba(224, 242, 254, 0.45)');
+        pRect(bx - 23, by + 3, 1, 1, '#e0f2fe');
+        const rippleR = (time * 0.014) % 9;
+        pRect(bx - 23 - rippleR, by + 5, 2, 1, 'rgba(224, 242, 254, 0.45)');
+        pRect(bx - 23 + rippleR, by + 5, 2, 1, 'rgba(224, 242, 254, 0.45)');
 
-        pRect(bx - 5, by, 11, 4, '#334155');
-        pRect(bx - 3, by - 10, 7, 10, '#475569');
-        pRect(bx - 2, by - 10, 2, 10, '#64748b');
-        pRect(bx - 5, by - 17, 11, 7, '#334155');
-        const glowAlpha = (0.75 + 0.2 * Math.sin(time * 0.004)).toFixed(2);
+        // Pulsing Warm Candlelight inside the Yukimi-dōrō Stone Lantern + Water Reflections
+        const glowAlpha = (0.78 + 0.2 * Math.sin(time * 0.004)).toFixed(2);
         pRect(bx - 3, by - 15, 7, 4, `rgba(253, 224, 71, ${glowAlpha})`);
         pRect(bx - 1, by - 14, 3, 2, '#ffffff');
-        pRect(bx - 9, by - 19, 19, 2, '#1e293b');
-        pRect(bx - 7, by - 21, 15, 2, '#334155');
-        pRect(bx - 4, by - 23, 9, 2, '#475569');
-        pRect(bx - 1, by - 25, 3, 2, '#64748b');
+        pRect(bx - 6, by - 17, 13, 8, 'rgba(251, 191, 36, 0.15)');
         for (let ry = 0; ry < 5; ry++) {
             const drift = Math.sin(time * 0.003 + ry * 1.4) * 2.5;
-            pRect(bx - 3 + drift, by + 10 + ry * 2, 6 - ry, 1, `rgba(251, 191, 36, ${0.28 - ry * 0.05})`);
+            pRect(bx - 3 + drift, by + 10 + ry * 2, 6 - ry, 1, `rgba(251, 191, 36, ${(0.32 - ry * 0.05).toFixed(2)})`);
         }
     }
 
@@ -1474,8 +1651,41 @@ export function drawHabitatEnvironment(time) {
         if (f.type === 'pebble') {
             pRect(f.x, f.y, f.w, f.h, isLightMode ? 'rgba(15, 55, 65, 0.35)' : f.shade);
 
+        } else if (f.type === 'maple_bough') {
+            // Hanging Japanese Red Maple (Momiji) Leaf Clusters swaying in the breeze
+            for (let y = 0; y < f.len; y += 2) {
+                const prog = y / f.len;
+                const sway = Math.sin(time * 0.0015 + f.phase + y * 0.07) * (1.0 + prog * 3.0);
+                const px = f.x + sway;
+                const py = f.branchY + y;
+                pRect(px, py, 1, 2, '#451a03');
+                if (y > 2 && y % 4 === 0) {
+                    const span = Math.max(1, Math.round((1 - prog * 0.5) * 3));
+                    pRect(px - span, py, span * 2 + 1, 2, f.col);
+                    pRect(px, py - 1, 1, 1, '#fca5a5');
+                }
+            }
+
+        } else if (f.type === 'bamboo_stalk') {
+            // Segmented Green Bamboo Culms with Nodes & Feathery Leaves on the Right Shore
+            const culmCol = isLightMode ? '#15803d' : '#0d593d';
+            const nodeCol = isLightMode ? '#86efac' : '#34d399';
+            const leafCol = isLightMode ? '#22c55e' : '#10b981';
+            for (let y = 0; y < f.h; y += 2) {
+                const prog = y / f.h;
+                const sway = Math.sin(time * 0.0012 + f.phase) * prog * 3.2 + f.lean * y;
+                const px = f.x + sway;
+                const py = baseGroundY - y;
+                pRect(px, py, 2, 2, culmCol);
+                if (y > 6 && y % 12 === 0) {
+                    pRect(px - 1, py, 4, 1, nodeCol); // Bamboo ring node
+                    const side = (y % 24 === 0) ? -1 : 1;
+                    pRect(px + side * 2, py - 1, 4 * side, 1, leafCol);
+                    pRect(px + side * 3, py - 2, 3 * side, 1, nodeCol);
+                }
+            }
+
         } else if (f.type === 'sea_vine') {
-            // Bioluminescent Hanging Sea Cavern Tendrils
             for (let y = 0; y < f.len; y += 2) {
                 const prog = y / f.len;
                 const sway = Math.sin(time * 0.0014 + f.phase + y * 0.06) * (1.0 + prog * 3.5);
@@ -1488,7 +1698,6 @@ export function drawHabitatEnvironment(time) {
             }
 
         } else if (f.type === 'staghorn_coral') {
-            // Branching Acropora Staghorn Coral with glowing bioluminescent polyp tips
             const mainCol = `hsla(${f.hue}, 82%, 46%, 0.9)`;
             const tipCol = '#fef08a';
             for (let b = -1; b <= 1; b++) {
@@ -1937,13 +2146,14 @@ export function drawHabitatEnvironment(time) {
         }
     });
 
-    // Ambient Floating Particles
-    ambientParticles.forEach(pt => {
+    // Ambient Floating Particles (Drifting Momiji Maple Leaves & Sakura Petals in Koi Pond)
+    ambientParticles.forEach((pt, idx) => {
         if (hab.sceneProfile === 'koi-pond') {
-            pt.y += pt.speed * 0.7 * frameScale;
-            pt.x += Math.sin(time * 0.0015 + pt.phase) * 0.22 * frameScale;
+            pt.y += pt.speed * 0.65 * frameScale;
+            pt.x += Math.sin(time * 0.0015 + pt.phase) * 0.25 * frameScale;
             if (pt.y > ph) { pt.y = 0; pt.x = Math.random() * pw; }
-            pRect(pt.x, pt.y, 2, 1, 'rgba(251, 207, 232, 0.65)');
+            const leafCol = idx % 3 === 0 ? 'rgba(239, 68, 68, 0.78)' : 'rgba(251, 207, 232, 0.72)';
+            pRect(pt.x, pt.y, 2, 1, leafCol);
         } else {
             pt.y -= pt.speed * frameScale;
             pt.x += Math.sin(time * 0.002 + pt.phase) * 0.12 * frameScale;
