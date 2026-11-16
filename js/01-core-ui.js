@@ -1,4 +1,4 @@
-import { lsGet, lsSet, lsRaw, lsPut, esc, normalizeWebUrl, normalizeShortcutList } from './storage.js';
+import { lsGet, lsSet, lsRaw, lsPut, normalizeWebUrl, normalizeShortcutList } from './storage.js';
 import { invalidateBackgroundCache } from './scene-state.js';
 import { refreshWeatherPreviewButtons, refreshDataManagerStats } from './services.js';
 
