@@ -12,9 +12,10 @@ export function calculateFrameSmoothing(amount, frameScale) {
 }
 
 const X_POSITION_KEYS = new Set(['x', 'baseX', 'targetX', 'originX', 'startX', 'endX', 'homeX', 'anchorX', 'centerX']);
-const Y_POSITION_KEYS = new Set(['y', 'baseY', 'targetY', 'originY', 'startY', 'endY', 'homeY', 'anchorY', 'centerY', 'h']);
+const Y_POSITION_KEYS = new Set(['y', 'baseY', 'targetY', 'originY', 'startY', 'endY', 'homeY', 'anchorY', 'centerY', 'branchY']);
+const Y_SIZE_KEYS = new Set(['h', 'len', 'rootLen']);
 
-/** Scale viewport-relative positions in place without recreating scene entities. */
+/** Scale viewport-relative positions and vertical extents in place without recreating scene entities. */
 export function scaleSceneCollections(collections, scaleX, scaleY) {
   const sx = Number.isFinite(scaleX) && scaleX > 0 ? scaleX : 1;
   const sy = Number.isFinite(scaleY) && scaleY > 0 ? scaleY : 1;
@@ -26,6 +27,7 @@ export function scaleSceneCollections(collections, scaleX, scaleY) {
         if (typeof value !== 'number' || !Number.isFinite(value)) continue;
         if (X_POSITION_KEYS.has(key)) entity[key] = value * sx;
         else if (Y_POSITION_KEYS.has(key)) entity[key] = value * sy;
+        else if (Y_SIZE_KEYS.has(key)) entity[key] = value * sy;
       }
     }
   }
