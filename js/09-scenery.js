@@ -887,13 +887,16 @@ const CREATURE_PROFILES = Object.freeze({
                             const halfWidth = Math.max(1, Math.floor(rx * Math.sqrt(ellipse) + irregular));
                             const shade = dy < -ry * 0.22 ? canopyShades[2]
                                 : dy > ry * 0.42 ? canopyShades[0] : canopyShades[1];
-                            pRect(cx - halfWidth, cy + dy, halfWidth * 2, 2, shade);
-
-                            // Pixel-sized leaf clusters break the smooth ellipse into organic foliage.
-                            if ((dy + index * 3 + tier * 5) % 8 === 0) {
-                                const leafX = cx - halfWidth + ((index * 17 + dy * 3 + 600) % Math.max(2, halfWidth * 2));
-                                pRect(leafX, cy + dy - 1, 3 + (index % 2), 2, canopyShades[3]);
-                                pRect(leafX + 1, cy + dy - 2, 1, 1, isLightMode ? '#86efac' : '#2dd4a0');
+                            // Broken, overlapping leaf tiles avoid broad ruler-straight canopy bands.
+                            const gap = 3 + ((index + tier) % 3);
+                            for (let dx = -halfWidth; dx < halfWidth; dx += gap) {
+                                const tileW = 2 + ((Math.floor(dx + 600) + index + tier) % 3);
+                                const tileX = cx + dx + Math.sin(dx * 0.17 + index) * 0.8;
+                                const tileColor = (dx + dy + index) % 7 === 0 ? canopyShades[3] : shade;
+                                pRect(tileX, cy + dy, tileW, 2, tileColor);
+                                if ((dx + dy + index * 3 + tier * 5) % 19 === 0) {
+                                    pRect(tileX + 1, cy + dy - 1, 1, 1, isLightMode ? '#86efac' : '#2dd4a0');
+                                }
                             }
                         }
                     }
@@ -908,9 +911,51 @@ const CREATURE_PROFILES = Object.freeze({
                     for (let dy = -ry; dy <= ry; dy += 2) {
                         const width = Math.floor(rx * Math.sqrt(Math.max(0, 1 - (dy * dy) / (ry * ry))));
                         const shade = dy < -3 ? canopyShades[1] : canopyShades[0];
-                        pRect(cx - width, cy + dy, width * 2, 2, shade);
+                        for (let dx = -width; dx < width; dx += 5 + (cluster % 3)) {
+                            pRect(cx + dx, cy + dy, 2 + ((dx + cluster + 40) % 4), 2,
+                                (dx + dy + cluster) % 9 === 0 ? canopyShades[2] : shade);
+                        }
                     }
                 }
+
+                // Smaller midground trees and forked branches build several layers behind the parrots.
+                const midgroundTrees = [
+                    { x: Math.floor(pw * 0.14), top: Math.floor(ph * 0.31), base: Math.floor(ph * 0.78), height: 68 },
+                    { x: Math.floor(pw * 0.48), top: Math.floor(ph * 0.38), base: Math.floor(ph * 0.73), height: 52 },
+                    { x: Math.floor(pw * 0.78), top: Math.floor(ph * 0.29), base: Math.floor(ph * 0.81), height: 76 },
+                ];
+                midgroundTrees.forEach((tree, index) => {
+                    const trunk = isLightMode ? '#3d3826' : '#172a25';
+                    const bark = isLightMode ? '#66513a' : '#294035';
+                    for (let y = tree.top; y < tree.base; y++) {
+                        const progress = (y - tree.top) / Math.max(1, tree.base - tree.top);
+                        const sway = Math.sin(y * 0.045 + index) * 1.4;
+                        const x = tree.x + sway;
+                        pRect(x, y, 3 + Math.floor(progress * 2), 1, trunk);
+                        pRect(x + 1, y, 1, 1, bark);
+                    }
+                    for (let branch = -1; branch <= 1; branch += 2) {
+                        for (let step = 0; step < tree.height * 0.48; step++) {
+                            const t = step / (tree.height * 0.48);
+                            const x = tree.x + branch * t * (18 + index * 3);
+                            const y = tree.top + 15 + step * 0.62 + Math.sin(step * 0.12 + index) * 1.5;
+                            pRect(x, y, 2, 1, trunk);
+                            if (step % 9 === 0) pRect(x + branch * 2, y - 1, 3, 1, bark);
+                        }
+                    }
+                    for (let leaf = 0; leaf < 5; leaf++) {
+                        const cx = tree.x + (leaf - 2) * (9 + index);
+                        const cy = tree.top + 8 + (leaf % 2) * 8;
+                        const rx = 11 + (leaf % 3) * 3;
+                        const ry = 8 + (leaf % 2) * 3;
+                        for (let dy = -ry; dy <= ry; dy += 2) {
+                            const width = Math.floor(rx * Math.sqrt(Math.max(0, 1 - (dy * dy) / (ry * ry))));
+                            for (let dx = -width; dx < width; dx += 4) {
+                                pRect(cx + dx, cy + dy, 3, 2, dy < -2 ? canopyShades[2] : canopyShades[0]);
+                            }
+                        }
+                    }
+                });
 
                 // Three buttress-root trees have irregular bark and different depths; none is a flat wall.
                 const forestTrees = [
