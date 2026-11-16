@@ -33,6 +33,11 @@ function getGroundY(x, profile) {
         const terrace = Math.pow(Math.abs(nx - 0.5) * 1.85, 1.45) * 15;
         return Math.round(ph - 5 - terrace - Math.sin(x * 0.032) * 2.5);
     }
+    if (profile === 'reef') {
+        // Tiered coral canyon shelves rising on left & right, framing a deeper central abyssal trench
+        const shelfLift = Math.pow(Math.abs(nx - 0.5) * 1.95, 1.5) * 22;
+        return Math.round(ph - 5 - shelfLift - Math.sin(x * 0.045) * 2.5 - Math.cos(x * 0.11) * 1.5);
+    }
     return ph;
 }
 
@@ -244,7 +249,6 @@ export function initHabitat(idx) {
         }
 
     } else if (hab.sceneProfile === 'botanical') {
-        // 1. Cascading Wisteria Racemes anchored to the left & right pergola/tree boughs
         const reach = Math.min(155, Math.round(pw * 0.30));
         const boughZones = [
             { startX: 6, endX: reach - 4, isLeft: true },
@@ -266,7 +270,6 @@ export function initHabitat(idx) {
             }
         });
 
-        // 2. Rich Botanical Conservatory Floor: Buddleia (Butterfly Bush), Hydrangeas, Ferns, Glowing Mycena & Foxgloves
         for (let x = 10; x < pw - 10; x += 7 + Math.floor(Math.random() * 5)) {
             const nx = x / Math.max(1, pw);
             if (Math.abs(nx - 0.5) < 0.06 && Math.random() < 0.65) continue;
@@ -335,19 +338,88 @@ export function initHabitat(idx) {
         }
 
     } else if (hab.sceneProfile === 'reef') {
-        for (let x = 12; x < pw - 12; x += 11 + Math.floor(Math.random() * 8)) {
+        // 1. Bioluminescent Sea Cavern Tendrils hanging from the upper left & right reef arches
+        const archReach = Math.min(135, Math.round(pw * 0.25));
+        [
+            { startX: 6, endX: archReach - 4, isLeft: true },
+            { startX: pw - archReach + 4, endX: pw - 6, isLeft: false }
+        ].forEach(zone => {
+            for (let x = zone.startX; x <= zone.endX; x += 8 + Math.floor(Math.random() * 5)) {
+                const t = zone.isLeft ? (x / archReach) : ((pw - x) / archReach);
+                const archY = Math.round(4 + Math.pow(1 - t, 1.3) * 18);
+                flora.push({
+                    type: 'sea_vine',
+                    x: Math.round(x),
+                    startY: archY,
+                    len: Math.round((1 - t * 0.6) * 28 + 10 + Math.random() * 12),
+                    col: Math.random() < 0.5 ? '#38bdf8' : '#e879f9',
+                    phase: Math.random() * Math.PI * 2
+                });
+            }
+        });
+
+        // 2. Diverse Bioluminescent Reef Biodiversity anchored along the terraced canyon floor
+        for (let x = 10; x < pw - 10; x += 9 + Math.floor(Math.random() * 6)) {
+            const nx = x / Math.max(1, pw);
+            const baseY = getGroundY(x, 'reef') + Math.round((Math.random() - 0.5) * 2);
             const r = Math.random();
             const hue = [285, 325, 190, 165, 45][Math.floor(Math.random() * 5)];
-            if (r < 0.22) {
-                flora.push({ type: 'brain_coral', x, r: 6 + Math.floor(Math.random() * 5), hue, phase: Math.random() * Math.PI * 2 });
+
+            // Giant Kelp forests frame the outer left and right canyon walls
+            if ((nx < 0.22 || nx > 0.78) && r < 0.36) {
+                flora.push({
+                    type: 'kelp',
+                    x,
+                    baseY,
+                    h: 52 + Math.random() * 62,
+                    phase: Math.random() * Math.PI * 2
+                });
+            } else if (r < 0.24) {
+                // Branching Staghorn Coral (Acropora / Geyik Boynuzu Mercanı)
+                flora.push({
+                    type: 'staghorn_coral',
+                    x,
+                    baseY,
+                    h: 18 + Math.random() * 20,
+                    hue,
+                    phase: Math.random() * Math.PI * 2
+                });
             } else if (r < 0.44) {
-                flora.push({ type: 'tube_sponge', x, h: 16 + Math.random() * 22, hue, phase: Math.random() * Math.PI * 2 });
-            } else if (r < 0.66) {
-                flora.push({ type: 'anemone', x, h: 16 + Math.random() * 14, hue, phase: Math.random() * Math.PI * 2 });
-            } else if (r < 0.85) {
-                flora.push({ type: 'sea_fan', x, h: 24 + Math.random() * 32, hue, phase: Math.random() * Math.PI * 2 });
+                flora.push({
+                    type: 'brain_coral',
+                    x,
+                    baseY,
+                    r: 6 + Math.floor(Math.random() * 5),
+                    hue,
+                    phase: Math.random() * Math.PI * 2
+                });
+            } else if (r < 0.64) {
+                flora.push({
+                    type: 'tube_sponge',
+                    x,
+                    baseY,
+                    h: 16 + Math.random() * 24,
+                    hue,
+                    phase: Math.random() * Math.PI * 2
+                });
+            } else if (r < 0.82) {
+                flora.push({
+                    type: 'anemone',
+                    x,
+                    baseY,
+                    h: 14 + Math.random() * 12,
+                    hue,
+                    phase: Math.random() * Math.PI * 2
+                });
             } else {
-                flora.push({ type: 'kelp', x, h: 45 + Math.random() * 55, phase: Math.random() * Math.PI * 2 });
+                flora.push({
+                    type: 'sea_fan',
+                    x,
+                    baseY,
+                    h: 24 + Math.random() * 30,
+                    hue,
+                    phase: Math.random() * Math.PI * 2
+                });
             }
         }
 
@@ -731,7 +803,6 @@ function buildStaticEnvironmentLayer(hab) {
     if (hab.sceneProfile === 'botanical') {
         const reach = Math.min(155, Math.round(pw * 0.30));
 
-        // A. Distant Victorian Glasshouse Conservatory Dome Silhouette
         const glassFrameCol = isLightMode ? 'rgba(30, 58, 95, 0.22)' : 'rgba(30, 27, 75, 0.52)';
         const glassPaneCol = isLightMode ? 'rgba(224, 242, 254, 0.18)' : 'rgba(129, 140, 248, 0.06)';
         const domeCx = Math.round(pw * 0.50);
@@ -757,7 +828,6 @@ function buildStaticEnvironmentLayer(hab) {
         sRect(domeCx - domeRx, domeBaseY - 18, domeRx * 2, 1, glassFrameCol);
         sRect(domeCx - 1, domeBaseY - 18 - domeRy - 6, 2, 6, glassFrameCol);
 
-        // B. Left & Right Gnarled Wisteria Trees (Grounded Trunks, Overlapping Canopy & Boughs)
         const trunkDark = isLightMode ? '#3b2316' : '#161122';
         const trunkMid = isLightMode ? '#5c3724' : '#261d38';
         const trunkHi = isLightMode ? '#7c4d34' : '#3b2d54';
@@ -810,7 +880,6 @@ function buildStaticEnvironmentLayer(hab) {
             }
         });
 
-        // C. Ornate Curved Gothic Stone Garden Archway on Right Terrace
         const gx = pw - 68;
         const archBaseY = getGroundY(gx + 16, 'botanical') + 2;
         const pillarH = 44;
@@ -847,7 +916,6 @@ function buildStaticEnvironmentLayer(hab) {
             }
         }
 
-        // D. Classical Tiered Stone Birdbath / Nectar Fountain on Left-Midground Terrace
         const fx = Math.round(pw * 0.18);
         const fy = getGroundY(fx, 'botanical') + 1;
         sRect(fx - 9, fy - 2, 19, 3, stoneDark);
@@ -860,7 +928,6 @@ function buildStaticEnvironmentLayer(hab) {
         sRect(fx - 2, fy - 28, 5, 5, stoneMid);
         sRect(fx - 1, fy - 30, 3, 2, stoneHi);
 
-        // E. Terraced Velvet Moss Garden Floor & Winding Flagstone Path
         const mossTop = isLightMode ? '#16a34a' : '#0f3d32';
         const mossDeep = isLightMode ? '#14532d' : '#061a17';
         for (let x = 0; x < pw; x++) {
@@ -879,22 +946,86 @@ function buildStaticEnvironmentLayer(hab) {
         }
     }
 
-    // 6. REEF STATIC SCENERY
+    // 6. REEF STATIC SCENERY (Bioluminescent Coral Canyon, Sea Cavern Overhangs, Sunken Atlantean Sanctuary & Table Acropora)
     if (hab.sceneProfile === 'reef') {
-        const colShade = isLightMode ? 'rgba(15, 38, 62, 0.45)' : 'rgba(18, 14, 46, 0.72)';
-        const colHi = isLightMode ? 'rgba(56, 189, 248, 0.25)' : 'rgba(139, 92, 246, 0.22)';
-        [38, pw - 54].forEach((cx, idx) => {
-            const ch = idx === 0 ? 68 : 48;
-            sRect(cx, ph - ch, 9, ch, colShade);
-            sRect(cx + 1, ph - ch, 2, ch, colHi);
-            sRect(cx - 2, ph - ch, 13, 3, colShade);
-            sRect(cx - 2, ph - 4, 13, 4, colShade);
+        const rockDark = isLightMode ? '#0f2942' : '#090d24';
+        const rockMid = isLightMode ? '#163e5c' : '#13193b';
+        const rockHi = isLightMode ? '#1e5678' : '#232d5e';
+        const neonRim = isLightMode ? '#38bdf8' : '#6366f1';
+
+        // A. Distant Sunken Atlantean Sanctuary Arch & Fluted Columns in the Abyssal Haze
+        const colShade = isLightMode ? 'rgba(15, 42, 68, 0.42)' : 'rgba(17, 14, 48, 0.68)';
+        const colHi = isLightMode ? 'rgba(56, 189, 248, 0.28)' : 'rgba(139, 92, 246, 0.26)';
+        const ruinX = Math.round(pw * 0.24);
+        const ruinBaseY = getGroundY(ruinX, 'reef') + 2;
+
+        // Pair of sunken classical columns connected by a broken lintel & arch
+        [
+            { cx: ruinX - 16, ch: 56, broken: false },
+            { cx: ruinX + 16, ch: 44, broken: true },
+            { cx: Math.round(pw * 0.77), ch: 50, broken: true }
+        ].forEach(col => {
+            const cy = getGroundY(col.cx, 'reef') + 2;
+            sRect(col.cx - 2, cy - 3, 13, 4, colShade); // Pedestal base
+            sRect(col.cx, cy - col.ch, 9, col.ch, colShade);
+            sRect(col.cx + 1, cy - col.ch, 2, col.ch, colHi); // Fluted highlight
+            sRect(col.cx + 5, cy - col.ch + 4, 1, col.ch - 6, colHi);
+            if (!col.broken) {
+                sRect(col.cx - 2, cy - col.ch - 2, 13, 3, colShade);
+                sRect(col.cx - 2, cy - col.ch - 2, 10, 1, colHi);
+            } else {
+                sRect(col.cx, cy - col.ch - 2, 5, 2, colShade);
+            }
+        });
+        // Broken stone lintel spanning the left sanctuary columns
+        sRect(ruinX - 18, ruinBaseY - 58, 24, 3, colShade);
+        sRect(ruinX - 18, ruinBaseY - 58, 22, 1, colHi);
+
+        // B. Left & Right Framing Coral Canyon Walls & Upper Sea-Cavern Overhangs
+        const archReach = Math.min(135, Math.round(pw * 0.25));
+        [
+            { isLeft: true, dir: 1 },
+            { isLeft: false, dir: -1 }
+        ].forEach(wall => {
+            const wallH = Math.round(ph * 0.75);
+            for (let y = 0; y < wallH; y++) {
+                const prog = y / wallH;
+                const jag = Math.sin(y * 0.14) * 3 + Math.cos(y * 0.06) * 2;
+                // Wide overhang at the top ceiling, narrowing in the middle, flaring into the reef terrace at bottom
+                const topArch = prog < 0.25 ? Math.pow((0.25 - prog) / 0.25, 1.4) * (archReach - 18) : 0;
+                const botShelf = prog > 0.65 ? Math.pow((prog - 0.65) / 0.35, 1.5) * 26 : 0;
+                const w = Math.max(6, Math.round(12 + topArch + botShelf + jag));
+                const wx = wall.isLeft ? 0 : pw - w;
+
+                sRect(wx, y, w, 1, rockDark);
+                sRect(wall.isLeft ? w - 4 : wx + 1, y, 3, 1, rockMid);
+                if (y % 4 === 0) {
+                    sRect(wall.isLeft ? w - 1 : wx, y, 1, 2, neonRim);
+                }
+            }
+
+            // Tiered Table Corals (Acropora) jutting out from the canyon ledges
+            [0.46, 0.64, 0.78].forEach((ledgeProg, lIdx) => {
+                const ly = Math.round(ph * ledgeProg);
+                const lw = 18 + (lIdx % 2) * 8;
+                const lx = wall.isLeft ? 8 + lIdx * 4 : pw - 8 - lIdx * 4 - lw;
+                const plateCol = lIdx % 2 === 0 ? '#a21caf' : '#0e7490';
+                const rimCol = lIdx % 2 === 0 ? '#f0abfc' : '#67e8f9';
+                sRect(lx, ly, lw, 3, rockDark);
+                sRect(lx - 2, ly - 2, lw + 4, 2, plateCol);
+                sRect(lx - 2, ly - 3, lw + 4, 1, rimCol);
+            });
         });
 
+        // C. Continuous Terraced Coral Reef Floor with Bioluminescent Mineral Veins
         for (let x = 0; x < pw; x++) {
-            const reefFloor = ph - 4 - Math.round(Math.sin(x * 0.03) * 2.5 + Math.cos(x * 0.08) * 1.5);
-            sRect(x, reefFloor, 1, ph - reefFloor, isLightMode ? '#164e63' : '#0f172a');
-            sRect(x, reefFloor, 1, 1, isLightMode ? '#0ea5e9' : '#312e81');
+            const gy = getGroundY(x, 'reef');
+            sRect(x, gy, 1, ph - gy, rockDark);
+            sRect(x, gy + 1, 1, Math.max(1, Math.floor((ph - gy) * 0.45)), rockMid);
+            sRect(x, gy, 1, 2, x % 7 === 0 ? '#38bdf8' : rockHi);
+            if (!isLightMode && (x % 19 === 0)) {
+                sRect(x, gy + 4 + (x % 5), 3, 1, 'rgba(56, 189, 248, 0.38)');
+            }
         }
     }
 
@@ -1084,7 +1215,7 @@ export function drawHabitatEnvironment(time) {
 
     // Diagonal Sunbeam / Moonlight Caustic Shafts
     if (hab.sceneProfile === 'betta-aquarium' || hab.sceneProfile === 'reef' || isLightMode) {
-        ctx.fillStyle = isLightMode ? 'rgba(255, 255, 255, 0.045)' : 'rgba(125, 211, 252, 0.022)';
+        ctx.fillStyle = isLightMode ? 'rgba(255, 255, 255, 0.045)' : 'rgba(125, 211, 252, 0.024)';
         for (let r = 0; r < 5; r++) {
             const rx = ((r * 85 + Math.sin(time * 0.0005 + r) * 16) % pw);
             for (let y = 0; y < ph * 0.76; y += 3) {
@@ -1227,7 +1358,6 @@ export function drawHabitatEnvironment(time) {
             pRect(lx - 2 + sway, branchY + 13, 5, 1, '#334155');
         });
 
-        // Animated water droplets arcing from the left stone fountain finial
         const fx = Math.round(pw * 0.18);
         const fy = getGroundY(fx, 'botanical') + 1;
         const dropPhase = (time * 0.015) % 6;
@@ -1238,7 +1368,6 @@ export function drawHabitatEnvironment(time) {
         });
         pRect(fx - 8 + Math.sin(time * 0.005) * 4, fy - 23, 4, 1, '#ffffff');
 
-        // Drifting Golden & Violet Botanical Fireflies
         for (let i = 0; i < 8; i++) {
             const fxPos = (i * 73 + Math.sin(time * 0.001 + i) * 12) % pw;
             const fyPos = ph * 0.36 + Math.sin(time * 0.0014 + i * 1.7) * 22;
@@ -1247,22 +1376,34 @@ export function drawHabitatEnvironment(time) {
         }
     }
 
-    // 5. REEF: Pulsing Giant Clam & Reef Bubbles
+    // 5. REEF: Shimmering Surface Caustics, Pulsing Giant Tridacna Clam & Rising Bioluminescent Bubble Streams
     if (hab.sceneProfile === 'reef') {
-        const clamX = Math.floor(pw * 0.24);
-        const clamY = ph - 8;
-        const openJaw = Math.round(2 + Math.sin(time * 0.002) * 1.2);
-        pRect(clamX - 7, clamY, 15, 4, '#311042');
-        pRect(clamX - 6, clamY - 1, 13, 2, '#a21caf');
-        pRect(clamX - 6, clamY - openJaw - 3, 13, 3, '#4c1d95');
-        pRect(clamX - 1, clamY - 3, 3, 3, '#fef9c3');
-        pRect(clamX - 2, clamY - 4, 5, 5, 'rgba(240, 171, 252, 0.35)');
+        // Wavy ocean surface caustic glints at the very top of the water column
+        for (let c = 0; c < 12; c++) {
+            const cx = Math.round(((c * 61 + Math.sin(time * 0.001 + c) * 18) % (pw * 0.56)) + pw * 0.22);
+            const cy = 3 + (c % 3) * 3;
+            pRect(cx, cy, 10 + (c % 4) * 4, 1, isLightMode ? 'rgba(224, 242, 254, 0.55)' : 'rgba(103, 232, 249, 0.24)');
+        }
 
-        for (let i = 0; i < 10; i++) {
-            const rise = (time * (0.004 + (i % 3) * 0.001) + i * 19) % Math.max(40, ph * 0.8);
-            const bx = 20 + ((i * 47) % Math.max(24, pw - 40));
-            const by = ph - rise - 8;
-            pRect(bx, by, 1, 2, 'rgba(165, 243, 252, 0.42)');
+        // Giant Tridacna Clam on the Right-Midground Reef Terrace with pulsing Pearl & Mantle
+        const clamX = Math.floor(pw * 0.72);
+        const clamY = getGroundY(clamX, 'reef') - 1;
+        const openJaw = Math.round(2 + Math.sin(time * 0.0022) * 1.3);
+        pRect(clamX - 8, clamY, 17, 4, '#1e1b4b');
+        pRect(clamX - 7, clamY - 2, 15, 2, '#a21caf'); // Lower fluted mantle lip
+        pRect(clamX - 6, clamY - openJaw - 4, 13, 3, '#311042');
+        pRect(clamX - 5, clamY - openJaw - 2, 11, 1, '#e879f9'); // Upper mantle rim
+        pRect(clamX - 2, clamY - 4, 4, 4, '#fef9c3'); // Radiant pearl core
+        pRect(clamX - 1, clamY - 3, 2, 2, '#ffffff');
+        pRect(clamX - 4, clamY - 6, 8, 7, 'rgba(240, 171, 252, 0.28)');
+
+        // Staggered Bioluminescent Micro-Bubble Streams rising from the reef floor
+        for (let i = 0; i < 14; i++) {
+            const rise = (time * (0.0045 + (i % 3) * 0.0012) + i * 21) % Math.max(40, ph * 0.84);
+            const bx = 24 + ((i * 43) % Math.max(24, pw - 48)) + Math.sin(time * 0.0015 + i) * 2;
+            const by = ph - rise - 10;
+            pRect(bx, by, 2, 2, 'rgba(103, 232, 249, 0.35)');
+            pRect(bx, by, 1, 1, i % 3 === 0 ? '#f0abfc' : '#cffafe');
         }
     }
 
@@ -1332,6 +1473,37 @@ export function drawHabitatEnvironment(time) {
 
         if (f.type === 'pebble') {
             pRect(f.x, f.y, f.w, f.h, isLightMode ? 'rgba(15, 55, 65, 0.35)' : f.shade);
+
+        } else if (f.type === 'sea_vine') {
+            // Bioluminescent Hanging Sea Cavern Tendrils
+            for (let y = 0; y < f.len; y += 2) {
+                const prog = y / f.len;
+                const sway = Math.sin(time * 0.0014 + f.phase + y * 0.06) * (1.0 + prog * 3.5);
+                const px = f.x + sway;
+                const py = f.startY + y;
+                pRect(px, py, 1, 2, '#0f766e');
+                if (y % 6 === 0) {
+                    pRect(px - 1, py, 3, 1, f.col);
+                }
+            }
+
+        } else if (f.type === 'staghorn_coral') {
+            // Branching Acropora Staghorn Coral with glowing bioluminescent polyp tips
+            const mainCol = `hsla(${f.hue}, 82%, 46%, 0.9)`;
+            const tipCol = '#fef08a';
+            for (let b = -1; b <= 1; b++) {
+                const bh = Math.round(f.h * (b === 0 ? 1 : 0.75));
+                for (let y = 0; y < bh; y++) {
+                    const prog = y / bh;
+                    const sway = Math.sin(time * 0.001 + f.phase) * prog * 0.8;
+                    const px = f.x + b * prog * 6.5 + sway;
+                    const py = baseGroundY - y;
+                    pRect(px, py, 2, 1, y >= bh - 2 ? tipCol : mainCol);
+                    if (b !== 0 && y === Math.floor(bh * 0.55)) {
+                        pRect(px + b * 2, py - 1, 2, 2, tipCol);
+                    }
+                }
+            }
 
         } else if (f.type === 'willow_frond') {
             const stemCol = isLightMode ? '#15803d' : '#0b4635';
@@ -1481,7 +1653,6 @@ export function drawHabitatEnvironment(time) {
             }
 
         } else if (f.type === 'buddleia') {
-            // Arching Butterfly Bush (Kelebek Çalısı) with conical panicles & live tip tracking
             const stemCol = isLightMode ? '#15803d' : '#0d4a3a';
             let tipX = f.x;
             let tipY = baseGroundY - f.h;
@@ -1506,7 +1677,6 @@ export function drawHabitatEnvironment(time) {
             f.tipY = tipY;
 
         } else if (f.type === 'hydrangea') {
-            // Rounded Hydrangea Shrub Mound (Ortanca Çalısı)
             const sway = Math.sin(time * 0.0012 + f.phase) * 1.2;
             const cx = f.x + sway;
             const cy = baseGroundY - f.r;
@@ -1716,8 +1886,8 @@ export function drawHabitatEnvironment(time) {
                 for (let dx = -f.r; dx <= f.r; dx++) {
                     if (dx * dx + dy * dy <= f.r * f.r) {
                         const groove = Math.sin(dx * 1.4 + dy * 1.2) > 0.2;
-                        const col = groove ? `hsla(${f.hue}, 95%, 68%, 0.85)` : `hsla(${f.hue}, 75%, 28%, 0.85)`;
-                        pRect(f.x + dx, ph - 4 + dy, 1, 1, col);
+                        const col = groove ? `hsla(${f.hue}, 95%, 68%, 0.88)` : `hsla(${f.hue}, 75%, 28%, 0.88)`;
+                        pRect(f.x + dx, baseGroundY + dy, 1, 1, col);
                     }
                 }
             }
@@ -1726,8 +1896,8 @@ export function drawHabitatEnvironment(time) {
             [-3, 0, 3].forEach((ox, idx) => {
                 const th = Math.round(f.h * (idx === 1 ? 1 : 0.72));
                 for (let y = 0; y < th; y++) {
-                    const col = y >= th - 2 ? '#fef08a' : `hsla(${f.hue}, 85%, ${35 + (y / th) * 25}%, 0.82)`;
-                    pRect(f.x + ox, ph - 4 - y, 2, 1, col);
+                    const col = y >= th - 2 ? '#fef08a' : `hsla(${f.hue}, 85%, ${35 + (y / th) * 25}%, 0.85)`;
+                    pRect(f.x + ox, baseGroundY - y, 2, 1, col);
                 }
             });
 
@@ -1736,10 +1906,10 @@ export function drawHabitatEnvironment(time) {
                 const sway = Math.sin(time * 0.0014 + f.phase + y * 0.08) * (y / f.h) * 2.5;
                 const spread = Math.round(Math.sin((y / f.h) * Math.PI) * 6);
                 const px = f.x + sway;
-                const py = ph - 4 - y;
+                const py = baseGroundY - y;
                 for (let dx = -spread; dx <= spread; dx += 2) {
                     if ((dx + y) % 2 === 0) {
-                        pRect(px + dx, py, 1, 1, `hsla(${f.hue}, 90%, 62%, 0.68)`);
+                        pRect(px + dx, py, 1, 1, `hsla(${f.hue}, 90%, 62%, 0.72)`);
                     }
                 }
             }
@@ -1748,7 +1918,7 @@ export function drawHabitatEnvironment(time) {
             for (let y = 0; y < f.h; y++) {
                 const sway = Math.sin(time * 0.0015 + f.phase + y * 0.07) * (y / f.h) * 5;
                 const px = f.x + sway;
-                const py = ph - 4 - y;
+                const py = baseGroundY - y;
                 pRect(px, py, 1, 1, '#0d9488');
                 if (y % 5 === 0 && y > 6) {
                     const side = (y % 10 === 0) ? -3 : 1;
@@ -1757,11 +1927,11 @@ export function drawHabitatEnvironment(time) {
             }
 
         } else if (f.type === 'anemone') {
-            pRect(f.x - 3, ph - 8, 7, 5, '#3b0764');
+            pRect(f.x - 3, baseGroundY - 3, 7, 4, '#3b0764');
             for (let t = -3; t <= 3; t++) {
                 const sway = Math.sin(time * 0.003 + f.phase + t) * 1.8;
-                for (let y = 8; y <= 17; y++) {
-                    pRect(f.x + t * 1.4 + sway * (y / 17), ph - y, 1, 1, y === 17 ? '#fef08a' : `hsla(${f.hue}, 90%, 65%, 0.78)`);
+                for (let y = 3; y <= 12; y++) {
+                    pRect(f.x + t * 1.4 + sway * (y / 12), baseGroundY - y, 1, 1, y === 12 ? '#fef08a' : `hsla(${f.hue}, 90%, 65%, 0.82)`);
                 }
             }
         }
