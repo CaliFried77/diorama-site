@@ -30,3 +30,17 @@ export function scaleSceneCollections(collections, scaleX, scaleY) {
     }
   }
 }
+
+
+/** Build the shared distant-horizon silhouette profile for habitat initialization and resize. */
+export function createBackgroundSilhouettes(width) {
+  const sceneWidth = Math.max(0, Math.floor(Number(width) || 0));
+  const silhouettes = [];
+  for (let x = 0; x < sceneWidth; x += 3) {
+    const nx = x / Math.max(1, sceneWidth);
+    const valleyMask = 0.55 + Math.pow(Math.abs(nx - 0.5) * 1.8, 1.4) * 0.75;
+    const h = Math.round((18 + Math.sin(x * 0.016) * 10 + Math.cos(x * 0.042) * 5) * valleyMask);
+    silhouettes.push({ x, h });
+  }
+  return silhouettes;
+}
