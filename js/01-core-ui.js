@@ -9,7 +9,7 @@ import { refreshWeatherPreviewButtons, refreshDataManagerStats } from './service
            ============================================================================ */
 
         // ============================================================================
-// BÖLÜM BAŞI: ORTAK SVG İKON KATALOĞU
+        // BÖLÜM BAŞI: ORTAK SVG İKON KATALOĞU
 // ============================================================================
 
         export const SVG_ICONS = {
@@ -26,8 +26,8 @@ import { refreshWeatherPreviewButtons, refreshDataManagerStats } from './service
         };
 
         // ============================================================================
-// BÖLÜM SONU: SVG İKON KATALOĞU
-// BÖLÜM BAŞI: TEMA VE ZEN MODU
+        // BÖLÜM SONU: SVG İKON KATALOĞU
+        // BÖLÜM BAŞI: TEMA VE ZEN MODU
 // ============================================================================
 
 /* ============================================================================
@@ -111,14 +111,14 @@ import { refreshWeatherPreviewButtons, refreshDataManagerStats } from './service
         zenModeBtn.addEventListener('click', toggleZenMode);
 
         // ============================================================================
-// BÖLÜM SONU: TEMA VE ZEN MODU
+        // BÖLÜM SONU: TEMA VE ZEN MODU
 // ============================================================================
 
 /* ============================================================================
            2. CLOCK, TURKISH GREETING & USER NAME
            ============================================================================ */
         // ============================================================================
-// BÖLÜM BAŞI: SAAT, TARİH VE GÜNÜN SELAMLAMASI
+        // BÖLÜM BAŞI: SAAT, TARİH VE GÜNÜN SELAMLAMASI
 // ============================================================================
 
         const heroClock = document.getElementById('heroClock');
@@ -155,8 +155,8 @@ import { refreshWeatherPreviewButtons, refreshDataManagerStats } from './service
         setInterval(updateClockAndGreeting, 10000);
 
         // ============================================================================
-// BÖLÜM SONU: SAAT, TARİH VE SELAMLAMA
-// BÖLÜM BAŞI: ÇOKLU ARAMA MOTORU
+        // BÖLÜM SONU: SAAT, TARİH VE SELAMLAMA
+        // BÖLÜM BAŞI: ÇOKLU ARAMA MOTORU
 // ============================================================================
 
 /* ============================================================================
@@ -224,8 +224,8 @@ import { refreshWeatherPreviewButtons, refreshDataManagerStats } from './service
         });
 
         // ============================================================================
-// BÖLÜM SONU: ÇOKLU ARAMA MOTORU
-// BÖLÜM BAŞI: KISAYOL PANELİ VE DÜZENLEME PENCERESİ
+        // BÖLÜM SONU: ÇOKLU ARAMA MOTORU
+        // BÖLÜM BAŞI: KISAYOL PANELİ VE DÜZENLEME PENCERESİ
 // ============================================================================
 
 /* ============================================================================
@@ -380,8 +380,8 @@ import { refreshWeatherPreviewButtons, refreshDataManagerStats } from './service
         });
 
         // ============================================================================
-// BÖLÜM SONU: KISAYOL PANELİ
-// BÖLÜM BAŞI: POPOVER AÇMA/KAPATMA VE ORTAK ARAYÜZ DURUMU
+        // BÖLÜM SONU: KISAYOL PANELİ
+        // BÖLÜM BAŞI: POPOVER AÇMA/KAPATMA VE ORTAK ARAYÜZ DURUMU
 // ============================================================================
 
 /* ============================================================================
@@ -439,5 +439,5 @@ export function setShortcuts(next) {
 }
 
 // ============================================================================
-// BÖLÜM SONU: POPOVER AÇMA/KAPATMA VE ORTAK ARAYÜZ DURUMU
+        // BÖLÜM SONU: POPOVER AÇMA/KAPATMA VE ORTAK ARAYÜZ DURUMU
 // ============================================================================
