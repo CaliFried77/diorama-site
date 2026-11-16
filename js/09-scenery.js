@@ -296,57 +296,87 @@ const CREATURE_PROFILES = Object.freeze({
                 }
 
             } else if (hab.sceneProfile === 'rainforest') {
-                // Layered tropical understory: elephant-ear leaves, bromeliads, orchids and hanging lianas.
-                for (let x = 8; x < pw - 8; x += 10 + Math.floor(Math.random() * 9)) {
+                // A dense tropical understory with several silhouettes, not a line of identical sprouts.
+                for (let x = 5; x < pw - 5; x += 7 + Math.floor(Math.random() * 7)) {
                     const roll = Math.random();
-                    if (roll < 0.48) {
+                    if (roll < 0.32) {
                         flora.push({
                             type: 'tropical_leaf',
                             x,
-                            h: 28 + Math.random() * 48,
+                            h: 42 + Math.random() * 58,
                             dir: Math.random() < 0.5 ? -1 : 1,
                             hue: Math.random() < 0.5 ? '#0f766e' : '#15803d',
                             phase: Math.random() * Math.PI * 2
                         });
-                    } else if (roll < 0.72) {
+                    } else if (roll < 0.49) {
+                        flora.push({
+                            type: 'jungle_fern',
+                            x,
+                            h: 24 + Math.random() * 25,
+                            dir: Math.random() < 0.5 ? -1 : 1,
+                            phase: Math.random() * Math.PI * 2
+                        });
+                    } else if (roll < 0.68) {
                         flora.push({
                             type: 'bromeliad',
                             x,
-                            h: 17 + Math.random() * 15,
+                            h: 22 + Math.random() * 19,
                             hue: Math.random() < 0.5 ? '#e11d48' : '#f97316',
+                            phase: Math.random() * Math.PI * 2
+                        });
+                    } else if (roll < 0.84) {
+                        flora.push({
+                            type: 'heliconia',
+                            x,
+                            h: 36 + Math.random() * 34,
+                            hue: ['#e11d48', '#f97316', '#facc15'][Math.floor(Math.random() * 3)],
                             phase: Math.random() * Math.PI * 2
                         });
                     } else {
                         flora.push({
                             type: 'orchid',
                             x,
-                            h: 24 + Math.random() * 24,
+                            h: 28 + Math.random() * 30,
                             hue: Math.random() < 0.5 ? '#e879f9' : '#f9a8d4',
                             phase: Math.random() * Math.PI * 2
                         });
                     }
                 }
-                for (let i = 0; i < 9; i++) {
+
+                // Epiphytes attach flowers and broad leaves to mid-level branches, adding depth.
+                for (let i = 0; i < 11; i++) {
+                    flora.push({
+                        type: 'epiphyte',
+                        x: 18 + Math.random() * (pw - 36),
+                        y: ph * (0.24 + Math.random() * 0.38),
+                        hue: ['#f9a8d4', '#e879f9', '#facc15'][i % 3],
+                        phase: Math.random() * Math.PI * 2
+                    });
+                }
+
+                // Lianas hang in uneven, overlapping arcs from the high canopy.
+                for (let i = 0; i < 7; i++) {
                     flora.push({
                         type: 'canopy_vine',
-                        x: 18 + Math.random() * (pw - 36),
-                        startY: 4 + Math.random() * 25,
-                        len: 28 + Math.random() * Math.min(82, ph * 0.34),
+                        x: 12 + Math.random() * (pw - 24),
+                        startY: 2 + Math.random() * 38,
+                        len: 42 + Math.random() * Math.min(118, ph * 0.46),
                         phase: Math.random() * Math.PI * 2,
                         hue: i % 2 === 0 ? '#16a34a' : '#0f766e'
                     });
                 }
-                for (let i = 0; i < 34; i++) {
+
+                // Fallen leaves and damp forest-floor fragments anchor the understory.
+                for (let i = 0; i < 52; i++) {
                     flora.push({
                         type: 'pebble',
                         x: Math.random() * pw,
-                        y: ph - 3 - Math.random() * 8,
-                        w: 2 + Math.floor(Math.random() * 5),
+                        y: ph - 3 - Math.random() * 12,
+                        w: 2 + Math.floor(Math.random() * 6),
                         h: 1 + Math.floor(Math.random() * 3),
-                        shade: ['#123a32', '#1a4a3b', '#245847'][i % 3]
+                        shade: ['#123a32', '#1a4a3b', '#245847', '#315d46'][i % 4]
                     });
                 }
-            }
 
             const creatureProfile = CREATURE_PROFILES[hab.creatureProfile];
             if (creatureProfile) {
