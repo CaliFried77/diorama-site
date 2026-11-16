@@ -292,8 +292,8 @@ test('creature facade reexports every independently maintained species module', 
   ];
 
   for (const [className, path] of species) {
-    assert.match(facade, new RegExp(`export \\{ ${className} \\} from '\\\\./${path.replaceAll('.', '\\\\.')}';`));
+    assert.ok(facade.includes(`export { ${className} } from './${path}';`));
     const implementation = await readFile(new URL(`../js/${path}`, import.meta.url), 'utf8');
-    assert.match(implementation, new RegExp(`export class ${className} \\{`));
+    assert.ok(implementation.includes(`export class ${className} {`));
   }
 });
