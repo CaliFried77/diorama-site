@@ -358,7 +358,7 @@ export function drawHabitatEnvironment(time) {
 
         // Sağ kıyıdaki fenerden suya düşen sıcak ışık ve damla halkaları.
         const bx = Math.round(pw * 0.91);
-        const by = getGroundY(bx, 'koi-pond', pw, ph) - 17;
+        const by = getGroundY(bx, 'koi-pond', pw, ph) - 15;
         const dropOffset = Math.floor((time * 0.022) % 6);
         pRect(bx - 5, by - 2 + dropOffset, 1, 3, '#bae6fd');
         pRect(bx - 5, by + 3, 1, 1, '#e0f2fe');
@@ -366,10 +366,11 @@ export function drawHabitatEnvironment(time) {
         pRect(bx - 5 - rippleR, by + 5, 3, 1, 'rgba(224, 242, 254, 0.42)');
         pRect(bx - 5 + rippleR, by + 5, 3, 1, 'rgba(224, 242, 254, 0.42)');
 
+        // The warm pulse sits in the lantern window, with a short reflection on the pond.
         const glowAlpha = (0.72 + 0.22 * Math.sin(time * 0.0035)).toFixed(2);
-        pRect(bx - 3, by - 17, 7, 5, 'rgba(255, 196, 104, ' + glowAlpha + ')');
-        pRect(bx - 1, by - 16, 3, 3, '#fff2c5');
-        pRect(bx - 8, by - 20, 17, 11, 'rgba(251, 191, 36, 0.12)');
+        pRect(bx - 3, by - 1, 7, 4, 'rgba(255, 196, 104, ' + glowAlpha + ')');
+        pRect(bx - 1, by, 3, 3, '#fff2c5');
+        pRect(bx - 8, by - 4, 17, 10, 'rgba(251, 191, 36, 0.12)');
         for (let ry = 0; ry < 6; ry++) {
             const drift = Math.sin(time * 0.0025 + ry * 1.2) * 3.2;
             pRect(bx - 3 + drift, by + 10 + ry * 2, 7 - ry, 1,
