@@ -1,5 +1,18 @@
 import { pw, ph, frameScale, frameChance, pRect, frameSmoothing } from './07-habitat-state.js';
 import { findAvailableStimulus } from './creature-utils.js';
+import { getGroundY, getKoiWaterSurfaceY } from './habitat-geometry.js';
+
+const KOI_SURFACE_CLEARANCE = 28;
+const KOI_FLOOR_CLEARANCE = 20;
+
+function getKoiSwimBounds(x) {
+    const sceneX = Math.max(0, Math.min(pw, x));
+    const surfaceY = getKoiWaterSurfaceY(sceneX, pw, ph);
+    const groundY = getGroundY(sceneX, 'koi-pond', pw, ph);
+    const minY = surfaceY + KOI_SURFACE_CLEARANCE;
+    const maxY = Math.max(minY + 12, groundY - KOI_FLOOR_CLEARANCE);
+    return { minY, maxY };
+}
 
 /* PIXELKOI — dedicated koi̇ baliği behavior and pixel-art rendering. */
 
@@ -17,7 +30,8 @@ import { findAvailableStimulus } from './creature-utils.js';
 export class PixelKoi {
     constructor() {
         this.x = 28 + Math.random() * (pw - 56);
-        this.y = 34 + Math.random() * (ph - 58);
+        const swimBounds = getKoiSwimBounds(this.x);
+        this.y = swimBounds.minY + Math.random() * (swimBounds.maxY - swimBounds.minY);
         this.angle = Math.random() * Math.PI * 2;
         this.targetAngle = this.angle;
         this.speed = 0.25 + Math.random() * 0.12;
@@ -74,8 +88,13 @@ export class PixelKoi {
             this.targetAngle += (Math.random() - 0.5) * 0.95;
         }
 
-        if (this.y < 32) this.targetAngle = Math.cos(this.angle) >= 0 ? 0.45 : Math.PI - 0.45;
-        if (this.y > ph - 24) this.targetAngle = Math.cos(this.angle) >= 0 ? -0.45 : Math.PI + 0.45;
+        const swimBounds = getKoiSwimBounds(this.x);
+        if (this.y < swimBounds.minY + 14) {
+            this.targetAngle = Math.cos(this.angle) >= 0 ? 0.45 : Math.PI - 0.45;
+        }
+        if (this.y > swimBounds.maxY - 14) {
+            this.targetAngle = Math.cos(this.angle) >= 0 ? -0.45 : Math.PI + 0.45;
+        }
         if (this.x > pw - 68 && this.y > ph - 42) {
             this.targetAngle = Math.PI + (Math.random() - 0.5) * 0.5;
         }
@@ -98,6 +117,11 @@ export class PixelKoi {
             this.x += d;
             this.shiftSpine(d, 0);
         }
+
+        // Recalculate after horizontal movement/wrap so the fish remains in the water
+        // even where the shoreline rises slightly toward the pond edges.
+        const nextBounds = getKoiSwimBounds(this.x);
+        this.y = Math.max(nextBounds.minY, Math.min(nextBounds.maxY, this.y));
 
         this.spine[0].x = this.x;
         this.spine[0].y = this.y;
