@@ -1,4 +1,4 @@
-import { bgSilhouettes, pw, ph, lerpHex } from './07-habitat-state.js';
+import { pw, ph, lerpHex } from './07-habitat-state.js';
 import { isLightMode } from './01-core-ui.js';
 import { getGroundY } from './habitat-geometry.js';
 import { getArcticLedges } from './arctic-geometry.js';
@@ -19,11 +19,6 @@ export function buildStaticEnvironmentLayer(hab) {
         sCtx.fillStyle = col;
         sCtx.fillRect(Math.round(x), Math.round(y), Math.round(w), Math.round(h));
     };
-
-    const silCol = isLightMode ? 'rgba(15, 42, 62, 0.18)' : 'rgba(3, 8, 18, 0.42)';
-    bgSilhouettes.forEach(sil => {
-        sRect(sil.x, ph - sil.h, 4, sil.h, silCol);
-    });
 
     const mistCol = isLightMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(148, 163, 184, 0.035)';
     sRect(0, ph - 28, pw, 10, mistCol);
@@ -894,12 +889,19 @@ export function buildStaticEnvironmentLayer(hab) {
         const midgroundTrees = [
             { x: Math.floor(pw * 0.14), top: Math.floor(ph * 0.24), rx: 32, ry: 18 },
             { x: Math.floor(pw * 0.27), top: Math.floor(ph * 0.36), rx: 26, ry: 15 },
+            { x: Math.floor(pw * 0.42), top: Math.floor(ph * 0.32), rx: 24, ry: 14, depth: 'far' },
+            { x: Math.floor(pw * 0.58), top: Math.floor(ph * 0.30), rx: 25, ry: 15, depth: 'far' },
             { x: Math.floor(pw * 0.75), top: Math.floor(ph * 0.34), rx: 28, ry: 16 },
             { x: Math.floor(pw * 0.86), top: Math.floor(ph * 0.22), rx: 34, ry: 19 },
         ];
         midgroundTrees.forEach((tree, idx) => {
-            const trunkCol = isLightMode ? '#2c221e' : '#101c1a';
-            const barkCol = isLightMode ? '#4a372d' : '#1c302b';
+            const isFarTree = tree.depth === 'far';
+            const trunkCol = isFarTree
+                ? (isLightMode ? 'rgba(44, 34, 30, 0.62)' : 'rgba(16, 28, 26, 0.72)')
+                : (isLightMode ? '#2c221e' : '#101c1a');
+            const barkCol = isFarTree
+                ? (isLightMode ? 'rgba(74, 55, 45, 0.55)' : 'rgba(28, 48, 43, 0.62)')
+                : (isLightMode ? '#4a372d' : '#1c302b');
             const groundBase = ph;
 
             for (let y = tree.top; y < groundBase; y++) {
@@ -922,7 +924,17 @@ export function buildStaticEnvironmentLayer(hab) {
 
             drawFoliageDome(tree.x - 14, tree.top + 6, tree.rx * 0.75, tree.ry * 0.75, 1);
             drawFoliageDome(tree.x + 14, tree.top + 8, tree.rx * 0.75, tree.ry * 0.75, 1);
-            drawFoliageDome(tree.x, tree.top, tree.rx, tree.ry, 2);
+            drawFoliageDome(tree.x, tree.top, tree.rx, tree.ry, isFarTree ? 1 : 2);
+
+            if (!isFarTree) {
+                [-1, 1].forEach(dir => {
+                    for (let step = 0; step <= 15; step += 3) {
+                        const rootX = tree.x + dir * step;
+                        const rootY = ph - 2 - Math.round(step * 0.22);
+                        sRect(rootX - 1, rootY, 3, 2, trunkCol);
+                    }
+                });
+            }
         });
 
         const edgeGiants = [
@@ -953,12 +965,23 @@ export function buildStaticEnvironmentLayer(hab) {
         const canopyDomes = [
             { cx: pw * 0.05, cy: 10, rx: 46, ry: 22, s: 1 },
             { cx: pw * 0.16, cy: 6,  rx: 40, ry: 18, s: 2 },
-            { cx: pw * 0.28, cy: 2,  rx: 30, ry: 12, s: 3 },
-            { cx: pw * 0.72, cy: 2,  rx: 30, ry: 12, s: 3 },
+            { cx: pw * 0.28, cy: 2,  rx: 34, ry: 15, s: 3 },
+            { cx: pw * 0.41, cy: 9,  rx: 36, ry: 17, s: 2 },
+            { cx: pw * 0.51, cy: 3,  rx: 38, ry: 18, s: 3 },
+            { cx: pw * 0.61, cy: 9,  rx: 36, ry: 17, s: 2 },
+            { cx: pw * 0.72, cy: 2,  rx: 34, ry: 15, s: 3 },
             { cx: pw * 0.84, cy: 6,  rx: 40, ry: 18, s: 2 },
             { cx: pw * 0.95, cy: 10, rx: 46, ry: 22, s: 1 }
         ];
         canopyDomes.forEach(d => drawFoliageDome(Math.round(d.cx), d.cy, d.rx, d.ry, d.s));
+
+        // Small broken highlights give the canopy a layered, leafy silhouette instead of one flat band.
+        for (let i = 0; i < 52; i++) {
+            const x = (i * 47 + 19) % pw;
+            const y = 5 + ((i * 17) % 25);
+            const shade = i % 4 === 0 ? canopyShades[3] : (i % 3 === 0 ? canopyShades[1] : canopyShades[2]);
+            sRect(x, y, 2 + (i % 3), 1 + (i % 2), shade);
+        }
 
         for (let x = 0; x < pw; x++) {
             const gy = getGroundY(x, 'rainforest');
