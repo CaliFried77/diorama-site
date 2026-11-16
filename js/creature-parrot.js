@@ -34,16 +34,15 @@ const PARROT_PALETTES = Object.freeze([
         rgb: [34, 197, 94]
     },
     {
-        bodyHi: '#818cf8', body: '#4f46e5', bodyShade: '#3730a3', belly: '#4338ca',
-        wingShoulder: '#6366f1', wingCovert: '#4f46e5', wingGreen: '#4338ca', wingPrimary: '#312e81', wingTip: '#1e1b4b', wingUnder: '#312e81',
-        tailCenter: '#4f46e5', tailMid: '#3730a3', tailOuter: '#312e81',
-        face: '#facc15', faceLine: '#312e81', beakUpper: '#334155', beakTip: '#0f172a', beakLower: '#0f172a', eye: '#0f172a',
-        rgb: [129, 140, 248]
+        bodyHi: '#60a5fa', body: '#2563eb', bodyShade: '#1e40af', belly: '#1d4ed8',
+        wingShoulder: '#3b82f6', wingCovert: '#2563eb', wingGreen: '#1e40af', wingPrimary: '#1e3a8a', wingTip: '#172554', wingUnder: '#1e40af',
+        tailCenter: '#2563eb', tailMid: '#1e40af', tailOuter: '#0ea5e9',
+        face: '#facc15', faceLine: '#1e3a8a', beakUpper: '#1f2937', beakTip: '#020617', beakLower: '#020617', eye: '#020617',
+        rgb: [37, 99, 235]
     },
 ]);
 
-// ============================================================================
-// ============================================================================
+const PARROT_RENDER_SCALE = 1.3;
 
 export class PixelParrot {
     constructor() {
@@ -72,6 +71,8 @@ export class PixelParrot {
             { x: Math.round(pw * 0.14 - 12), y: Math.round(ph * 0.24 + 6) },
             { x: Math.round(pw * 0.14 + 14), y: Math.round(ph * 0.24 + 8) },
             { x: Math.round(pw * 0.27 + 10), y: Math.round(ph * 0.36 + 6) },
+            { x: Math.round(pw * 0.42), y: Math.round(ph * 0.32 + 7) },
+            { x: Math.round(pw * 0.58), y: Math.round(ph * 0.30 + 7) },
             { x: Math.round(pw * 0.75 - 10), y: Math.round(ph * 0.34 + 6) },
             { x: Math.round(pw * 0.86 - 14), y: Math.round(ph * 0.22 + 6) },
             { x: Math.round(pw * 0.86 + 12), y: Math.round(ph * 0.22 + 8) }
@@ -243,8 +244,12 @@ export class PixelParrot {
         const by = Math.round(this.y);
 
         const px = (x, y, w, h, col) => {
-            const drawX = dir > 0 ? (bx + x) : (bx - x - w);
-            pRect(drawX, by + y, w, h, col);
+            const sx = Math.round(x * PARROT_RENDER_SCALE);
+            const sy = Math.round(y * PARROT_RENDER_SCALE);
+            const sw = Math.max(1, Math.round(w * PARROT_RENDER_SCALE));
+            const sh = Math.max(1, Math.round(h * PARROT_RENDER_SCALE));
+            const drawX = dir > 0 ? (bx + sx) : (bx - sx - sw);
+            pRect(drawX, by + sy, sw, sh, col);
         };
 
         if (this.state === 'perched') {
@@ -260,6 +265,10 @@ export class PixelParrot {
 
             px(-2, 3, 2, 2, '#1e293b');
             px(1, 3, 2, 2, '#1e293b');
+            px(-3, 5, 3, 1, '#92400e');
+            px(1, 5, 3, 1, '#92400e');
+            px(-4, 4, 1, 2, '#78350f');
+            px(3, 4, 1, 2, '#78350f');
 
             px(-4, -5 + breath, 7, 4, p.body);
             px(-3, -1 + breath, 6, 4, p.belly);
@@ -280,9 +289,12 @@ export class PixelParrot {
                 px(1, hy + 1, 3, 3, p.face);
                 px(2, hy + 1, 1, 1, p.eye);
                 px(1, hy + 3, 2, 1, p.faceLine);
+                px(0, hy + 2, 1, 2, p.faceLine);
+                px(2, hy + 4, 2, 1, p.faceLine);
                 px(4, hy + 1, 3, 2, p.beakUpper);
-                px(6, hy + 2, 1, 2, p.beakTip);
-                px(4, hy + 3 + this.beakOpen, 2, 1, p.beakLower);
+                px(6, hy + 2, 2, 2, p.beakTip);
+                px(5, hy + 3, 2, 2, p.beakTip);
+                px(4, hy + 3 + this.beakOpen, 3, 1, p.beakLower);
             } else {
                 px(-2, hy + 1, 3, 3, p.face);
                 px(-1, hy + 1, 1, 1, p.eye);
@@ -310,7 +322,7 @@ export class PixelParrot {
             px(-1, -2 - farH + liftY, 6, 3, p.wingPrimary);
         }
 
-        const tailLen = 19;
+        const tailLen = 23;
         for (let t = 0; t < tailLen; t++) {
             const tx = -8 - t;
             const waveOffset = Math.sin(this.tailWave - t * 0.28) * (t * 0.08);
@@ -337,6 +349,7 @@ export class PixelParrot {
         px(0, -2 + liftY, 6, 2, p.bodyHi);
         px(-7, 0 + rearPitch + liftY, 14, 3, p.body);
         px(1, 1 + headPitch + liftY, 6, 2, p.belly);
+        px(-1, 3 + headPitch + liftY, 6, 1, p.belly);
         px(-5, 3 + rearPitch + liftY, 10, 1, p.bodyShade);
 
         if (isHovering) {
@@ -357,11 +370,15 @@ export class PixelParrot {
         px(hx + 2, hy + 3, 2, 1, p.faceLine);
         px(hx + 3, hy + 1, 2, 2, p.eye);
         px(hx + 3, hy + 1, 1, 1, '#ffffff');
+        px(hx + 1, hy + 2, 1, 2, p.faceLine);
+        px(hx + 2, hy + 4, 2, 1, p.faceLine);
+        px(hx + 5, hy + 3, 1, 2, p.faceLine);
 
         px(hx + 6, hy + 1, 3, 2, p.beakUpper);
         px(hx + 8, hy + 2, 2, 2, p.beakTip);
+        px(hx + 7, hy + 3, 2, 2, p.beakTip);
         px(hx + 9, hy + 4, 1, 1, p.beakTip);
-        px(hx + 6, hy + 3 + this.beakOpen, 2, 2, p.beakLower);
+        px(hx + 6, hy + 3 + this.beakOpen, 3, 1, p.beakLower);
 
         if (isHovering) {
             px(-2, -3 + liftY, 5, 3, p.wingShoulder);

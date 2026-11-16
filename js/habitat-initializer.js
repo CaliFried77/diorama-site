@@ -1,6 +1,6 @@
 import {
     currentHabitatIdx, HABITATS, creatures, stimuli, ambientParticles, flora,
-    bgSilhouettes, shootingStars, pw, ph, setCurrentHabitatIndex,
+    shootingStars, pw, ph, setCurrentHabitatIndex,
 } from './07-habitat-state.js';
 import {
     PixelBee, PixelBetta, PixelDragonfly, PixelButterfly, PixelJellyfish,
@@ -8,7 +8,6 @@ import {
 } from './08-creatures.js';
 import { sceneCache } from './scene-state.js';
 import { populateHabitatFlora } from './habitat-flora-generator.js';
-import { createBackgroundSilhouettes } from './scene-math.js';
 
 /* HABITAT INITIALIZER — resets shared state and builds the selected habitat's scene data. */
 
@@ -43,11 +42,8 @@ export function initHabitat(idx) {
     stimuli.length = 0;
     ambientParticles.length = 0;
     flora.length = 0;
-    bgSilhouettes.length = 0;
     shootingStars.length = 0;
     sceneCache.staticEnvCache = null;
-
-    bgSilhouettes.push(...createBackgroundSilhouettes(pw));
 
     for (let i = 0; i < 40; i++) {
         ambientParticles.push({
