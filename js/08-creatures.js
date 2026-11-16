@@ -1097,7 +1097,7 @@ import { stimuli, canvas, PIXEL_SCALE, HABITATS, currentHabitatIdx, pw, ph, fram
                 this.phase = Math.random() * Math.PI * 2;
                 this.eatCooldown = 0;
                 this.palette = PARROT_PALETTES[Math.floor(Math.random() * PARROT_PALETTES.length)];
-                this.size = Math.random() < 0.22 ? 1.2 : 1.05;
+                this.size = Math.random() < 0.24 ? 1.38 : 1.22;
             }
 
             update(time) {
@@ -1148,41 +1148,50 @@ import { stimuli, canvas, PIXEL_SCALE, HABITATS, currentHabitatIdx, pw, ph, fram
                     pRect(px, by + y * scale, w * scale, h * scale, color);
                 };
 
-                // Five separated, tapered tail feathers fan away from the body.
-                for (let feather = 0; feather < 5; feather++) {
-                    const rootX = -6 - (feather % 2);
-                    const rootY = 1 + feather * 0.7;
-                    const length = 9 + (feather % 3) * 2;
-                    for (let step = 0; step < length; step++) {
-                        const t = step / Math.max(1, length - 1);
-                        const x = rootX - t * (2 + feather * 0.68);
-                        const y = rootY + t * (length * 0.82);
-                        const color = feather % 2 === 0 ? p.tail : p.tailAlt;
-                        pixel(Math.round(x), Math.round(y), 1, 1, color);
-                        if (step > 3 && step % 4 === 0) pixel(Math.round(x - 1), Math.round(y), 1, 1, p.wingTip);
-                    }
-                }
-
-                // Shoulder and wing silhouette, with a moving upper edge for each flap.
-                const wingRows = [
-                    [-7, 3], [-9, 8], [-10, 12], [-9, 14],
-                    [-7, 14], [-5, 12], [-3, 9], [-1, 5]
+                // Long, joined macaw tail feathers taper into a colourful fan behind the body.
+                const tailFeathers = [
+                    { x: -7, y: 0, length: 19, spread: 4, color: p.tail },
+                    { x: -6, y: 1, length: 21, spread: 2, color: p.tailAlt },
+                    { x: -5, y: 2, length: 18, spread: 6, color: p.wingTip },
+                    { x: -4, y: 3, length: 15, spread: 1, color: p.tail },
                 ];
-                wingRows.forEach(([x, width], row) => {
-                    const y = -8 + row + (row < 4 ? -flap * 0.55 : 0);
-                    pixel(x - 1, y, width + 2, 1, '#102d3b');
-                    pixel(x, y, width, 1, p.wing);
-                    if (row >= 1 && row <= 5) {
-                        pixel(x + 2, y, Math.max(2, width - 5), 1, p.wingAlt);
-                        pixel(x + width - 3, y, 2, 1, p.wingTip);
+                tailFeathers.forEach((feather, index) => {
+                    for (let step = 0; step < feather.length; step++) {
+                        const t = step / Math.max(1, feather.length - 1);
+                        const x = feather.x - t * feather.spread;
+                        const y = feather.y + t * feather.length * 0.94;
+                        pixel(Math.round(x), Math.round(y), 1, 1, feather.color);
+                        if (step > 5 && step % 5 === 0) {
+                            pixel(Math.round(x - 1), Math.round(y + 1), 1, 1, index % 2 ? p.wingTip : p.belly);
+                        }
+                    }
+                    pixel(feather.x - feather.spread, feather.y + feather.length - 1, 2, 1, feather.color);
+                });
+
+                // Swept, arched wing: the upper edge rises during each powerful flap.
+                const wingRows = [
+                    { y: -8, x: -5, w: 7 }, { y: -7, x: -8, w: 11 },
+                    { y: -6, x: -10, w: 14 }, { y: -5, x: -11, w: 16 },
+                    { y: -4, x: -11, w: 16 }, { y: -3, x: -10, w: 15 },
+                    { y: -2, x: -8, w: 12 }, { y: -1, x: -6, w: 9 },
+                ];
+                wingRows.forEach((row, index) => {
+                    const y = row.y + (index < 5 ? -flap * 0.62 : -flap * 0.24);
+                    pixel(row.x - 1, y, row.w + 2, 1, '#102d3b');
+                    pixel(row.x, y, row.w, 1, p.wing);
+                    if (index >= 1 && index <= 6) {
+                        pixel(row.x + 2, y, Math.max(2, row.w - 5), 1, p.wingAlt);
+                        pixel(row.x + row.w - 3, y, 2, 1, p.wingTip);
                     }
                 });
-                // Individual flight feathers create the characteristic scalloped wing edge.
+                // Individual curved flight feathers make the wing edge visibly scalloped.
                 for (let feather = 0; feather < 6; feather++) {
-                    const fx = -8 + feather * 2;
-                    const fy = -1 + Math.abs(2 - feather) * 0.45 - flap * 0.45;
-                    pixel(fx, fy, 2, 3 + (feather % 2), feather % 2 ? p.wingAlt : p.wingTip);
-                    pixel(fx + 1, fy + 2, 1, 2, p.wing);
+                    for (let step = 0; step < 5; step++) {
+                        const fx = -9 + feather * 2 + Math.floor(step * 0.48);
+                        const fy = -6 + step + (feather % 2) - flap * 0.35;
+                        pixel(fx, fy, 2, 1, step % 2 ? p.wingAlt : p.wingTip);
+                    }
+                    pixel(-8 + feather * 2, -1 + Math.abs(2 - feather) * 0.45, 2, 2, p.wing);
                 }
 
                 // Rounded body with a dark pixel outline and softly graduated belly.
@@ -1233,10 +1242,13 @@ import { stimuli, canvas, PIXEL_SCALE, HABITATS, currentHabitatIdx, pw, ph, fram
                 pixel(10, -10, 3, 1, p.face);
                 pixel(11, -9, 2, 2, p.eye);
                 pixel(11, -9, 1, 1, '#ffffff');
-                pixel(13, -8, 3, 2, p.beak);
-                pixel(14, -6, 3, 2, p.beak);
-                pixel(15, -4, 2, 1, p.beakShade);
-                pixel(13, -7, 2, 1, '#fff0b5');
+                // Layered hook: dark outline, warm upper bill, and a curved lower tip.
+                pixel(12, -8, 5, 1, p.beakShade);
+                pixel(13, -7, 4, 1, p.beak);
+                pixel(14, -6, 4, 1, p.beak);
+                pixel(15, -5, 3, 1, p.beak);
+                pixel(16, -4, 2, 1, p.beakShade);
+                pixel(14, -7, 2, 1, '#fff0b5');
 
                 // Feet and hooked claws are visible below the breast.
                 pixel(-1, 4, 1, 2, '#49352c');
