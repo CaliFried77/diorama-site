@@ -1,5 +1,6 @@
 import { stimuli, canvas, PIXEL_SCALE, HABITATS, currentHabitatIdx, pw, ph, frameScale, pRect } from './07-habitat-state.js';
 import { getArcticLandingY } from './arctic-geometry.js';
+import { getGroundY, getKoiWaterSurfaceY } from './habitat-geometry.js';
 
 /* HABITAT INTERACTIONS — user input that spawns food and stimuli in the active habitat. */
 
@@ -82,11 +83,16 @@ canvas.addEventListener('pointerdown', (e) => {
             });
         }
     } else if (interactionProfile === 'pellet') {
+        // Food is dropped into the pond, never onto the sky/shore above the waterline.
+        const pelletX = Math.max(22, Math.min(pw - 22, px));
+        const waterTop = getKoiWaterSurfaceY(pelletX, pw, ph) + 14;
+        const waterBottom = getGroundY(pelletX, 'koi-pond', pw, ph) - 12;
+        const safePelletY = Math.max(waterTop, Math.min(waterBottom, py));
         for (let i = 0; i < 3; i++) {
             stimuli.push({
                 type: 'koi_pellet',
-                x: px + (Math.random() - 0.5) * 14,
-                y: py + (Math.random() - 0.5) * 10,
+                x: pelletX + (Math.random() - 0.5) * 10,
+                y: safePelletY + (Math.random() - 0.5) * 6,
                 ripple: 1,
                 life: 250,
                 claimedBy: null
