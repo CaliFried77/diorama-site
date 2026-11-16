@@ -44,6 +44,8 @@ export function initHabitat(idx) {
     flora.length = 0;
     shootingStars.length = 0;
     sceneCache.staticEnvCache = null;
+    sceneCache.koiFloraCache = null;
+    sceneCache.koiWaterOpticsCache = null;
 
     for (let i = 0; i < 40; i++) {
         ambientParticles.push({
