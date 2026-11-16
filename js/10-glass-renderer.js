@@ -1,7 +1,8 @@
 import { recordRenderFrame } from './performance-monitor.js';
 import { cachedGlassCards, popovers, setPopoverOpen, shortcutModal, closeShortcutModal, toggleZenMode, refreshGlassCardCache } from './01-core-ui.js';
 import { pw, ph, canvas, HABITATS, currentHabitatIdx, creatures, pinnedHabitatId, prefersReducedMotion, BASE_FRAME_MS, MAX_FRAME_DELTA_MS, REDUCED_MOTION_QUERY, setPinnedHabitatId, setFrameScale, setPrefersReducedMotion } from './07-habitat-state.js';
-import { initHabitat, drawHabitatEnvironment } from './09-scenery.js';
+import { initHabitat } from './habitat-initializer.js';
+import { drawHabitatEnvironment } from './09-scenery.js';
 import { drawWxFront } from './03-weather.js';
 import { lsPut, esc } from './storage.js';
 
