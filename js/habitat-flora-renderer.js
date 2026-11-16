@@ -148,6 +148,37 @@ export function drawHabitatFlora(time, hab) {
             }
             pRect(f.x - 1, baseGroundY - 3, 3, 4, stem);
 
+        } else if (f.type === 'monstera') {
+            const sway = Math.sin(time * 0.0012 + f.phase) * 1.3;
+            const stemCol = isLightMode ? '#0f5e35' : '#073d2b';
+            const leafDark = isLightMode ? '#15803d' : '#0b5838';
+            const leafLight = isLightMode ? '#22a65a' : '#1b8250';
+            for (let blade = -2; blade <= 2; blade++) {
+                const length = f.h * (blade === 0 ? 1 : (Math.abs(blade) === 1 ? 0.82 : 0.66));
+                const lateralReach = blade * 8.5 * f.dir;
+                for (let step = 0; step < length; step += 2) {
+                    const progress = step / length;
+                    const centerX = f.x + lateralReach * Math.pow(progress, 1.15) + sway * progress;
+                    const py = baseGroundY - step;
+                    const halfW = Math.max(1, Math.round(Math.sin(progress * Math.PI) * 5.5));
+                    const leafCol = (blade + Math.floor(step / 12)) % 2 === 0 ? leafLight : leafDark;
+                    pRect(centerX - halfW, py, halfW * 2 + 1, 2, leafCol);
+                    pRect(centerX, py, 1, 2, stemCol);
+
+                    if (step > 8 && step < length - 8 && step % 12 === 0 && halfW >= 3) {
+                        const cut = Math.max(1, Math.floor(halfW * 0.48));
+                        const shadow = isLightMode ? '#0b3b2b' : '#041713';
+                        pRect(centerX - cut, py, 1, 2, shadow);
+                        pRect(centerX + cut, py, 1, 2, shadow);
+                    }
+                    if (step % 10 === 0 && halfW > 2) {
+                        pRect(centerX - Math.sign(lateralReach || f.dir) * (halfW - 1), py - 1, 1, 2, isLightMode ? '#4ade80' : '#2bb46f');
+                    }
+                }
+            }
+            pRect(f.x - 3, baseGroundY - 5, 7, 5, stemCol);
+            pRect(f.x - 1, baseGroundY - 7, 3, 2, leafLight);
+
         } else if (f.type === 'jungle_fern') {
             for (let frond = -2; frond <= 2; frond++) {
                 const direction = frond < 0 ? -1 : 1;
