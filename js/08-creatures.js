@@ -749,6 +749,7 @@ export class PixelDragonfly {
 
 /* ============================================================================
    CREATURE 4: TRUE 4-LOBED ORNATE SWALLOWTAIL & MORPHO BUTTERFLIES
+   Enhanced with natural flower-perching & wing-basking on Buddleia/Hydrangeas!
    ============================================================================ */
 export class PixelButterfly {
     constructor() {
@@ -760,6 +761,7 @@ export class PixelButterfly {
         this.phase = Math.random() * Math.PI * 2;
         this.sipTimer = 0;
         this.eatCooldown = 0;
+        this.perchedFlower = null;
 
         const species = [
             { base: '#0369a1', mid: '#0ea5e9', hi: '#7dd3fc', border: '#090d16', pearl: '#f8fafc', eye: '#38bdf8', rgb: [56, 189, 248] },
@@ -772,19 +774,33 @@ export class PixelButterfly {
     }
 
     update(t) {
-        this.phase += (this.sipTimer > 0 ? 0.05 : 0.14) * frameScale;
         if (this.eatCooldown > 0) this.eatCooldown = Math.max(0, this.eatCooldown - frameScale);
 
+        const blossom = findAvailableStimulus(this, 'floating_blossom', Math.max(260, pw * 0.65));
+        if (blossom && this.perchedFlower) {
+            this.perchedFlower = null;
+            this.sipTimer = 0;
+        }
+
         if (this.sipTimer > 0) {
+            this.phase += 0.045 * frameScale;
             this.sipTimer = Math.max(0, this.sipTimer - frameScale);
+            if (this.perchedFlower) {
+                const tx = this.perchedFlower.tipX !== undefined ? this.perchedFlower.tipX : this.perchedFlower.x;
+                const ty = this.perchedFlower.tipY !== undefined ? this.perchedFlower.tipY : ((this.perchedFlower.baseY || ph) - (this.perchedFlower.h || 18));
+                this.x = tx;
+                this.y = ty - 3;
+            }
             if (this.sipTimer === 0) {
-                this.targetAngle += (Math.random() < 0.5 ? 1 : -1) * (1.1 + Math.random() * 0.8);
+                this.perchedFlower = null;
+                this.targetAngle = -Math.PI * 0.5 + (Math.random() - 0.5) * 1.4;
                 this.eatCooldown = 110;
             }
             return;
         }
 
-        const blossom = findAvailableStimulus(this, 'floating_blossom', 145);
+        this.phase += 0.15 * frameScale;
+
         if (blossom) {
             const dx = blossom.x - this.x;
             const dy = blossom.y - this.y;
@@ -792,26 +808,46 @@ export class PixelButterfly {
             this.targetAngle = Math.atan2(dy, dx);
             if (dist < 6) {
                 blossom.life = 0;
-                this.sipTimer = 20;
+                this.sipTimer = 28;
                 return;
             }
-        } else if (frameChance(0.028)) {
-            this.targetAngle += (Math.random() - 0.5) * 1.1;
+        } else {
+            if (this.eatCooldown === 0 && frameChance(0.012)) {
+                const flowers = flora.filter(f => f.type === 'buddleia' || f.type === 'hydrangea' || f.type === 'foxglove');
+                if (flowers.length > 0) {
+                    const fl = flowers[Math.floor(Math.random() * flowers.length)];
+                    const fx = fl.tipX !== undefined ? fl.tipX : fl.x;
+                    const fy = fl.tipY !== undefined ? fl.tipY : ((fl.baseY || ph) - (fl.h || 20));
+                    const d = Math.hypot(fx - this.x, fy - this.y);
+                    if (d < 115) {
+                        this.targetAngle = Math.atan2(fy - 3 - this.y, fx - this.x);
+                        if (d < 8) {
+                            this.perchedFlower = fl;
+                            this.sipTimer = 55 + Math.floor(Math.random() * 65);
+                            return;
+                        }
+                    }
+                }
+            }
+            if (frameChance(0.028)) {
+                this.targetAngle += (Math.random() - 0.5) * 1.1;
+            }
         }
 
         if (this.y < 24) this.targetAngle = Math.PI * 0.45;
-        if (this.y > ph - 38) this.targetAngle = -Math.PI * 0.45;
+        if (this.y > ph - 36) this.targetAngle = -Math.PI * 0.45;
         if (this.x < 24) this.targetAngle = 0;
         if (this.x > pw - 24) this.targetAngle = Math.PI;
 
         let diff = this.targetAngle - this.angle;
         while (diff > Math.PI) diff -= Math.PI * 2;
         while (diff < -Math.PI) diff += Math.PI * 2;
-        this.angle += diff * frameSmoothing(0.048);
+        this.angle += diff * frameSmoothing(0.055);
 
         const flutter = Math.sin(this.phase * 0.7) * 0.14;
-        this.x += Math.cos(this.angle + flutter) * this.speed * frameScale;
-        this.y += Math.sin(this.angle + flutter) * this.speed * frameScale;
+        const spd = this.speed * (blossom ? 1.35 : 1.0);
+        this.x += Math.cos(this.angle + flutter) * spd * frameScale;
+        this.y += Math.sin(this.angle + flutter) * spd * frameScale;
     }
 
     draw() {
@@ -881,7 +917,6 @@ export class PixelButterfly {
         }
     }
 }
-
 /* ============================================================================
    CREATURE 5: 360° BIOLUMINESCENT JELLYFISH
    ============================================================================ */
