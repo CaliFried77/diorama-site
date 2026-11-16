@@ -104,19 +104,21 @@ canvas.addEventListener('pointerdown', (e) => {
                 claimedBy: null
             });
         }
-    } else if (interactionProfile === 'fruit') {
+} else if (interactionProfile === 'fruit') {
+        // Spawn a trio of detailed pixel-art tropical fruits: Mango, Pink Guava & Golden Banana Cluster
+        const kinds = ['mango', 'guava', 'banana'];
         for (let i = 0; i < 3; i++) {
-            const offset = (i - 1) * 7;
+            const offset = (i - 1) * 11;
             const fruitX = px + offset + (Math.random() - 0.5) * 3;
             const fruitY = py + (Math.random() - 0.5) * 6;
             stimuli.push({
                 type: 'tropical_fruit',
+                kind: kinds[i],
                 x: fruitX,
                 y: fruitY,
                 baseY: fruitY,
                 phase: Math.random() * Math.PI * 2,
-                hue: ['#f97316', '#e11d48', '#facc15'][i],
-                life: 280,
+                life: 300,
                 claimedBy: null
             });
         }
