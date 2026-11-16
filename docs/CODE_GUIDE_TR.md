@@ -18,7 +18,9 @@ Bu belge, projeyi ileride düzenlerken doğru dosyayı bulmayı ve değişiklikl
 | `js/08-creatures.js` | Canlı sınıfları ve canlıların güncellenmesi/çizimi | Hayvan davranışı veya görünümü değişirken |
 | `js/habitat-interactions.js` | Canvas tıklamalarını yem/uyarana çevirir; yemlerin animasyon, çizim ve ömür döngüsünü yürütür | Yeni yem türü, tıklama etkileşimi veya yem çizimi eklerken |
 | `js/arctic-geometry.js` | Kutup platform koordinatları ve tilki platform bağlantı grafiği; DOM/canvas bağımlılığı olmayan saf geometri | Kutup platformlarının boyutu, konumu veya tilki rotaları değişirken |
-| `js/09-scenery.js` | Habitatın kurulması, arka plan/bitki/zemin katmanları ve sahne çizimi | Orman, çayır, akvaryum, kutup gibi çevreler değişirken |
+| `js/habitat-geometry.js` | Tüm habitat profillerinin zemin eğrileri; sahne boyutlarını parametre olarak alan saf hesaplamalar | Bir habitatın zemin eğrisi veya yükseklik formülü değişirken |
+| `js/habitat-backgrounds.js` | Önbelleğe alınan statik habitat arka planları, ağaçlar, kayalar ve çevre katmanları | Statik çevre görünümü veya arka plan kompozisyonu değişirken |
+| `js/09-scenery.js` | Habitatın kurulması, flora dağılımı ve kare bazlı hareketli çevre efektleri | Habitat başlangıcı, bitki yerleşimi veya hareketli sahne efektleri değişirken |
 | `js/10-glass-renderer.js` | Animasyon döngüsü, canlıların sahneye çizilmesi, cam yansıma katmanı ve klavye kısayolları | Animasyon, çizim sırası veya cam efektleri değişirken |
 | `js/11-calendar.js` | Takvim, etkinlik doğrulama ve yerel kayıt | Takvim özellikleri değişirken |
 | `js/storage.js`, `js/news-utils.js`, `js/scene-math.js`, `js/scene-state.js`, `js/services.js`, `js/focus-timer-state.js` | Birden fazla modülün kullandığı küçük, ortak yardımcılar ve döngü engelleyici servis köprüleri | Aynı mantık birden fazla modülde gerçekten ortaksa |
