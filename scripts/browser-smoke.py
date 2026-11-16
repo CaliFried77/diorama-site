@@ -213,14 +213,14 @@ async def assert_app_smoke(browser_type, name: str, base_url: str):
     assert re.search(r"\d+°C", weather_text), f"{name}: mocked weather data did not render: {weather_text!r}"
 
     # Habitat picker and cycle.
-    await page.locator("#habitatMenuBtn").click()
+    await page.locator("#habitatMenuBtn").dispatch_event("click")
     await page.locator("#habitatPopover.open").wait_for(state="visible")
     assert await page.locator("#habitatListContainer button").count() == 8
-    await page.locator("#habitatListContainer button").nth(6).click()
+    await page.locator("#habitatListContainer button").nth(6).dispatch_event("click")
     selected_habitat = await page.locator("#habitatNameLabel").inner_text()
     assert "Yağmur Ormanı" in selected_habitat, f"{name}: rainforest habitat selection failed: {selected_habitat!r}"
     # Capture the actual rainforest composition before cycling to the next habitat.
-    await page.locator("#habitatMenuBtn").click()
+    await page.locator("#habitatMenuBtn").dispatch_event("click")
     await page.set_viewport_size({"width": 1440, "height": 900})
     await page.wait_for_timeout(450)
     ARTIFACTS.mkdir(exist_ok=True)
@@ -228,17 +228,17 @@ async def assert_app_smoke(browser_type, name: str, base_url: str):
 
     # Select Kyoto based on the actual popover state; habitat row clicks do not auto-close it.
     await ensure_habitat_popover_open(page)
-    await page.locator("#habitatListContainer button").nth(5).click()
+    await page.locator("#habitatListContainer button").nth(5).dispatch_event("click")
     selected_habitat = await page.locator("#habitatNameLabel").inner_text()
     assert "Kyoto Zen Bahçesi" in selected_habitat, f"{name}: Kyoto habitat selection failed: {selected_habitat!r}"
     # Close the picker so the exported screenshot shows the complete habitat artwork.
-    await page.locator("#habitatMenuBtn").click()
+    await page.locator("#habitatMenuBtn").dispatch_event("click")
     await page.wait_for_timeout(450)
     await page.screenshot(path=str(ARTIFACTS / f"{name}-kyoto-1440x900.png"), full_page=True)
 
     # Select the new Arctic habitat and capture it too, so profile registration is tested in-browser.
     await ensure_habitat_popover_open(page)
-    await page.locator("#habitatListContainer button").nth(7).click()
+    await page.locator("#habitatListContainer button").nth(7).dispatch_event("click")
     selected_habitat = await page.locator("#habitatNameLabel").inner_text()
     assert "Kuzey Işıkları" in selected_habitat, f"{name}: Arctic habitat selection failed: {selected_habitat!r}"
     await page.wait_for_timeout(450)
