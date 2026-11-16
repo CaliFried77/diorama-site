@@ -136,12 +136,19 @@ test('zen mode hides the complete toolbar and focus HUD, then reveals them at th
   assert.ok(baseCss.includes('visibility: hidden;'));
 });
 
-test('lunar phases render as original crisp pixel art rather than emoji glyphs', () => {
+test('lunar phases render as original crisp pixel art without a decorative frame', () => {
   assert.ok(weatherModule.includes('function pixelMoonMarkup(phase)'));
   assert.ok(weatherModule.includes('shape-rendering="crispEdges"'));
   assert.ok(weatherModule.includes('wx-pixel-moon'));
   assert.ok(!weatherModule.includes('moonGlyphs'));
-  assert.ok(widgetsCss.includes('.wx-moon-art'));
+  assert.match(widgetsCss, /\\.wx-moon-art\\s*\\{[^}]*border:\\s*0;[^}]*background:\\s*transparent;[^}]*box-shadow:\\s*none;/s);
+});
+
+test('rainforest scenery suppresses generic cloud slabs but keeps foreground weather effects', () => {
+  assert.ok(weatherModule.includes('drawWxSky(time, skyOk, suppressClouds = false)'));
+  assert.ok(weatherModule.includes('if (!suppressClouds) WX.clouds.forEach'));
+  assert.ok(sceneryModule.includes("drawWxSky(time, hab.weatherSky === true, hab.sceneProfile === 'rainforest')"));
+  assert.ok(weatherModule.includes('if (sky && WX.rain > 0)'));
 });
 
 test('rainforest habitat connects its scenery, parrot flock and edible fruit interaction', () => {
@@ -156,6 +163,16 @@ test('rainforest habitat connects its scenery, parrot flock and edible fruit int
   assert.ok(creatureModule.includes('export class PixelParrot'));
   assert.ok(creatureModule.includes("findAvailableStimulus(this, 'tropical_fruit'"));
   assert.ok(creatureModule.includes("interactionProfile === 'fruit'"));
+  assert.ok(sceneryModule.includes('const canopyShades = isLightMode'));
+  assert.ok(sceneryModule.includes('Wide buttress-root trees'));
+  assert.ok(sceneryModule.includes("f.type === 'jungle_fern'"));
+  assert.ok(sceneryModule.includes("f.type === 'heliconia'"));
+  assert.ok(sceneryModule.includes("f.type === 'epiphyte'"));
+  assert.ok(sceneryModule.includes('humid mist floats as separate wisps'));
+  assert.ok(creatureModule.includes('Individually layered pixel plumage'));
+  assert.ok(creatureModule.includes('Pale macaw cheek patch'));
+  assert.ok(creatureModule.includes('strong hooked beak'));
+  assert.ok(creatureModule.includes('Five separated, tapered tail feathers'));
 });
 
 test('existing habitat improvements preserve bespoke scene layers', () => {
