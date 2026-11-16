@@ -1,5 +1,5 @@
 import { stimuli, pw, ph, frameScale, frameChance, flora, pRect, frameSmoothing } from './07-habitat-state.js';
-import { ARCTIC_ARCTIC_LEDGE_LINKS, getArcticLedges } from './arctic-geometry.js';
+import { ARCTIC_LEDGE_LINKS, getArcticLedges } from './arctic-geometry.js';
 
 /* CREATURES — Living Pixel Diorama
    Native ES module. Cross-file dependencies are declared with imports and exports. */
