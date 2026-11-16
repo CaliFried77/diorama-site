@@ -64,12 +64,13 @@ For a real deployment, use `npm run deploy` only after the branch, account bindi
 
 The Cloudflare migration is developed on the dedicated Git branch `migration/cloudflare-pages`. Keep `main` separate. Netlify is an archived fallback and is not part of this development branch.
 
-The Worker name is `diorama-cloudflare`. Its static assets come from `dist/`; only `/api/*` is routed through Worker code. The Wrangler CLI is pinned to `4.162.0` for repeatable builds. The GitHub Actions workflow runs syntax/import checks, unit tests, the security audit, a Wrangler dry-run on the migration branch, and Chromium/Firefox browser smoke tests.
+The Worker name is `diorama-site`. Its static assets come from `dist/`; only `/api/*` is routed through Worker code. The Wrangler CLI is pinned to `4.162.0` for repeatable builds. The GitHub Actions workflow runs syntax/import checks, unit tests, the security audit, a Wrangler dry-run on the migration branch, and Chromium browser smoke tests.
 
 See:
 
 - [Cloudflare deployment guide](docs/DEPLOY_CLOUDFLARE_TR.md)
 - [Architecture overview](docs/ARCHITECTURE.md)
+- [Code navigation and safe editing guide (Turkish)](docs/CODE_GUIDE_TR.md)
 - [Security model](docs/SECURITY.md)
 - [Quality checklist](docs/QA_CHECKLIST.md)
 - [Adding news sources](docs/ADDING_NEWS_SOURCES.md)
