@@ -236,6 +236,41 @@ async def assert_app_smoke(browser_type, name: str, base_url: str):
     await page.wait_for_timeout(450)
     await page.screenshot(path=str(ARTIFACTS / f"{name}-kyoto-1440x900.png"), full_page=True)
 
+    # Capture real animation cadence and long tasks while the optimized Kyoto scene runs.
+    perf_sample = await page.evaluate("""async () => {
+        const timestamps = [];
+        let longTasks = 0;
+        let observer = null;
+        if ('PerformanceObserver' in window) {
+            try {
+                observer = new PerformanceObserver((entries) => { longTasks += entries.getEntries().length; });
+                observer.observe({ type: 'longtask', buffered: true });
+            } catch { /* Long-task entries are not supported by every browser. */ }
+        }
+        const started = performance.now();
+        await new Promise((resolve) => {
+            const tick = (now) => {
+                timestamps.push(now);
+                if (now - started < 1500) requestAnimationFrame(tick);
+                else resolve();
+            };
+            requestAnimationFrame(tick);
+        });
+        observer?.disconnect();
+        const intervals = timestamps.slice(1).map((value, index) => value - timestamps[index]).sort((a, b) => a - b);
+        const percentile = (fraction) => intervals[Math.min(intervals.length - 1, Math.floor(intervals.length * fraction))] || 0;
+        const elapsed = Math.max(1, timestamps[timestamps.length - 1] - timestamps[0]);
+        return {
+            frames: timestamps.length,
+            measuredFps: Number(((timestamps.length - 1) * 1000 / elapsed).toFixed(1)),
+            medianFrameMs: Number(percentile(0.5).toFixed(2)),
+            p95FrameMs: Number(percentile(0.95).toFixed(2)),
+            longTasks,
+        };
+    }""")
+    (ARTIFACTS / f"{name}-kyoto-performance.json").write_text(json.dumps(perf_sample, indent=2), encoding="utf-8")
+    print(f"{name}: Kyoto performance sample {json.dumps(perf_sample, sort_keys=True)}")
+
     # Select the new Arctic habitat and capture it too, so profile registration is tested in-browser.
     await ensure_habitat_popover_open(page)
     await page.locator("#habitatListContainer button").nth(7).dispatch_event("click")
