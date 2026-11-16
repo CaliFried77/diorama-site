@@ -14,6 +14,7 @@ export function drawHabitatFlora(time, hab) {
         const baseGroundY = f.baseY !== undefined ? f.baseY : getGroundY(f.x, hab.sceneProfile, pw, ph);
 
         if (f.type === 'pebble') {
+            // BÖLÜM BAŞI: ZEMİN VE KUTUP DETAYLARI
             pRect(f.x, f.y, f.w, f.h, isLightMode ? 'rgba(15, 55, 65, 0.35)' : f.shade);
 
         } else if (f.type === 'cotton_grass') {
@@ -38,7 +39,9 @@ export function drawHabitatFlora(time, hab) {
             pRect(f.x - 2, baseGroundY - 3, 2, 2, '#ef4444');
             pRect(f.x + 2, baseGroundY - 2, 2, 2, '#f97316');
 
+            // BÖLÜM SONU: ZEMİN VE KUTUP DETAYLARI
         } else if (f.type === 'maple_bough') {
+            // BÖLÜM BAŞI: AĞAÇ, SARMAŞIK VE ORMAN FLORASI
             for (let y = 0; y < f.len; y += 2) {
                 const prog = y / f.len;
                 const sway = Math.sin(time * 0.0015 + f.phase + y * 0.07) * (1.0 + prog * 3.0);
@@ -209,7 +212,9 @@ export function drawHabitatFlora(time, hab) {
             pRect(flowerX - 1, flowerY - 2, 3, 2, '#fbcfe8');
             pRect(flowerX, flowerY - 1, 1, 2, '#fef08a');
 
+            // BÖLÜM SONU: AĞAÇ, SARMAŞIK VE ORMAN FLORASI
         } else if (f.type === 'sunflower') {
+            // BÖLÜM BAŞI: ÇAYIR VE ÇİÇEKLİ BİTKİLER
             const stemShade = isLightMode ? '#15803d' : '#14532d';
             let topX = f.x;
             const topY = baseGroundY - Math.floor(f.h);
@@ -321,7 +326,9 @@ export function drawHabitatFlora(time, hab) {
             f.tipX = topX;
             f.tipY = baseGroundY - f.h;
 
+            // BÖLÜM SONU: ÇAYIR VE ÇİÇEKLİ BİTKİLER
         } else if (f.type === 'hornwort') {
+            // BÖLÜM BAŞI: SULAK ALAN VE AKVARYUM BİTKİLERİ
             for (let y = 0; y < f.h; y++) {
                 const sway = Math.sin(time * 0.0018 + f.phase + y * 0.06) * (y / f.h) * 5;
                 const px = f.x + sway;
@@ -486,7 +493,9 @@ export function drawHabitatFlora(time, hab) {
                 pRect(driftX, f.y - 2, 1, 1, '#fef08a');
             }
 
+            // BÖLÜM SONU: SULAK ALAN VE AKVARYUM BİTKİLERİ
         } else if (f.type === 'brain_coral') {
+            // BÖLÜM BAŞI: RESİF VE DENİZ CANLILARI
             for (let dy = -f.r; dy <= 0; dy++) {
                 for (let dx = -f.r; dx <= f.r; dx++) {
                     if (dx * dx + dy * dy <= f.r * f.r) {
@@ -539,6 +548,7 @@ export function drawHabitatFlora(time, hab) {
                     pRect(f.x + t * 1.4 + sway * (y / 12), baseGroundY - y, 1, 1, y === 12 ? '#fef08a' : `hsla(${f.hue}, 90%, 65%, 0.82)`);
                 }
             }
+            // BÖLÜM SONU: RESİF VE DENİZ CANLILARI
         }
     });
 }
