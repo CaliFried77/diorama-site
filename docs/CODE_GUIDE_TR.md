@@ -20,8 +20,9 @@ Bu belge, projeyi ileride düzenlerken doğru dosyayı bulmayı ve değişiklikl
 | `js/arctic-geometry.js` | Kutup platform koordinatları, tilki rotaları ve böğürtlen iniş yüzeyleri; DOM/canvas bağımlılığı olmayan saf geometri | Kutup platformlarının boyutu, konumu veya tilki rotaları değişirken |
 | `js/habitat-geometry.js` | Tüm habitat profillerinin zemin eğrileri; sahne boyutlarını parametre olarak alan saf hesaplamalar | Bir habitatın zemin eğrisi veya yükseklik formülü değişirken |
 | `js/habitat-backgrounds.js` | Önbelleğe alınan statik habitat arka planları, ağaçlar, kayalar ve çevre katmanları | Statik çevre görünümü veya arka plan kompozisyonu değişirken |
-| `js/habitat-flora-renderer.js` | `initHabitat` tarafından hazırlanan bitkilerin ve küçük doğal ayrıntıların kare bazlı animasyon/çizimi | Bitki türlerinin görünümü, sallanması veya hareketli çizim davranışı değişirken |
-| `js/habitat-initializer.js` | Aktif habitatı seçer; sahne dizilerini sıfırlar ve habitat profiline göre canlı/flora/partikül verisini oluşturur | Yeni habitat profili, başlangıç bitkileri veya canlı sayıları eklerken |
+| `js/habitat-flora-renderer.js` | Flora oluşturucusunun hazırladığı bitkilerin kare bazlı animasyon/çizimi | Bitki türlerinin görünümü, sallanması veya hareketli çizim davranışı değişirken |
+| `js/habitat-initializer.js` | Aktif habitatı seçer; sahne dizilerini ve önbelleği sıfırlayıp flora/canlı oluşturucularını çağırır | Habitat geçişinin genel başlangıç akışını değiştirirken |
+| `js/habitat-flora-generator.js` | Her biyom için bitkilerin türünü, miktarını, rengini ve sahnedeki başlangıç koordinatlarını üretir | Yeni biyoma bitki eklerken veya bitkilerin başlangıç yerleşimini değiştirirken |
 | `js/09-scenery.js` | Gökyüzü, ortam efektleri, statik arka plan, flora çizimi ve yem çizimi çağrı sırasını yönetir | Hareketli sahne efektleri veya çizim sırası değişirken |
 | `js/10-glass-renderer.js` | Animasyon döngüsü, canlıların sahneye çizilmesi, cam yansıma katmanı ve klavye kısayolları | Animasyon, çizim sırası veya cam efektleri değişirken |
 | `js/11-calendar.js` | Takvim, etkinlik doğrulama ve yerel kayıt | Takvim özellikleri değişirken |
