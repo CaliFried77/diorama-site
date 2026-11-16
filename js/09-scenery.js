@@ -1,5 +1,6 @@
 import { currentHabitatIdx, HABITATS, creatures, stimuli, ambientParticles, flora, bgSilhouettes, shootingStars, pw, ph, lerpHex, ctx, pRect, frameChance, frameScale, setCurrentHabitatIndex } from './07-habitat-state.js';
-import { PixelBee, PixelBetta, PixelDragonfly, PixelButterfly, PixelJellyfish, PixelKoi, PixelParrot, PixelArcticFox, getArcticLedges } from './08-creatures.js';
+import { PixelBee, PixelBetta, PixelDragonfly, PixelButterfly, PixelJellyfish, PixelKoi, PixelParrot, PixelArcticFox } from './08-creatures.js';
+import { getArcticLedges } from './arctic-geometry.js';
 import { isLightMode } from './01-core-ui.js';
 import { wxFxOn, drawWxSky } from './03-weather.js';
 import { sceneCache } from './scene-state.js';
@@ -600,7 +601,7 @@ export function initHabitat(idx) {
         });
 
     } else if (hab.sceneProfile === 'arctic-tundra') {
-        const ledges = getArcticLedges();
+        const ledges = getArcticLedges(pw, ph);
         ledges.forEach(l => {
             for (let x = l.x1 + 8; x < l.x2 - 8; x += 12 + Math.floor(Math.random() * 10)) {
                 if (l.id === 5 && x > pw * 0.68 && x < pw * 0.78) continue;
@@ -1421,7 +1422,7 @@ function buildStaticEnvironmentLayer(hab) {
             }
         }
 
-        const ledges = getArcticLedges();
+        const ledges = getArcticLedges(pw, ph);
         drawSnowPine(22, ledges[3].yFn(22) + 1, 46);
         drawSnowPine(Math.round(pw * 0.14), ledges[1].yFn(pw * 0.14) + 1, 52);
         drawSnowPine(Math.round(pw * 0.29), ledges[2].yFn(pw * 0.29) + 1, 38);
