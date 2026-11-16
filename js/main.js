@@ -8,6 +8,7 @@ import './05-workspace.js';
 import './06-data-manager.js';
 import './07-habitat-state.js';
 import './08-creatures.js';
+import './habitat-interactions.js';
 import './09-scenery.js';
 import './10-glass-renderer.js';
 import './performance-monitor.js';
