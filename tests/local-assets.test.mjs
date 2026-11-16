@@ -14,7 +14,13 @@ const calendarModule = await readFile(new URL('../js/11-calendar.js', import.met
 const coreUiModule = await readFile(new URL('../js/01-core-ui.js', import.meta.url), 'utf8');
 const dataManagerModule = await readFile(new URL('../js/06-data-manager.js', import.meta.url), 'utf8');
 const sceneryModule = await readFile(new URL('../js/09-scenery.js', import.meta.url), 'utf8');
+const initializerModule = await readFile(new URL('../js/habitat-initializer.js', import.meta.url), 'utf8');
+const floraGeneratorModule = await readFile(new URL('../js/habitat-flora-generator.js', import.meta.url), 'utf8');
+const backgroundsModule = await readFile(new URL('../js/habitat-backgrounds.js', import.meta.url), 'utf8');
+const floraModule = await readFile(new URL('../js/habitat-flora-renderer.js', import.meta.url), 'utf8');
 const creatureModule = await readFile(new URL('../js/08-creatures.js', import.meta.url), 'utf8');
+const creatureParrotModule = await readFile(new URL('../js/creature-parrot.js', import.meta.url), 'utf8');
+const interactionModule = await readFile(new URL('../js/habitat-interactions.js', import.meta.url), 'utf8');
 const habitatCatalog = await readFile(new URL('../config/habitat-catalog.js', import.meta.url), 'utf8');
 const cssBuilder = await readFile(new URL('../scripts/build-css.mjs', import.meta.url), 'utf8');
 const newsCss = await readFile(new URL('../css/news.css', import.meta.url), 'utf8');
@@ -159,32 +165,37 @@ test('rainforest habitat connects its layered canopy, flora, parrot flock and ed
   assert.ok(habitatCatalog.includes("sceneProfile: 'rainforest'"));
   assert.ok(habitatCatalog.includes("creatureProfile: 'parrot'"));
   assert.ok(habitatCatalog.includes("interactionProfile: 'fruit'"));
-  assert.ok(sceneryModule.includes('new PixelParrot()'));
+  assert.ok(initializerModule.includes('new PixelParrot()'));
+  assert.ok(initializerModule.includes('populateHabitatFlora(hab);'));
+  assert.ok(floraGeneratorModule.includes("hab.sceneProfile === 'rainforest'"));
   assert.ok(sceneryModule.includes("hab.sceneProfile === 'rainforest'"));
-  assert.ok(sceneryModule.includes('const midgroundTrees = ['));
-  assert.ok(sceneryModule.includes('const edgeGiants = ['));
-  assert.ok(sceneryModule.includes('const canopyDomes = ['));
-  assert.ok(sceneryModule.includes('rootFlare = prog > 0.78'));
-  assert.ok(sceneryModule.includes("f.type === 'canopy_vine'"));
-  assert.ok(sceneryModule.includes("f.type === 'jungle_fern'"));
-  assert.ok(sceneryModule.includes("f.type === 'heliconia'"));
-  assert.ok(sceneryModule.includes("f.type === 'epiphyte'"));
-  assert.ok(sceneryModule.includes("f.type === 'orchid'"));
-  assert.ok(sceneryModule.includes("s.type === 'tropical_fruit'"));
-  assert.ok(creatureModule.includes('export class PixelParrot'));
-  assert.ok(creatureModule.includes('this.palette'));
-  assert.ok(creatureModule.includes('const tailLen = 19'));
-  assert.ok(creatureModule.includes('p.beakUpper'));
+  assert.ok(backgroundsModule.includes('const midgroundTrees = ['));
+  assert.ok(backgroundsModule.includes('const edgeGiants = ['));
+  assert.ok(backgroundsModule.includes('const canopyDomes = ['));
+  assert.ok(backgroundsModule.includes('rootFlare = prog > 0.78'));
+  assert.ok(floraModule.includes("f.type === 'canopy_vine'"));
+  assert.ok(floraModule.includes("f.type === 'jungle_fern'"));
+  assert.ok(floraModule.includes("f.type === 'heliconia'"));
+  assert.ok(floraModule.includes("f.type === 'epiphyte'"));
+  assert.ok(floraModule.includes("f.type === 'orchid'"));
+  assert.ok(interactionModule.includes("s.type === 'tropical_fruit'"));
+  assert.ok(interactionModule.includes('export function drawHabitatStimuli()'));
+  assert.ok(sceneryModule.includes('drawHabitatStimuli()'));
+  assert.ok(creatureModule.includes("export { PixelParrot } from './creature-parrot.js';"));
+  assert.ok(creatureParrotModule.includes('export class PixelParrot'));
+  assert.ok(creatureParrotModule.includes('this.palette'));
+  assert.ok(creatureParrotModule.includes('const tailLen = 19'));
+  assert.ok(creatureParrotModule.includes('p.beakUpper'));
 });
 
 test('existing habitat improvements preserve bespoke scene layers', () => {
-  assert.ok(sceneryModule.includes('const drawOrchardTree ='));
-  assert.ok(sceneryModule.includes('const leftTree1X = 24'));
-  assert.ok(sceneryModule.includes('const willowZones = ['));
-  assert.ok(sceneryModule.includes("type: 'willow_frond'"));
-  assert.ok(sceneryModule.includes("type: 'pebble'"));
-  assert.ok(sceneryModule.includes("type: 'staghorn_coral'"));
-  assert.ok(sceneryModule.includes("type: 'sea_fan'"));
+  assert.ok(backgroundsModule.includes('const drawOrchardTree ='));
+  assert.ok(backgroundsModule.includes('const leftTree1X = 24'));
+  assert.ok(floraGeneratorModule.includes('const willowZones = ['));
+  assert.ok(floraGeneratorModule.includes("type: 'willow_frond'"));
+  assert.ok(floraGeneratorModule.includes("type: 'pebble'"));
+  assert.ok(floraGeneratorModule.includes("type: 'staghorn_coral'"));
+  assert.ok(floraGeneratorModule.includes("type: 'sea_fan'"));
   assert.ok(sceneryModule.includes("hab.sceneProfile === 'reef'"));
   assert.ok(sceneryModule.includes("hab.sceneProfile === 'wetland'"));
 });
@@ -265,4 +276,24 @@ test('search input does not steal focus on page load', () => {
   const end = html.indexOf('>', inputIdIndex);
   assert.ok(start >= 0 && end > inputIdIndex, 'search input tag should be complete');
   assert.equal(/\bautofocus\b/i.test(html.slice(start, end + 1)), false);
+});
+
+test('creature facade reexports every independently maintained species module', async () => {
+  const facade = await readFile(new URL('../js/08-creatures.js', import.meta.url), 'utf8');
+  const species = [
+    ['PixelBee', 'creature-bee.js'],
+    ['PixelKoi', 'creature-koi.js'],
+    ['PixelBetta', 'creature-betta.js'],
+    ['PixelDragonfly', 'creature-dragonfly.js'],
+    ['PixelButterfly', 'creature-butterfly.js'],
+    ['PixelJellyfish', 'creature-jellyfish.js'],
+    ['PixelParrot', 'creature-parrot.js'],
+    ['PixelArcticFox', 'creature-arctic-fox.js'],
+  ];
+
+  for (const [className, path] of species) {
+    assert.ok(facade.includes(`export { ${className} } from './${path}';`));
+    const implementation = await readFile(new URL(`../js/${path}`, import.meta.url), 'utf8');
+    assert.ok(implementation.includes(`export class ${className} {`));
+  }
 });

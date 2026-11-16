@@ -1,3 +1,4 @@
+/* BÖLÜM BAŞI: HABER PANELİ VE KART TASARIMI */
 /* Diorama News — shares the same liquid-glass surface and quiet control language as Weather. */
 /* v1.6.3: compact controls; the whole panel scrolls so the toolbar never traps list space. */
 .news-popover,
@@ -400,3 +401,5 @@
   .news-icon-btn[aria-busy="true"] svg { animation: none; }
   .news-icon-btn, .news-filter-btn, .news-cat-btn, .news-card { transition: none; }
 }
+
+/* BÖLÜM SONU: HABER PANELİ VE KART TASARIMI */

@@ -2,7 +2,6 @@ import { closeAllPopovers } from './01-core-ui.js';
 /* FOCUS-AUDIO — Living Pixel Diorama
    Refresh-safe focus timer and Web Audio soundscape generator. */
 import {
-  DEFAULT_FOCUS_MINUTES,
   FOCUS_MAX_MINUTES,
   FOCUS_MIN_MINUTES,
   normalizeFocusSession,
@@ -15,6 +14,11 @@ import {
 
 const FOCUS_STORAGE_KEY = 'diorama_focus_session_v1';
 const FOCUS_PRESETS = [10, 25, 45, 60];
+
+// ============================================================================
+// BÖLÜM BAŞI: ODAK SAYACI VE OTURUM DURUMU
+// Süre, oturumun durumu ve seçili habitat bilgisi bu bölümde yönetilir.
+// ============================================================================
 
 function readFocusSession() {
   try {
@@ -258,7 +262,12 @@ setPresetState(focusTotalSec);
 updateFocusDisplay();
 if (focusSession.status === 'running') startFocusTicker();
 
-        // Clean Web Audio API Ambient Generator
+        // ============================================================================
+// BÖLÜM SONU: ODAK SAYACI VE OTURUM DURUMU
+// BÖLÜM BAŞI: WEB AUDIO, BİLDİRİM SESİ VE AMBİYANS
+// ============================================================================
+
+// Clean Web Audio API Ambient Generator
         let audioCtx = null;
         let activeSoundSource = null;
         let activeSoundType = null;
@@ -382,4 +391,6 @@ if (focusSession.status === 'running') startFocusTicker();
             }
         });
 
-        
+// ============================================================================
+// BÖLÜM SONU: WEB AUDIO, BİLDİRİM SESİ VE AMBİYANS
+// ============================================================================

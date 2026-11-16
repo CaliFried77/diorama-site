@@ -23,6 +23,11 @@ import { NEWS_CATEGORY_IDS } from '../config/news-feeds.js';
         const DATA_ENGINE_IDS = new Set(['google', 'duckduckgo', 'youtube', 'perplexity', 'github']);
         const dataManagerStatus = document.getElementById('dataManagerStatus');
 
+        // ============================================================================
+        // BÖLÜM BAŞI: VERİ YÖNETİCİSİ DURUMU VE DEPOLAMA ÖZETİ
+// Kullanıcıya gösterilen durum, kayıt boyutu ve yerel veri istatistikleri.
+// ============================================================================
+
         function setDataManagerStatus(message, tone = 'normal') {
             dataManagerStatus.textContent = message;
             dataManagerStatus.className = `text-[11px] mt-3 min-h-8 ${tone === 'error' ? 'text-rose-200' : tone === 'success' ? 'text-emerald-200' : 'text-white/65'}`;
@@ -60,6 +65,11 @@ import { NEWS_CATEGORY_IDS } from '../config/news-feeds.js';
                 ? `${formatDataBytes(footprint.bytes)} · ${footprint.keyCount} kayıt`
                 : 'Okunamadı';
         }
+
+        // ============================================================================
+        // BÖLÜM SONU: DEPOLAMA ÖZETİ
+        // BÖLÜM BAŞI: YEDEK OLUŞTURMA VE DIŞA AKTARMA
+// ============================================================================
 
         function makeBackup(scope = 'all') {
             const data = {};
@@ -103,6 +113,11 @@ import { NEWS_CATEGORY_IDS } from '../config/news-feeds.js';
                 setDataManagerStatus(`Yedek oluşturulamadı: ${error.message || 'Bilinmeyen hata'}`, 'error');
             }
         }
+
+        // ============================================================================
+        // BÖLÜM SONU: YEDEK DIŞA AKTARMA
+        // BÖLÜM BAŞI: İÇE AKTARILAN JSON'UN ŞEMA VE VERİ DOĞRULAMASI
+// ============================================================================
 
         function isPlainRecord(value) {
             return value !== null && typeof value === 'object' && !Array.isArray(value);
@@ -257,6 +272,11 @@ import { NEWS_CATEGORY_IDS } from '../config/news-feeds.js';
             return { scope: raw.scope, data: clean };
         }
 
+        // ============================================================================
+        // BÖLÜM SONU: YEDEK VERİ DOĞRULAMA
+        // BÖLÜM BAŞI: DOĞRULANMIŞ YEDEĞİ GÜVENLİ ŞEKİLDE UYGULAMA
+// ============================================================================
+
         function persistImportedBackup(validated) {
             const writes = {};
             if (validated.data.tasks) writes.diorama_tasks = JSON.stringify(validated.data.tasks);
@@ -361,3 +381,7 @@ import { NEWS_CATEGORY_IDS } from '../config/news-feeds.js';
 
         
 registerDataManagerStatsUpdater(updateDataManagerStats);
+
+// ============================================================================
+        // BÖLÜM SONU: DOĞRULANMIŞ YEDEĞİ UYGULAMA
+// ============================================================================

@@ -1,3 +1,4 @@
+/* BÖLÜM BAŞI: MOBİL, TABLET VE DAR EKRAN DÜZENLERİ */
 /* Hero typography: make the clock/date the clear visual anchor without crowding mobile. */
 .pixel-clock {
     font-size: clamp(4.25rem, 7vw, 5.5rem);
@@ -185,3 +186,5 @@
     min-width: 32px;
     min-height: 32px;
 }
+
+/* BÖLÜM SONU: MOBİL, TABLET VE DAR EKRAN DÜZENLERİ */

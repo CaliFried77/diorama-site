@@ -1,7 +1,6 @@
 import { lsGet, lsSet, normalizeWebUrl } from './storage.js';
 import { NEWS_CATEGORIES, NEWS_CATEGORY_IDS } from '../config/news-feeds.js';
 import {
-  canonicalArticleUrl,
   createArticleId,
   filterNewsArticles,
   formatNewsDate,
@@ -14,6 +13,11 @@ import {
 } from './news-utils.js';
 
 /* NEWS — personalized, multi-source RSS reader with local cache and source controls. */
+// ============================================================================
+// BÖLÜM BAŞI: HABER VERİSİ, KULLANICI TERCİHLERİ VE ÖNBELLEK
+// Kaynaklar, kullanıcı seçimleri, kayıt anahtarları ve istek sınırları burada tanımlanır.
+// ============================================================================
+
 const NEWS_CACHE_TTL = 48 * 60 * 60 * 1000;
 const SOURCE_CACHE_TTL = 5 * 60 * 1000;
 const SOURCE_STALE_TTL = 48 * 60 * 60 * 1000;
@@ -136,6 +140,11 @@ function setSourceBackoff(source, seconds, reason) {
     reason: String(reason || 'Kaynak geçici olarak bekletiliyor').slice(0, 160),
   });
 }
+
+// ============================================================================
+// BÖLÜM SONU: HABER VERİSİ VE ÖNBELLEK
+// BÖLÜM BAŞI: HABER KARTLARI VE KAYNAK YÖNETİMİ ARAYÜZÜ
+// ============================================================================
 
 function updateHeadlineTicker() {
   const category = NEWS_CATEGORIES[activeNewsCat] || NEWS_CATEGORIES[NEWS_CATEGORY_IDS[0]];
@@ -364,6 +373,11 @@ function buildCategoryTabs() {
     newsCategoriesContainer.appendChild(button);
   });
 }
+
+// ============================================================================
+// BÖLÜM SONU: HABER ARAYÜZÜ
+// BÖLÜM BAŞI: RSS İSTEKLERİ, ÖNBELLEK POLİTİKASI VE KATEGORİ YÜKLEME
+// ============================================================================
 
 async function fetchOneSource(source, signal) {
   if (!source.custom) throw new Error('Yerleşik RSS kaynakları toplu Diorama API üzerinden alınır.');
@@ -605,6 +619,11 @@ async function loadNewsCategory(categoryId, { force = false } = {}) {
   }
 }
 
+// ============================================================================
+// BÖLÜM SONU: HABER İSTEKLERİ VE KATEGORİ YÜKLEME
+// BÖLÜM BAŞI: KULLANICI KAYNAK AYARLARI VE ÖZEL RSS EKLEME
+// ============================================================================
+
 function toggleSourceSettings() {
   sourceSettingsOpen = !sourceSettingsOpen;
   newsSettingsPanel.hidden = !sourceSettingsOpen;
@@ -689,3 +708,7 @@ setInterval(() => {
 window.addEventListener('online', () => {
   if (!document.hidden) loadNewsCategory(activeNewsCat);
 });
+
+// ============================================================================
+// BÖLÜM SONU: KULLANICI KAYNAK AYARLARI VE ÖZEL RSS EKLEME
+// ============================================================================

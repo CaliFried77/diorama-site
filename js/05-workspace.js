@@ -12,6 +12,10 @@ import { lsGet, lsSet, esc, normalizeTaskList, normalizeNoteList } from './stora
         const DEFAULT_NOTES = [
             { title: 'Habitat Etkileşimi', body: 'Her canlı kendi doğasına uygun yeme tepki verir ve tadına baktıktan sonra zarifçe uzaklaşır.', date: 'Bugün' }
         ];
+        // ============================================================================
+        // BÖLÜM BAŞI: GÖREV VE NOT VERİLERİ / YEREL KAYIT
+// ============================================================================
+
         export let tasks = normalizeTaskList(lsGet('diorama_tasks', null), DEFAULT_TASKS);
         export let notes = normalizeNoteList(lsGet('diorama_notes', null), DEFAULT_NOTES);
 
@@ -30,6 +34,11 @@ import { lsGet, lsSet, esc, normalizeTaskList, normalizeNoteList } from './stora
         const taskProgressBar = document.getElementById('taskProgressBar');
         const remainingTasksLabel = document.getElementById('remainingTasksLabel');
         const stickyNotesGrid = document.getElementById('stickyNotesGrid');
+
+        // ============================================================================
+        // BÖLÜM SONU: GÖREV VE NOT VERİLERİ
+        // BÖLÜM BAŞI: GÖREV LİSTESİNİN OLUŞTURULMASI VE ETKİLEŞİMİ
+// ============================================================================
 
         export function renderTasks() {
             lsSet('diorama_tasks', tasks);
@@ -83,6 +92,11 @@ import { lsGet, lsSet, esc, normalizeTaskList, normalizeNoteList } from './stora
             renderTasks();
         });
 
+        // ============================================================================
+        // BÖLÜM SONU: GÖREV LİSTESİ
+        // BÖLÜM BAŞI: NOT LİSTESİNİN OLUŞTURULMASI VE ETKİLEŞİMİ
+// ============================================================================
+
         export function renderNotes() {
             lsSet('diorama_notes', notes);
             stickyNotesGrid.innerHTML = '';
@@ -122,6 +136,11 @@ import { lsGet, lsSet, esc, normalizeTaskList, normalizeNoteList } from './stora
             renderNotes();
         });
 
+        // ============================================================================
+        // BÖLÜM SONU: NOT LİSTESİ
+        // BÖLÜM BAŞI: GÖREV/NOT SEKME GEÇİŞİ VE DIŞARIYA AÇILAN DURUM GÜNCELLEYİCİLERİ
+// ============================================================================
+
         function activateWorkspaceTab(btn, moveFocus = false) {
             const tab = btn.dataset.tab;
             document.querySelectorAll('.workspace-tab-btn').forEach(b => {
@@ -156,3 +175,7 @@ import { lsGet, lsSet, esc, normalizeTaskList, normalizeNoteList } from './stora
         
 export function setTasks(next) { tasks = Array.isArray(next) ? next : []; }
 export function setNotes(next) { notes = Array.isArray(next) ? next : []; }
+
+// ============================================================================
+        // BÖLÜM SONU: GÖREV/NOT SEKME GEÇİŞİ VE DURUM GÜNCELLEYİCİLERİ
+// ============================================================================

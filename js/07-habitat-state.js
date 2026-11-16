@@ -2,16 +2,15 @@ import { invalidateBackgroundCache } from './scene-state.js';
 import { HABITATS, HABITAT_IDS } from '../config/habitat-catalog.js';
 export { HABITATS };
 import { lsRaw, lsPut } from './storage.js';
-import { calculateFrameChance, calculateFrameSmoothing, scaleSceneCollections } from './scene-math.js';
+import { calculateFrameChance, calculateFrameSmoothing, scaleSceneCollections, createBackgroundSilhouettes } from './scene-math.js';
 
-/* HABITAT-STATE — Living Pixel Diorama
-   Native ES module. Cross-file dependencies are declared with imports and exports. */
-/* ============================================================================
-           8. PIXEL ART HABITAT ENGINE
-              - Smart Food Claiming & Quick Sip Cooldown (Zero crowding or lingering!)
-              - Floating Honey Nectar & Drifting Moon-Blossoms (No floor-stalk line!)
-              - Artisan 3/4 Wing-Banking Butterflies & Active-Start Dragonflies
-           ============================================================================ */
+/* HABITAT STATE — Living Pixel Diorama
+   Canvas dimensions, frame timing and shared scene collections for all habitats. */
+// Shared scene state used by habitat, creature, scenery and renderer modules.
+// ============================================================================
+        // BÖLÜM BAŞI: CANVAS, KARE ZAMANLAMASI VE ÇİZİM YARDIMCILARI
+// ============================================================================
+
         export const canvas = document.getElementById('habitatCanvas');
         export const ctx = canvas.getContext('2d', { alpha: false });
 
@@ -53,10 +52,7 @@ import { calculateFrameChance, calculateFrameSmoothing, scaleSceneCollections } 
                     ph / previousHeight,
                 );
                 bgSilhouettes.length = 0;
-                for (let x = 0; x < pw; x += 4) {
-                    const height = 22 + Math.sin(x * 0.018) * 12 + Math.cos(x * 0.045) * 6;
-                    bgSilhouettes.push({ x, h: height });
-                }
+                bgSilhouettes.push(...createBackgroundSilhouettes(pw));
             }
         }
         window.addEventListener('resize', resizePixelCanvas, { passive: true });
@@ -74,6 +70,11 @@ import { calculateFrameChance, calculateFrameSmoothing, scaleSceneCollections } 
             const b = Math.round(b1 + (b2 - b1) * t);
             return `rgb(${r},${g},${b})`;
         }
+
+        // ============================================================================
+        // BÖLÜM SONU: CANVAS VE ÇİZİM YARDIMCILARI
+        // BÖLÜM BAŞI: AKTİF HABİTAT VE PAYLAŞILAN SAHNE DİZİLERİ
+// ============================================================================
 
         export let pinnedHabitatId = lsRaw('diorama_pinned_habitat');
         if (pinnedHabitatId && !HABITAT_IDS.has(pinnedHabitatId)) {
@@ -106,3 +107,7 @@ export function setPinnedHabitatId(value) {
 }
 export function setFrameScale(value) { frameScale = value; }
 export function setPrefersReducedMotion(value) { prefersReducedMotion = Boolean(value); }
+
+// ============================================================================
+        // BÖLÜM SONU: AKTİF HABİTAT VE PAYLAŞILAN SAHNE DURUMU
+// ============================================================================

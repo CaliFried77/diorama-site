@@ -1,7 +1,8 @@
 import { recordRenderFrame } from './performance-monitor.js';
 import { cachedGlassCards, popovers, setPopoverOpen, shortcutModal, closeShortcutModal, toggleZenMode, refreshGlassCardCache } from './01-core-ui.js';
 import { pw, ph, canvas, HABITATS, currentHabitatIdx, creatures, pinnedHabitatId, prefersReducedMotion, BASE_FRAME_MS, MAX_FRAME_DELTA_MS, REDUCED_MOTION_QUERY, setPinnedHabitatId, setFrameScale, setPrefersReducedMotion } from './07-habitat-state.js';
-import { initHabitat, drawHabitatEnvironment } from './09-scenery.js';
+import { initHabitat } from './habitat-initializer.js';
+import { drawHabitatEnvironment } from './09-scenery.js';
 import { drawWxFront } from './03-weather.js';
 import { lsPut, esc } from './storage.js';
 
@@ -16,6 +17,11 @@ import { lsPut, esc } from './storage.js';
                 bloom directly onto the lens canvas for EVERY creature simultaneously
                 passing underneath or near the glass card (not just the single closest!).
            ============================================================================ */
+        // ============================================================================
+        // BÖLÜM BAŞI: CAM YÜZEYİ KIRILMA VE IŞIK EFEKTİ
+// Sahne canvas'ından cam kartlarına örnek alır; maliyetli işlem ayrı aralıkla çalışır.
+// ============================================================================
+
         function updateOpticalLiquidGlass() {
             if (document.body.classList.contains('zen-active')) return;
             const winW = window.innerWidth;
@@ -118,6 +124,11 @@ import { lsPut, esc } from './storage.js';
             }
         }
 
+        // ============================================================================
+        // BÖLÜM SONU: CAM YÜZEYİ EFEKTİ
+        // BÖLÜM BAŞI: HABİTAT SEÇİM MENÜSÜ VE SABİTLEME
+// ============================================================================
+
         const habitatListContainer = document.getElementById('habitatListContainer');
         const pinHabitatBtn = document.getElementById('pinHabitatBtn');
         const pinHabitatText = document.getElementById('pinHabitatText');
@@ -181,6 +192,11 @@ import { lsPut, esc } from './storage.js';
             }
             renderHabitatMenu();
         });
+
+        // ============================================================================
+        // BÖLÜM SONU: HABİTAT SEÇİM MENÜSÜ
+        // BÖLÜM BAŞI: SAHNE BAŞLANGICI, ANİMASYON DÖNGÜSÜ VE KLAVYE KISAYOLLARI
+// ============================================================================
 
         initHabitat(currentHabitatIdx);
         renderHabitatMenu();
@@ -309,3 +325,7 @@ import { lsPut, esc } from './storage.js';
             refreshGlassCardCache();
             startAnimationLoop();
         }, { once: true });
+
+// ============================================================================
+        // BÖLÜM SONU: SAHNE BAŞLANGICI, ANİMASYON DÖNGÜSÜ VE KLAVYE KISAYOLLARI
+// ============================================================================

@@ -32,8 +32,23 @@ Mevcut profiller:
 | `creatureProfile` | `bee`, `betta`, `dragonfly`, `butterfly`, `jellyfish`, `koi`, `parrot`, `arctic_fox` |
 | `interactionProfile` | `nectar`, `bloodworm`, `midge`, `blossom`, `plankton`, `pellet`, `fruit`, `cloudberry` |
 
-Tamamen yeni bir ekosistem veya tür tasarlanacaksa mevcut profil kodu kopyalanarak genişletilmemeli; `js/09-scenery.js` içindeki habitat başlangıç/çevre çizim profiline, `js/08-creatures.js` içindeki yeni canlı sınıfına ve `js/03-weather.js` ile `js/10-glass-renderer.js` etkileşimlerine bilinçli katkı yapılmalıdır. Sonrasında veri yedekleme doğrulaması `HABITAT_IDS` üzerinden katalogla otomatik eşleşir.
+Tamamen yeni bir ekosistem veya tür tasarlanacaksa mevcut profil kodu kopyalanarak genişletilmemeli; habitat geçişinin başlangıç akışı için `js/habitat-initializer.js`, bitki türü ve başlangıç koordinatları için `js/habitat-flora-generator.js`, zemin eğrileri için `js/habitat-geometry.js`, statik arka plan için `js/habitat-backgrounds.js`, bitkilerin animasyonu için `js/habitat-flora-renderer.js`, sahne çizim sırası ve hava efektleri için `js/09-scenery.js` ve yeni canlı sınıfı için `js/creature-<tür>.js` (ve sınıfı dışa aktarmak için `js/08-creatures.js`) güncellenmelidir. Sonrasında veri yedekleme doğrulaması `HABITAT_IDS` üzerinden katalogla otomatik eşleşir.
 
 Yeni `arctic-tundra` profili `PixelArcticFox` ile kutup tilkileri ve karlı platformları kullanır. `cloudberry` etkileşimi sahneye düşen ve platformlara yerleşen altın kutup böğürtlenleri bırakır; tilkiler bu yemleri takip eder. Yeni profil eklerken katalogdaki izin listelerini ve ilgili sahne/canlı/yem uygulamalarını aynı değişiklikte güncelle.
 
-Yeni `rainforest` profili `PixelParrot` sürüsünü, katmanlı tropik ağaç gövdelerini, dev yaprakları, bromelyaları, orkideleri ve sarkan sarmaşıkları kullanır. `fruit` etkileşimi sahneye yenilebilir tropik meyveler bırakır; papağanlar en yakın serbest meyveye yönelir ve yediğinde uyaranı tüketir. Yeni fauna eklerken çizim sınıfını `js/08-creatures.js`, sahne üretimini/çizimini `js/09-scenery.js` içinde tut ve katalogdaki üç profil listesini birlikte güncelle.
+Yeni `rainforest` profili `PixelParrot` sürüsünü, katmanlı tropik ağaç gövdelerini, dev yaprakları, bromelyaları, orkideleri ve sarkan sarmaşıkları kullanır. `fruit` etkileşimi sahneye yenilebilir tropik meyveler bırakır; papağanlar en yakın serbest meyveye yönelir ve yediğinde uyaranı tüketir. Yeni fauna eklerken çizim sınıfını `js/creature-<tür>.js` dosyasına ekle ve `js/08-creatures.js` içinden yeniden dışa aktar; başlangıç yerleşimini `js/habitat-flora-generator.js`, habitatın statik çevresini `js/habitat-backgrounds.js`, hareketli çevreyi `js/09-scenery.js` içinde tut ve katalogdaki üç profil listesini birlikte güncelle.
+
+Kutup tilkilerinin kullandığı basamaklı kar platformlarının koordinatları ve platformlar arasındaki geçiş bağlantıları `js/arctic-geometry.js` dosyasındadır. Bu modül sahne genişliği ve yüksekliğini parametre olarak alır; DOM veya canvas'a erişmez. Platform konumları, tilki rotaları ve böğürtlenlerin iniş yüzeyleri aynı geometriden hesaplanır. Bunları değiştirirken bu dosyayı ve `tests/arctic-geometry.test.mjs` testini birlikte güncelle.
+
+Kullanıcı tıklamasıyla yem veya uyaran üretimi `js/habitat-interactions.js` dosyasında yapılır. Yeni bir `interactionProfile` eklerken burada ilgili üretim kuralını ekle; ardından üretilen uyaranın güncellenmesi/çizilmesi için `js/habitat-interactions.js` içindeki `drawHabitatStimuli()` fonksiyonunu, canlılar tarafından tüketilmesi için de ilgili canlı sınıfını kontrol et. `js/09-scenery.js` bu fonksiyonu sahne karesinde çağırır. Var olan interaction türlerinin adlarını değiştirirken üç tarafın da aynı tür adını kullandığından emin ol.
+
+## Yeni bir hayvan türü ekleme
+
+Her hayvanın sınıfı ayrı bir dosyada tutulur; mevcut türlerin sınıflarını `js/08-creatures.js` içine ekleme.
+
+1. `js/creature-<tür>.js` dosyasını oluştur ve `export class PixelYeniTur` sınıfını burada tanımla. Yalnızca kullandığın sahne durumlarını `js/07-habitat-state.js` dosyasından içe aktar.
+2. Ortak yem arama gerekiyorsa `findAvailableStimulus` fonksiyonunu `js/creature-utils.js` içinden kullan.
+3. Sınıfı `js/08-creatures.js` dosyasından yeniden dışa aktar.
+4. `js/habitat-initializer.js` içindeki `CREATURE_PROFILES` tablosuna yeni profil ve oluşturucu fonksiyonunu ekle. Yeni bir profil adı kullandıysan `config/habitat-catalog.js` izin listesini güncelle.
+5. Hayvanın yeni bir yem türü üretmesi gerekiyorsa `js/habitat-interactions.js` kodunu ve sahne etkileşim testlerini güncelle.
+6. Yeni sınıf dışa aktarımını, profil kaydını ve açılış testlerini ekle; tüm kalite kontrolleri geçmeden birleştirme.
