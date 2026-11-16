@@ -1,4 +1,5 @@
 import { stimuli, canvas, PIXEL_SCALE, HABITATS, currentHabitatIdx, pw, ph, frameScale, pRect } from './07-habitat-state.js';
+import { getArcticLandingY } from './arctic-geometry.js';
 
 /* HABITAT INTERACTIONS — user input that spawns food and stimuli in the active habitat. */
 
@@ -111,24 +112,10 @@ canvas.addEventListener('pointerdown', (e) => {
         }
     } else if (interactionProfile === 'cloudberry') {
         // Spawn Golden Arctic Cloudberries that fall and land onto the nearest snow platform below!
-        const ledges = [
-            { xMin: 0.01, xMax: 0.25, y: Math.round(ph * 0.72) },
-            { xMin: 0.02, xMax: 0.19, y: Math.round(ph * 0.52) },
-            { xMin: 0.20, xMax: 0.36, y: Math.round(ph * 0.62) },
-            { xMin: 0.64, xMax: 0.80, y: Math.round(ph * 0.60) },
-            { xMin: 0.75, xMax: 0.99, y: Math.round(ph * 0.72) },
-            { xMin: 0.81, xMax: 0.98, y: Math.round(ph * 0.50) }
-        ];
         for (let i = 0; i < 2; i++) {
             const bx = Math.max(12, Math.min(pw - 12, px + (i - 0.5) * 14));
             const nx = bx / Math.max(1, pw);
-            const valleyGround = Math.round(ph - 5 - Math.pow(Math.abs(nx - 0.5) * 1.9, 1.45) * 18);
-            let landY = valleyGround;
-            for (const l of ledges) {
-                if (nx >= l.xMin && nx <= l.xMax && l.y >= py - 12 && l.y < landY) {
-                    landY = l.y;
-                }
-            }
+            const landY = getArcticLandingY(bx, py, pw, ph);
             stimuli.push({
                 type: 'cloudberry',
                 x: bx,
