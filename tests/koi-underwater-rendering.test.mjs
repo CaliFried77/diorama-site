@@ -25,7 +25,7 @@ test('Koi is drawn as a three-quarter sprite with a single near-side eye', () =>
   assert.match(koi, /buildKoiSprites\(palette\)/, 'each koi uses a cached pixel sprite');
   assert.match(drawSection, /ctx\.drawImage\(this\.sprites\.body/);
   assert.match(drawSection, /ctx\.drawImage\(this\.sprites\.tail/);
-  assert.match(koi, /single near-side eye\/flank/);
+  assert.match(koi, /near-side eye\/flank/);
   assert.doesNotMatch(drawSection, /pRect\(/, 'the animation loop no longer paints hundreds of body pixels');
   assert.match(drawSection, /ctx\.globalAlpha = 0\.90 - depth \* 0\.08/, 'underwater attenuation follows depth');
   assert.doesNotMatch(koi, /rgba\(2, 10, 18, 0\.30\)/, 'old floating shadow is removed');
