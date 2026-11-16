@@ -15,6 +15,8 @@ const coreUiModule = await readFile(new URL('../js/01-core-ui.js', import.meta.u
 const dataManagerModule = await readFile(new URL('../js/06-data-manager.js', import.meta.url), 'utf8');
 const sceneryModule = await readFile(new URL('../js/09-scenery.js', import.meta.url), 'utf8');
 const creatureModule = await readFile(new URL('../js/08-creatures.js', import.meta.url), 'utf8');
+const interactionModule = await readFile(new URL('../js/habitat-interactions.js', import.meta.url), 'utf8');
+const arcticGeometryModule = await readFile(new URL('../js/arctic-geometry.js', import.meta.url), 'utf8');
 const habitatCatalog = await readFile(new URL('../config/habitat-catalog.js', import.meta.url), 'utf8');
 const cssBuilder = await readFile(new URL('../scripts/build-css.mjs', import.meta.url), 'utf8');
 const newsCss = await readFile(new URL('../css/news.css', import.meta.url), 'utf8');
@@ -188,6 +190,17 @@ test('existing habitat improvements preserve bespoke scene layers', () => {
   assert.ok(sceneryModule.includes("hab.sceneProfile === 'reef'"));
   assert.ok(sceneryModule.includes("hab.sceneProfile === 'wetland'"));
 });
+test('habitat input is separated from creature classes and Arctic food uses the shared geometry', () => {
+  assert.ok(main.includes("import './habitat-interactions.js';"));
+  assert.equal(creatureModule.includes("canvas.addEventListener('pointerdown'"), false);
+  assert.ok(interactionModule.includes("canvas.addEventListener('pointerdown'"));
+  assert.ok(interactionModule.includes('getArcticLandingY(bx, py, pw, ph)'));
+  assert.ok(creatureModule.includes("from './arctic-geometry.js'"));
+  assert.ok(sceneryModule.includes("from './arctic-geometry.js'"));
+  assert.ok(arcticGeometryModule.includes('export function getArcticLandingY'));
+  assert.ok(arcticGeometryModule.includes('export const ARCTIC_LEDGE_LINKS'));
+});
+
 test('service worker precaches local shell assets and leaves external live services to the network', () => {
   assert.match(main, /serviceWorker\.register/);
   assert.match(sw, /\!url\.origin === self\.location\.origin|url\.origin !== self\.location\.origin/);
