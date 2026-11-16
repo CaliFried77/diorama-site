@@ -1,6 +1,6 @@
 import { pw, ph, lerpHex } from './07-habitat-state.js';
 import { isLightMode } from './01-core-ui.js';
-import { getGroundY } from './habitat-geometry.js';
+import { getGroundY, getKoiWaterSurfaceY } from './habitat-geometry.js';
 import { getArcticLedges } from './arctic-geometry.js';
 
 /* HABITAT BACKGROUNDS — cached static pixel-art environment layers. */
@@ -682,7 +682,7 @@ export function buildStaticEnvironmentLayer(hab) {
         const barkMid = isLightMode ? '#70412b' : '#382328';
         const barkHi = isLightMode ? '#9b6340' : '#65402f';
 
-        const shoreY = (x) => Math.round(ph * 0.225 + Math.sin(x * 0.016) * 2.2 + Math.cos(x * 0.039) * 1.2);
+        const shoreY = (x) => getKoiWaterSurfaceY(x, pw, ph);
 
         // Uzak kıyı: suyla ufku birbirinden ayıran alçak yosun ve taş sırtı.
         for (let x = 0; x < pw; x++) {
