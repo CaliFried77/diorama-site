@@ -31,5 +31,5 @@ test('Arctic Aurora registers its scene, creature, and interaction profiles', as
   assert.match(interactions, /export function drawHabitatStimuli\(\)/);
   assert.match(scenery, /drawHabitatStimuli\(\)/);
   assert.match(entrypoint, /import '\.\/habitat-interactions\.js';/);
-  assert.match(scenery, /s\.type === 'cloudberry'/);
+  assert.match(interactions, /s\.type === 'cloudberry'/);
 });
