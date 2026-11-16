@@ -21,7 +21,8 @@ Bu belge, projeyi ileride düzenlerken doğru dosyayı bulmayı ve değişiklikl
 | `js/habitat-geometry.js` | Tüm habitat profillerinin zemin eğrileri; sahne boyutlarını parametre olarak alan saf hesaplamalar | Bir habitatın zemin eğrisi veya yükseklik formülü değişirken |
 | `js/habitat-backgrounds.js` | Önbelleğe alınan statik habitat arka planları, ağaçlar, kayalar ve çevre katmanları | Statik çevre görünümü veya arka plan kompozisyonu değişirken |
 | `js/habitat-flora-renderer.js` | `initHabitat` tarafından hazırlanan bitkilerin ve küçük doğal ayrıntıların kare bazlı animasyon/çizimi | Bitki türlerinin görünümü, sallanması veya hareketli çizim davranışı değişirken |
-| `js/09-scenery.js` | Habitatın kurulması, flora dağılımı ve genel hareketli çevre efektlerinin sıralanması | Habitat başlangıcı, bitki yerleşimi veya sahne çizim sırası değişirken |
+| `js/habitat-initializer.js` | Aktif habitatı seçer; sahne dizilerini sıfırlar ve habitat profiline göre canlı/flora/partikül verisini oluşturur | Yeni habitat profili, başlangıç bitkileri veya canlı sayıları eklerken |
+| `js/09-scenery.js` | Gökyüzü, ortam efektleri, statik arka plan, flora çizimi ve yem çizimi çağrı sırasını yönetir | Hareketli sahne efektleri veya çizim sırası değişirken |
 | `js/10-glass-renderer.js` | Animasyon döngüsü, canlıların sahneye çizilmesi, cam yansıma katmanı ve klavye kısayolları | Animasyon, çizim sırası veya cam efektleri değişirken |
 | `js/11-calendar.js` | Takvim, etkinlik doğrulama ve yerel kayıt | Takvim özellikleri değişirken |
 | `js/storage.js`, `js/news-utils.js`, `js/scene-math.js`, `js/scene-state.js`, `js/services.js`, `js/focus-timer-state.js` | Birden fazla modülün kullandığı küçük, ortak yardımcılar ve döngü engelleyici servis köprüleri | Aynı mantık birden fazla modülde gerçekten ortaksa |
