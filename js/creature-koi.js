@@ -1,30 +1,154 @@
-import { pw, ph, ctx, frameScale, frameChance, pRect, frameSmoothing } from './07-habitat-state.js';
+import { pw, ph, ctx, frameScale, frameChance, frameSmoothing } from './07-habitat-state.js';
 import { findAvailableStimulus } from './creature-utils.js';
 import { getGroundY, getKoiWaterSurfaceY } from './habitat-geometry.js';
 
 const KOI_SURFACE_CLEARANCE = 28;
 const KOI_FLOOR_CLEARANCE = 20;
+const koiSpriteCache = new Map();
 
 function getKoiSwimBounds(x) {
     const sceneX = Math.max(0, Math.min(pw, x));
     const surfaceY = getKoiWaterSurfaceY(sceneX, pw, ph);
     const groundY = getGroundY(sceneX, 'koi-pond', pw, ph);
     const minY = surfaceY + KOI_SURFACE_CLEARANCE;
-    const maxY = Math.max(minY + 12, groundY - KOI_FLOOR_CLEARANCE);
+    const maxY = Math.max(minY + 18, groundY - KOI_FLOOR_CLEARANCE);
     return { minY, maxY };
 }
 
-/* PIXELKOI — dedicated koi̇ baliği behavior and pixel-art rendering. */
+function spriteRect(spriteCtx, x, y, width, height, color) {
+    spriteCtx.fillStyle = color;
+    spriteCtx.fillRect(x, y, width, height);
+}
+
+function paintPatch(spriteCtx, x, y, rows, color) {
+    rows.forEach((row, rowIndex) => {
+        let start = -1;
+        for (let col = 0; col <= row.length; col++) {
+            const filled = row[col] === '1';
+            if (filled && start < 0) start = col;
+            if (!filled && start >= 0) {
+                spriteRect(spriteCtx, x + start, y + rowIndex, col - start, 1, color);
+                start = -1;
+            }
+        }
+    });
+}
+
+function buildKoiSprites(palette) {
+    const cached = koiSpriteCache.get(palette.kind);
+    if (cached) return cached;
+
+    // One-time sprite construction: a three-quarter surface view with a visible
+    // flank, single near-side eye, asymmetrical fins and a softly tapered head.
+    // The hot animation loop only rotates and blits these tiny cached canvases.
+    const body = document.createElement('canvas');
+    body.width = 40;
+    body.height = 26;
+    const bodyCtx = body.getContext('2d');
+    const halfWidths = [
+        1.1, 1.9, 2.8, 3.7, 4.5, 5.2, 5.8, 6.2, 6.4, 6.4,
+        6.3, 6.1, 5.8, 5.4, 4.9, 4.4, 3.8, 3.2, 2.6, 2.0,
+        1.5, 1.0
+    ];
+
+    halfWidths.forEach((radius, index) => {
+        const x = 7 + index;
+        const centerY = 12 + Math.sin(index * 0.13) * 0.45;
+        const farEdge = Math.round(centerY - radius * 0.70);
+        const nearEdge = Math.round(centerY + radius * 1.05);
+
+        spriteRect(bodyCtx, x, farEdge - 1, 1, nearEdge - farEdge + 3, '#263b40');
+        for (let y = farEdge; y <= nearEdge; y++) {
+            let color = palette.base;
+            if (y <= centerY - 2) color = palette.back;
+            else if (y >= centerY + 3) color = palette.shade;
+            else if (y === Math.round(centerY + 1)) color = palette.flank;
+            spriteRect(bodyCtx, x, y, 1, 1, color);
+        }
+    });
+
+    // Dorsal ridge and a soft highlight along the upper back.
+    spriteRect(bodyCtx, 15, 6, 12, 1, palette.back);
+    spriteRect(bodyCtx, 18, 5, 7, 1, palette.finHi);
+    spriteRect(bodyCtx, 20, 4, 3, 1, palette.fin);
+    spriteRect(bodyCtx, 12, 8, 18, 1, palette.back);
+    spriteRect(bodyCtx, 13, 9, 14, 1, palette.back);
+
+    // Gill plate and a single eye on the viewer-facing side.
+    spriteRect(bodyCtx, 31, 13, 1, 4, palette.gill);
+    spriteRect(bodyCtx, 32, 14, 1, 3, palette.gillHi);
+    spriteRect(bodyCtx, 33, 15, 2, 2, '#142a31');
+    spriteRect(bodyCtx, 33, 15, 1, 1, '#f8f6e8');
+    spriteRect(bodyCtx, 36, 15, 2, 1, palette.back);
+    spriteRect(bodyCtx, 37, 14, 2, 2, palette.base);
+
+    // Near-side pectoral fin is broad and readable; the far fin is deliberately
+    // smaller and darker to avoid the symmetrical, directly-from-above look.
+    spriteRect(bodyCtx, 21, 17, 3, 1, palette.gill);
+    spriteRect(bodyCtx, 22, 18, 4, 1, palette.fin);
+    spriteRect(bodyCtx, 23, 19, 4, 1, palette.finHi);
+    spriteRect(bodyCtx, 24, 20, 3, 1, palette.fin);
+    spriteRect(bodyCtx, 24, 21, 2, 1, palette.gillHi);
+    spriteRect(bodyCtx, 19, 8, 3, 1, palette.gill);
+    spriteRect(bodyCtx, 18, 7, 3, 1, palette.fin);
+
+    // Small scale glints stay on the exposed flank instead of covering the whole fish.
+    for (let x = 13; x <= 29; x += 3) {
+        const offset = (x % 2) * 1;
+        spriteRect(bodyCtx, x, 15 + offset, 1, 1, palette.scale);
+        if (x % 2 === 1) spriteRect(bodyCtx, x + 1, 17 + offset, 1, 1, palette.scaleSoft);
+    }
+
+    if (palette.kind === 'kohaku') {
+        paintPatch(bodyCtx, 12, 8, ['0011100', '0111110', '1111111', '0111110'], palette.patch1);
+        paintPatch(bodyCtx, 26, 9, ['01110', '11111', '11111', '01110'], palette.patch2);
+    } else if (palette.kind === 'tancho') {
+        paintPatch(bodyCtx, 31, 8, ['0110', '1111', '1111', '0110'], palette.patch1);
+    } else if (palette.kind === 'showa') {
+        paintPatch(bodyCtx, 11, 8, ['0011100', '0111110', '1111111', '0111110'], palette.patch2);
+        paintPatch(bodyCtx, 24, 9, ['01110', '11111', '11111', '01110'], palette.patch1);
+        spriteRect(bodyCtx, 17, 13, 4, 2, palette.patch2);
+    } else if (palette.kind === 'ogon') {
+        spriteRect(bodyCtx, 12, 10, 18, 1, palette.patch1);
+        spriteRect(bodyCtx, 14, 12, 14, 1, palette.finHi);
+        spriteRect(bodyCtx, 17, 16, 9, 1, palette.scaleSoft);
+    } else if (palette.kind === 'asagi') {
+        for (let x = 12; x <= 29; x += 3) {
+            const y = 10 + ((x / 3) % 2);
+            spriteRect(bodyCtx, x, y, 2, 1, palette.patch1);
+            spriteRect(bodyCtx, x + 1, y + 2, 1, 1, palette.patch2);
+        }
+        spriteRect(bodyCtx, 30, 10, 4, 2, palette.patch2);
+    }
+
+    const tail = document.createElement('canvas');
+    tail.width = 12;
+    tail.height = 18;
+    const tailCtx = tail.getContext('2d');
+    const tailRows = [
+        [8, 10], [6, 10], [3, 10], [1, 9], [0, 8], [1, 7],
+        [3, 6], [4, 7], [3, 6], [1, 7], [0, 8], [1, 9],
+        [3, 10], [6, 10]
+    ];
+    tailRows.forEach(([left, right], y) => {
+        spriteRect(tailCtx, left, y + 2, right - left + 1, 1, palette.gill);
+        spriteRect(tailCtx, left + 1, y + 2, Math.max(1, right - left - 1), 1, palette.fin);
+        if (y % 3 === 0) spriteRect(tailCtx, left + 2, y + 2, 2, 1, palette.finHi);
+    });
+    spriteRect(tailCtx, 8, 7, 3, 3, palette.gillHi);
+
+    bodyCtx.imageSmoothingEnabled = false;
+    tailCtx.imageSmoothingEnabled = false;
+    const sprites = { body, tail };
+    koiSpriteCache.set(palette.kind, sprites);
+    return sprites;
+}
+
+/* PIXELKOI — dedicated three-quarter Nishikigoi behavior and cached pixel-art sprite. */
 
 // ============================================================================
 // BÖLÜM BAŞI: KOİ BALIĞI SINIFI VE DAVRANIŞLARI
 // Bu dosya yalnızca ilgili canlının hareket, etkileşim ve çizim kodunu içerir.
-// ============================================================================
-
-/* ============================================================================
-   CREATURE 6: MAJESTIC ARTICULATED NISHIKIGOI (Japon Zen Koi Balığı)
-   ============================================================================ */
-// ============================================================================
 // ============================================================================
 
 export class PixelKoi {
@@ -34,45 +158,59 @@ export class PixelKoi {
         this.y = swimBounds.minY + Math.random() * (swimBounds.maxY - swimBounds.minY);
         this.angle = Math.random() * Math.PI * 2;
         this.targetAngle = this.angle;
-        this.speed = 0.25 + Math.random() * 0.12;
+        this.speed = 0.22 + Math.random() * 0.07;
         this.phase = Math.random() * Math.PI * 2;
         this.eatCooldown = 0;
         this.biteRipple = 0;
 
         const varieties = [
-            { kind: 'kohaku', base: '#f8fafc', shade: '#cbd5e1', patch1: '#ef4444', patch2: '#dc2626', fin: 'rgba(254, 226, 226, 0.85)', rgb: [248, 113, 113] },
-            { kind: 'tancho', base: '#ffffff', shade: '#e2e8f0', patch1: '#dc2626', patch2: '#f8fafc', fin: 'rgba(248, 250, 252, 0.88)', rgb: [239, 68, 68] },
-            { kind: 'showa', base: '#f1f5f9', shade: '#cbd5e1', patch1: '#e11d48', patch2: '#0f172a', fin: 'rgba(241, 245, 249, 0.85)', rgb: [251, 113, 133] },
-            { kind: 'ogon', base: '#fef08a', shade: '#eab308', patch1: '#f59e0b', patch2: '#ca8a04', fin: 'rgba(254, 249, 195, 0.85)', rgb: [250, 204, 21] },
-            { kind: 'asagi', base: '#93c5fd', shade: '#3b82f6', patch1: '#1d4ed8', patch2: '#ef4444', fin: 'rgba(254, 202, 202, 0.85)', rgb: [96, 165, 250] }
+            {
+                kind: 'kohaku', base: '#e8eee8', shade: '#9bafa9', back: '#f3f6ed',
+                flank: '#c4d2cb', patch1: '#d36b60', patch2: '#aa453f',
+                fin: 'rgba(229, 226, 205, 0.88)', finHi: 'rgba(247, 241, 222, 0.92)',
+                gill: '#718b84', gillHi: '#adc0b7', scale: '#f9f4df',
+                scaleSoft: 'rgba(248, 245, 226, 0.72)', rgb: [207, 105, 94]
+            },
+            {
+                kind: 'tancho', base: '#edf1e9', shade: '#aab9ad', back: '#f7f7eb',
+                flank: '#ced8cd', patch1: '#c94b45', patch2: '#a8403c',
+                fin: 'rgba(237, 233, 214, 0.88)', finHi: 'rgba(250, 247, 225, 0.92)',
+                gill: '#82978b', gillHi: '#b9c8ba', scale: '#fff8e6',
+                scaleSoft: 'rgba(248, 245, 226, 0.72)', rgb: [196, 75, 69]
+            },
+            {
+                kind: 'showa', base: '#dce5de', shade: '#8a9b91', back: '#eef0e4',
+                flank: '#b1c0b7', patch1: '#bb5351', patch2: '#273e45',
+                fin: 'rgba(211, 224, 213, 0.86)', finHi: 'rgba(238, 242, 225, 0.9)',
+                gill: '#607b73', gillHi: '#9db2a6', scale: '#edf4e6',
+                scaleSoft: 'rgba(239, 244, 229, 0.62)', rgb: [177, 77, 79]
+            },
+            {
+                kind: 'ogon', base: '#d9c778', shade: '#9c8448', back: '#f0dc8c',
+                flank: '#c3a95a', patch1: '#f2d17a', patch2: '#b18c3e',
+                fin: 'rgba(237, 214, 144, 0.9)', finHi: 'rgba(250, 235, 181, 0.92)',
+                gill: '#806c3f', gillHi: '#bda45b', scale: '#fff0b8',
+                scaleSoft: 'rgba(250, 231, 171, 0.65)', rgb: [216, 180, 93]
+            },
+            {
+                kind: 'asagi', base: '#9dbcc2', shade: '#587984', back: '#d1e1dc',
+                flank: '#769ba6', patch1: '#5a8ba2', patch2: '#bd685d',
+                fin: 'rgba(205, 222, 211, 0.86)', finHi: 'rgba(231, 239, 222, 0.9)',
+                gill: '#4b6c76', gillHi: '#a8c4bf', scale: '#deebe0',
+                scaleSoft: 'rgba(211, 232, 223, 0.66)', rgb: [105, 151, 165]
+            }
         ];
         this.pal = varieties[Math.floor(Math.random() * varieties.length)];
         this.rgb = this.pal.rgb;
-        this.seed = Math.floor(Math.random() * 100);
-
-        this.spineLen = 18;
-        this.spine = [];
-        for (let i = 0; i < this.spineLen; i++) {
-            this.spine.push({
-                x: this.x - Math.cos(this.angle) * i * 1.18,
-                y: this.y - Math.sin(this.angle) * i * 1.18
-            });
-        }
-    }
-
-    shiftSpine(dx, dy) {
-        for (let i = 0; i < this.spineLen; i++) {
-            this.spine[i].x += dx;
-            this.spine[i].y += dy;
-        }
+        this.sprites = buildKoiSprites(this.pal);
     }
 
     update(t) {
-        this.phase += 0.088 * frameScale;
+        this.phase += 0.09 * frameScale;
         if (this.eatCooldown > 0) this.eatCooldown = Math.max(0, this.eatCooldown - frameScale);
         if (this.biteRipple > 0) this.biteRipple = Math.max(0, this.biteRipple - 0.35 * frameScale);
 
-        const pellet = findAvailableStimulus(this, 'koi_pellet', Math.max(360, pw * 0.85));
+        const pellet = findAvailableStimulus(this, 'koi_pellet', Math.max(300, pw * 0.72));
         if (pellet) {
             const dx = pellet.x - this.x;
             const dy = pellet.y - this.y;
@@ -82,184 +220,69 @@ export class PixelKoi {
                 pellet.life = 0;
                 this.eatCooldown = 85;
                 this.biteRipple = 9;
-                this.targetAngle += (Math.random() - 0.5) * 1.4;
+                this.targetAngle += (Math.random() - 0.5) * 1.0;
             }
-        } else if (frameChance(0.018)) {
-            this.targetAngle += (Math.random() - 0.5) * 0.95;
+        } else if (frameChance(0.012)) {
+            this.targetAngle += (Math.random() - 0.5) * 0.72;
         }
 
         const swimBounds = getKoiSwimBounds(this.x);
-        if (this.y < swimBounds.minY + 14) {
-            this.targetAngle = Math.cos(this.angle) >= 0 ? 0.45 : Math.PI - 0.45;
+        if (this.y < swimBounds.minY + 16) {
+            this.targetAngle = Math.atan2(0.75, Math.cos(this.angle) >= 0 ? 1 : -1);
+        } else if (this.y > swimBounds.maxY - 16) {
+            this.targetAngle = Math.atan2(-0.75, Math.cos(this.angle) >= 0 ? 1 : -1);
         }
-        if (this.y > swimBounds.maxY - 14) {
-            this.targetAngle = Math.cos(this.angle) >= 0 ? -0.45 : Math.PI + 0.45;
-        }
-        if (this.x > pw - 68 && this.y > ph - 42) {
-            this.targetAngle = Math.PI + (Math.random() - 0.5) * 0.5;
+        if (this.x > pw - 56 && this.y > ph - 44) {
+            this.targetAngle = Math.PI + (Math.random() - 0.5) * 0.32;
         }
 
         let diff = this.targetAngle - this.angle;
         while (diff > Math.PI) diff -= Math.PI * 2;
         while (diff < -Math.PI) diff += Math.PI * 2;
-        this.angle += diff * frameSmoothing(pellet ? 0.065 : 0.038);
+        this.angle += diff * frameSmoothing(pellet ? 0.052 : 0.026);
 
-        const spd = this.speed * (pellet ? 1.55 : 1.0);
-        this.x += Math.cos(this.angle) * spd * frameScale;
-        this.y += Math.sin(this.angle) * spd * frameScale;
+        const speed = this.speed * (pellet ? 1.35 : 1);
+        this.x += Math.cos(this.angle) * speed * frameScale;
+        this.y += Math.sin(this.angle) * speed * frameScale;
 
-        if (this.x < -38) {
-            const d = pw + 76;
-            this.x += d;
-            this.shiftSpine(d, 0);
-        } else if (this.x > pw + 38) {
-            const d = -(pw + 76);
-            this.x += d;
-            this.shiftSpine(d, 0);
-        }
+        if (this.x < -42) this.x += pw + 84;
+        else if (this.x > pw + 42) this.x -= pw + 84;
 
-        // Recalculate after horizontal movement/wrap so the fish remains in the water
-        // even where the shoreline rises slightly toward the pond edges.
         const nextBounds = getKoiSwimBounds(this.x);
         this.y = Math.max(nextBounds.minY, Math.min(nextBounds.maxY, this.y));
-
-        this.spine[0].x = this.x;
-        this.spine[0].y = this.y;
-        for (let i = 1; i < this.spineLen; i++) {
-            const prev = this.spine[i - 1];
-            const cur = this.spine[i];
-            const dx = cur.x - prev.x;
-            const dy = cur.y - prev.y;
-            const segAngle = Math.atan2(dy, dx);
-            const wag = Math.sin(this.phase - i * 0.35) * (i > 3 ? 0.17 : 0.04);
-            const finalAng = segAngle + wag * 0.19;
-            cur.x = prev.x + Math.cos(finalAng) * 1.15;
-            cur.y = prev.y + Math.sin(finalAng) * 1.15;
-        }
     }
 
     draw() {
-        const swimBounds = getKoiSwimBounds(this.x);
-        const depth = (this.y - swimBounds.minY) / Math.max(1, swimBounds.maxY - swimBounds.minY);
+        const bounds = getKoiSwimBounds(this.x);
+        const depth = Math.max(0, Math.min(1, (this.y - bounds.minY) / Math.max(1, bounds.maxY - bounds.minY)));
+        const tailWag = Math.sin(this.phase * 1.7) * 0.18;
+
         ctx.save();
-        ctx.globalAlpha = 0.84 - Math.max(0, Math.min(1, depth)) * 0.10;
-        ctx.filter = 'saturate(0.82) brightness(0.96)';
+        ctx.translate(Math.round(this.x), Math.round(this.y));
+        ctx.rotate(this.angle);
+        ctx.globalAlpha = 0.90 - depth * 0.08;
+        ctx.imageSmoothingEnabled = false;
 
-        const cos = Math.cos(this.angle);
-        const sin = Math.sin(this.angle);
-        const perpX = -sin;
-        const perpY = cos;
+        // Body sprite shows a dorsal ridge and only the near-side eye/flank.
+        ctx.drawImage(this.sprites.body, -20, -13);
 
-        for (let i = 1; i < 14; i++) {
-            const pt = this.spine[i];
-            if (Math.abs(pt.x - this.x) > 45) continue;
-            // Avoid a hard black "ground shadow" that makes submerged koi look airborne.
-            pRect(pt.x + 1, pt.y + 3, 3, 1, 'rgba(4, 39, 47, 0.10)');
-        }
-
-        const pecNode = this.spine[3];
-        if (Math.abs(pecNode.x - this.x) < 40) {
-            const finStroke = Math.sin(this.phase * 0.85) * 0.24;
-            [-1, 1].forEach(side => {
-                const fAng = this.angle + side * (Math.PI * 0.56 + finStroke);
-                const fCos = Math.cos(fAng);
-                const fSin = Math.sin(fAng);
-                for (let r = 2; r <= 7; r++) {
-                    const halfW = r <= 5 ? 2 : 1;
-                    for (let w = -halfW; w <= 1; w++) {
-                        pRect(pecNode.x + fCos * r - fSin * w, pecNode.y + fSin * r + fCos * w, 1, 1, this.pal.fin);
-                    }
-                }
-            });
-        }
-        const venNode = this.spine[7];
-        if (Math.abs(venNode.x - this.x) < 40) {
-            [-1, 1].forEach(side => {
-                const vAng = this.angle + side * (Math.PI * 0.65);
-                for (let r = 2; r <= 4; r++) {
-                    pRect(venNode.x + Math.cos(vAng) * r, venNode.y + Math.sin(vAng) * r, 1, 1, this.pal.fin);
-                }
-            });
-        }
-
-        for (let i = 13; i < this.spineLen; i++) {
-            const pt = this.spine[i];
-            const prev = this.spine[i - 1];
-            if (Math.abs(pt.x - this.x) > 45) continue;
-            const segAng = Math.atan2(prev.y - pt.y, prev.x - pt.x);
-            const tPerpX = -Math.sin(segAng);
-            const tPerpY = Math.cos(segAng);
-            const spread = (i - 12) * 1.45;
-            for (let w = -Math.ceil(spread); w <= Math.ceil(spread); w++) {
-                if (i >= 16 && Math.abs(w) <= 1) continue;
-                pRect(pt.x + tPerpX * w, pt.y + tPerpY * w, 1, 1, this.pal.fin);
-            }
-        }
-
-        const bodyRadii = [2.9, 3.9, 4.6, 4.9, 4.8, 4.5, 4.1, 3.6, 3.1, 2.6, 2.2, 1.8, 1.4, 1.1];
-        for (let i = 13; i >= 0; i--) {
-            const pt = this.spine[i];
-            if (Math.abs(pt.x - this.x) > 45) continue;
-            const rad = bodyRadii[i] || 1.2;
-            const rInt = Math.ceil(rad);
-
-            for (let dy = -rInt; dy <= rInt; dy++) {
-                for (let dx = -rInt; dx <= rInt; dx++) {
-                    const d2 = dx * dx + dy * dy;
-                    if (d2 <= rad * rad) {
-                        const isEdge = d2 > (rad - 0.9) * (rad - 0.9);
-                        let col = isEdge ? this.pal.shade : this.pal.base;
-
-                        if (this.pal.kind === 'tancho') {
-                            if (i <= 1 && d2 <= 3.2) col = this.pal.patch1;
-                        } else if (this.pal.kind === 'asagi') {
-                            if (isEdge && i >= 2 && i <= 9) col = this.pal.patch2;
-                            else if ((dx + dy + i) % 2 === 0 && d2 < rad * rad * 0.6) col = this.pal.patch1;
-                        } else {
-                            if ((i >= 1 && i <= 4 && dx >= -2) || (i >= 7 && i <= 10 && dy <= 1)) {
-                                col = this.pal.patch1;
-                            } else if ((i + this.seed) % 5 === 0 && Math.abs(dx) <= 1) {
-                                col = this.pal.patch2;
-                            }
-                        }
-                        pRect(pt.x + dx, pt.y + dy, 1, 1, col);
-                    }
-                }
-            }
-        }
-
-        for (let i = 4; i <= 10; i++) {
-            const pt = this.spine[i];
-            const prev = this.spine[i - 1];
-            if (Math.abs(pt.x - this.x) > 45) continue;
-            const segAng = Math.atan2(prev.y - pt.y, prev.x - pt.x);
-            const dPerpX = -Math.sin(segAng);
-            const dPerpY = Math.cos(segAng);
-            const sway = Math.sin(this.phase - i * 0.3) * 0.8;
-            pRect(pt.x + dPerpX * sway, pt.y + dPerpY * sway, 2, 1, 'rgba(255, 255, 255, 0.88)');
-        }
-
-        const head = this.spine[0];
-        const snoutX = head.x + cos * 3.3;
-        const snoutY = head.y + sin * 3.3;
-        pRect(snoutX - 1, snoutY - 1, 2, 2, this.pal.base);
-
-        const eyeX = head.x + cos * 1.5;
-        const eyeY = head.y + sin * 1.5;
-        pRect(eyeX + perpX * 2.8, eyeY + perpY * 2.8, 1, 1, '#0f172a');
-        pRect(eyeX - perpX * 2.8, eyeY - perpY * 2.8, 1, 1, '#0f172a');
-
-        const barbCol = this.pal.kind === 'tancho' ? '#fda4af' : this.pal.patch1;
-        pRect(snoutX + cos * 1.3 + perpX * 2.1, snoutY + sin * 1.3 + perpY * 2.1, 1, 1, barbCol);
-        pRect(snoutX + cos * 1.3 - perpX * 2.1, snoutY + sin * 1.3 - perpY * 2.1, 1, 1, barbCol);
+        // The caudal fin has its own small hinge so propulsion reads as a tail beat,
+        // not a whole-body wobble or an exaggerated serpentine motion.
+        ctx.save();
+        ctx.translate(-14, 0);
+        ctx.rotate(tailWag);
+        ctx.drawImage(this.sprites.tail, -11, -9);
+        ctx.restore();
 
         if (this.biteRipple > 0) {
-            const r = (10 - this.biteRipple) * 1.4;
-            for (let a = 0; a < Math.PI * 2; a += 0.6) {
-                pRect(snoutX + Math.cos(a) * r, snoutY + Math.sin(a) * r, 1, 1, 'rgba(255, 255, 255, 0.45)');
-            }
+            const radius = (10 - this.biteRipple) * 1.1;
+            ctx.globalAlpha = 0.30;
+            ctx.strokeStyle = 'rgba(224, 248, 235, 0.6)';
+            ctx.lineWidth = 0.7;
+            ctx.beginPath();
+            ctx.ellipse(19, 3, radius * 0.9, radius * 0.42, -0.18, 0, Math.PI * 2);
+            ctx.stroke();
         }
-
         ctx.restore();
     }
 }
