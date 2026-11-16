@@ -2295,4 +2295,3 @@ export class PixelArcticFox {
         px(9, hy + 1, 1, 1, p.nose);    // Black button nose
     }
 }
-}
