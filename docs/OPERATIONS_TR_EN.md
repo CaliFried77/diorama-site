@@ -20,12 +20,12 @@
 - PR #1, #2 ve #6 birleştirildi.
 - PR #3 ve #4, daha kapsamlı çalışmalar tarafından geçersiz kılındığı için kapatıldı.
 - PR #5, PR #6'nın birleştirilmiş modüler yapısı ve güncel rehberinden sonra tekrara düştüğü için kapatıldı.
-- PR #7 yağmur ormanı/papağan görsel çalışmasıdır; inceleme ve CI düzeltmesi tamamlanana kadar açık kalmalıdır.
+- PR #7, tüm kontroller geçtikten sonra 16 Kasım 2026'da squash merge ile birleştirildi (merge commit: `cb310a04fb4539257ec2d912aa5ec4cc38b7e2c7`). Görsel çalışma artık ana dalın parçasıdır; feature branch ayrıca silinmelidir.
 - Birleştirilmiş veya geçersiz kılınmış PR'lara ait geçici branch'ler, `migration/cloudflare-pages` üzerinde gerekli kodun bulunduğu doğrulandıktan sonra silinebilir.
-- `main` dalı yalnızca Netlify geri dönüşü gerçekten artık gerekmiyorsa kaldırılmalıdır.
+- Kullanıcının hedefi tek branch olduğundan son durumda yalnızca `migration/cloudflare-pages` kalmalıdır. `main` da eski Netlify geri dönüş dalıdır; Netlify/özel domain artık kullanılmıyorsa silinebilir. Kullanılmıyorsa tüm eski çalışma dallarıyla birlikte sil.
 
 ### Branch koruması
-GitHub branch listesindeki tüm dallar `protected: false` olarak dönüyordu. Üretim dalı için GitHub Settings → Branches bölümünde:
+16 Kasım 2026 son kontrolünde branch listesindeki 9 dalın tamamı `protected: false` idi. PR #7 birleştirildi ancak GitHub feature branch'ini otomatik silmedi; tüm eski dallar listede kaldı. Son temizlik hedefi yalnızca `migration/cloudflare-pages` branch'ini bırakmaktır. Üretim dalı için GitHub Settings → Branches bölümünde:
 1. `migration/cloudflare-pages` için branch protection/ruleset etkinleştir.
 2. Doğrudan push ve force-push'ı kapat.
 3. Pull request zorunluluğu koy.
@@ -104,12 +104,12 @@ Gerçek deploy, yalnızca `npm run deploy` komutuyla veya doğrulanmış Cloudfl
 - PRs #1, #2 and #6 were merged.
 - PRs #3 and #4 were closed as superseded.
 - PR #5 was closed as redundant after the modular refactor and current editing guide from PR #6 had been merged.
-- PR #7 contains the rainforest/macaw visual work; keep it open until its review and CI updates are complete.
+- PR #7 was squash-merged on 16 November 2026 after every CI job passed (merge commit: `cb310a04fb4539257ec2d912aa5ec4cc38b7e2c7`). The visual work is now part of the primary branch; delete its feature branch as part of cleanup.
 - Temporary branches belonging to merged or superseded PRs can be deleted after confirming that the required code exists on `migration/cloudflare-pages`.
-- Remove `main` only after confirming that the Netlify rollback is no longer required.
+- The user's target is a single permanent branch: `migration/cloudflare-pages`. `main` is the legacy Netlify rollback branch; remove it with the other old branches if Netlify and its custom-domain fallback are no longer used.
 
 ### Branch protection
-The GitHub branch listing reported `protected: false` for every listed branch. In GitHub Settings → Branches, configure protection/rules for `migration/cloudflare-pages`:
+As of the 16 November 2026 check, all nine listed branches reported `protected: false`. PR #7 was merged, but GitHub did not automatically remove its feature branch. The cleanup target is to leave only `migration/cloudflare-pages`. In GitHub Settings → Branches, configure protection/rules for `migration/cloudflare-pages`:
 1. Require pull requests.
 2. Block direct pushes and force pushes.
 3. Require the quality gate before merging.
@@ -175,3 +175,32 @@ A production deployment should use `npm run deploy` or a verified Cloudflare Git
 - [Workers Builds — branch control](https://developers.cloudflare.com/workers/ci-cd/builds/build-branches/)
 - [Workers Static Assets](https://developers.cloudflare.com/workers/static-assets/)
 - [Workers CI/CD](https://developers.cloudflare.com/workers/ci-cd/)
+
+
+## 5. 16 November 2026 cleanup snapshot | Temizlik kontrolü
+
+### Türkçe
+PR #7 birleştirildi ve tüm CI adımları başarılı oldu. Ancak feature branch dahil eski branch'ler GitHub'da hâlâ duruyor. Silinmesi hedeflenen branch'ler:
+- `chore/code-navigation-guide`
+- `chore/codebase-maintainability`
+- `feature/rainforest-parrot-visual-polish`
+- `fix/arctic-habitat-runtime`
+- `fix/browser-smoke-localhost-hostname`
+- `main` (eski Netlify geri dönüşü)
+- `maintenance/code-navigation-and-cleanup`
+- `refactor/habitat-interactions`
+
+Son durumda yalnızca `migration/cloudflare-pages` kalmalıdır. Önce Netlify geri dönüşünün artık kullanılmadığını doğrula; sonra listelenen dalları GitHub Branches ekranından sil. Herhangi bir dalı doğrudan silmek yerine, gerekliyse önce etiket/backup oluştur.
+
+### English
+PR #7 has been merged and every CI job passed. However, the old branches, including its feature branch, are still present on GitHub. The branches targeted for deletion are:
+- `chore/code-navigation-guide`
+- `chore/codebase-maintainability`
+- `feature/rainforest-parrot-visual-polish`
+- `fix/arctic-habitat-runtime`
+- `fix/browser-smoke-localhost-hostname`
+- `main` (legacy Netlify rollback)
+- `maintenance/code-navigation-and-cleanup`
+- `refactor/habitat-interactions`
+
+The intended end state is to keep only `migration/cloudflare-pages`. Confirm that the Netlify rollback is no longer used, then delete the listed branches from GitHub's Branches page. Create a tag or backup first only when a branch still contains work that must be retained.
