@@ -1,7 +1,6 @@
 import { lsRaw, lsPut, lsGet, lsSet, esc } from './storage.js';
 import { SVG_ICONS, isLightMode, setLightMode, closeAllPopovers } from './01-core-ui.js';
 import { pw, ph, pRect, ctx, frameChance, shootingStars, frameScale, HABITATS, currentHabitatIdx } from './07-habitat-state.js';
-import { invalidateBackgroundCache } from './scene-state.js';
 import { registerWeatherPreviewRenderer } from './services.js';
 
 /* WEATHER — Living Pixel Diorama
