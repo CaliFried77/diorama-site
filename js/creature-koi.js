@@ -142,7 +142,8 @@ export class PixelKoi {
         const swimBounds = getKoiSwimBounds(this.x);
         const depth = (this.y - swimBounds.minY) / Math.max(1, swimBounds.maxY - swimBounds.minY);
         ctx.save();
-        ctx.globalAlpha = 0.92 - Math.max(0, Math.min(1, depth)) * 0.08;
+        ctx.globalAlpha = 0.84 - Math.max(0, Math.min(1, depth)) * 0.10;
+        ctx.filter = 'saturate(0.82) brightness(0.96)';
 
         const cos = Math.cos(this.angle);
         const sin = Math.sin(this.angle);
