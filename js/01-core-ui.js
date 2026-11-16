@@ -21,7 +21,12 @@ import { refreshWeatherPreviewButtons, refreshDataManagerStats } from './service
             moon: `<svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>`
         };
 
-        /* ============================================================================
+        // ============================================================================
+// BÖLÜM SONU: SVG İKON KATALOĞU
+// BÖLÜM BAŞI: TEMA VE ZEN MODU
+// ============================================================================
+
+/* ============================================================================
            1B. DAY / NIGHT (AYDINLIK / KARANLIK) THEME ENGINE
            ============================================================================ */
         export let isLightMode = lsRaw('diorama_theme') === 'light';
@@ -101,7 +106,11 @@ import { refreshWeatherPreviewButtons, refreshDataManagerStats } from './service
         }
         zenModeBtn.addEventListener('click', toggleZenMode);
 
-        /* ============================================================================
+        // ============================================================================
+// BÖLÜM SONU: TEMA VE ZEN MODU
+// ============================================================================
+
+/* ============================================================================
            2. CLOCK, TURKISH GREETING & USER NAME
            ============================================================================ */
         const heroClock = document.getElementById('heroClock');
@@ -137,7 +146,12 @@ import { refreshWeatherPreviewButtons, refreshDataManagerStats } from './service
         updateClockAndGreeting();
         setInterval(updateClockAndGreeting, 10000);
 
-        /* ============================================================================
+        // ============================================================================
+// BÖLÜM SONU: SAAT, TARİH VE SELAMLAMA
+// BÖLÜM BAŞI: ÇOKLU ARAMA MOTORU
+// ============================================================================
+
+/* ============================================================================
            3. MULTI-ENGINE SEARCH BAR (WITH CUSTOM SVG BADGES & ARROW CYCLING)
            ============================================================================ */
         const ENGINES = {
@@ -201,7 +215,12 @@ import { refreshWeatherPreviewButtons, refreshDataManagerStats } from './service
             window.location.href = ENGINES[activeEngine].url(encodeURIComponent(val));
         });
 
-        /* ============================================================================
+        // ============================================================================
+// BÖLÜM SONU: ÇOKLU ARAMA MOTORU
+// BÖLÜM BAŞI: KISAYOL PANELİ VE DÜZENLEME PENCERESİ
+// ============================================================================
+
+/* ============================================================================
            4. TEXT-ONLY MINIMALIST OPTICAL LIQUID GLASS SHORTCUT DOCK (ZERO ICONS)
            ============================================================================ */
         export const DEFAULT_SHORTCUTS = [
@@ -352,8 +371,13 @@ import { refreshWeatherPreviewButtons, refreshDataManagerStats } from './service
             if (newAddButton) newAddButton.focus();
         });
 
-        /* ============================================================================
-           5. POPOVER MANAGEMENT, LIVE NEWS AGENDA (GÜNDEM) & WEATHER
+        // ============================================================================
+// BÖLÜM SONU: KISAYOL PANELİ
+// BÖLÜM BAŞI: POPOVER AÇMA/KAPATMA VE ORTAK ARAYÜZ DURUMU
+// ============================================================================
+
+/* ============================================================================
+           5. POPOVER MANAGEMENT AND SHARED OPEN/CLOSE BEHAVIOR
            ============================================================================ */
         export const popovers = [
             { btn: document.getElementById('habitatMenuBtn'), panel: document.getElementById('habitatPopover') },
@@ -405,3 +429,7 @@ export function setLightMode(next) {
 export function setShortcuts(next) {
     shortcuts = normalizeShortcutList(next, []);
 }
+
+// ============================================================================
+// BÖLÜM SONU: POPOVER AÇMA/KAPATMA VE ORTAK ARAYÜZ DURUMU
+// ============================================================================
