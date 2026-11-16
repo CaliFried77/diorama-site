@@ -855,66 +855,135 @@ const CREATURE_PROFILES = Object.freeze({
             }
 
             if (hab.sceneProfile === 'rainforest') {
-                // Giant buttress trees and an overlapping emerald canopy frame the parrot flight corridor.
-                const forestTrees = [
-                    { x: 12, top: 4, width: 18, height: 0, canopy: 38 },
-                    { x: Math.round(pw * 0.43), top: 18, width: 13, canopy: 31 },
-                    { x: pw - 34, top: 0, width: 21, canopy: 42 },
-                ];
-                forestTrees.forEach((tree, index) => {
-                    const trunkColor = isLightMode ? '#5b341f' : '#241c20';
-                    const barkColor = isLightMode ? '#8a5530' : '#49302a';
-                    const topY = Math.min(tree.top, Math.max(0, ph - 80));
-                    for (let y = topY; y < ph; y++) {
-                        const progress = (y - topY) / Math.max(1, ph - topY);
-                        const trunkW = tree.width + Math.floor(progress * 12);
-                        pRect(tree.x, y, trunkW, 1, trunkColor);
-                        pRect(tree.x + 2, y, 2, 1, barkColor);
-                        if (y % 19 === index * 4) pRect(tree.x + Math.floor(trunkW * 0.65), y, 3, 1, isLightMode ? '#a1623b' : '#654237');
-                    }
+                // A layered emerald ceiling: overlapping crowns leave only small windows to the sky.
+                const canopyShades = isLightMode
+                    ? ['#0d513b', '#146b48', '#1b8050', '#27945a']
+                    : ['#062b25', '#0a3b2e', '#0e4b35', '#15583b'];
+                for (let tier = 0; tier < 3; tier++) {
+                    const step = tier === 0 ? 39 : 47;
+                    const count = Math.ceil(pw / step) + 2;
+                    for (let index = -1; index < count; index++) {
+                        const cx = index * step + (tier === 1 ? 13 : 0) + Math.sin(index * 1.9 + tier) * 5;
+                        const cy = tier === 0
+                            ? 5 + ((index * 7 + 30) % 17)
+                            : tier === 1 ? 28 + ((index * 11 + 60) % 23) : 53 + ((index * 5 + 20) % 17);
+                        const rx = (tier === 2 ? 25 : 31) + ((index * 7 + tier * 9 + 80) % 18);
+                        const ry = (tier === 2 ? 19 : 23) + ((index * 5 + tier * 7 + 70) % 12);
+                        for (let dy = -ry; dy <= ry; dy += 2) {
+                            const ellipse = Math.max(0, 1 - (dy * dy) / (ry * ry));
+                            const irregular = Math.sin(index * 1.73 + dy * 0.31 + tier) * 2.2;
+                            const halfWidth = Math.max(1, Math.floor(rx * Math.sqrt(ellipse) + irregular));
+                            const shade = dy < -ry * 0.22 ? canopyShades[2]
+                                : dy > ry * 0.42 ? canopyShades[0] : canopyShades[1];
+                            pRect(cx - halfWidth, cy + dy, halfWidth * 2, 2, shade);
 
-                    // Buttress roots fan into the forest floor.
-                    for (let side = -1; side <= 1; side += 2) {
-                        for (let step = 0; step < 24; step++) {
-                            const rootX = tree.x + tree.width / 2 + side * step * 1.35;
-                            const rootY = ph - 1 - step * 0.72;
-                            pRect(rootX, rootY, 2 + Math.floor((24 - step) / 8), 1, trunkColor);
-                            if (step % 6 === 0) pRect(rootX, rootY - 1, 3, 1, barkColor);
-                        }
-                    }
-
-                    // Broad canopy clumps with a cool rim light.
-                    const canopyY = topY + 14 + (index % 2) * 8;
-                    for (let dy = -15; dy <= 16; dy++) {
-                        for (let dx = -tree.canopy; dx <= tree.canopy; dx++) {
-                            if ((dx * dx) / (tree.canopy * tree.canopy) + (dy * dy) / 225 <= 1) {
-                                const top = dy < -5;
-                                const lower = dy > 8;
-                                const color = top
-                                    ? (isLightMode ? '#22a06b' : '#145b43')
-                                    : lower ? (isLightMode ? '#166534' : '#0a392e')
-                                        : (isLightMode ? '#16a34a' : '#0d4a39');
-                                pRect(tree.x + tree.width / 2 + dx, canopyY + dy, 1, 1, color);
-                                if ((dx + dy + index * 3) % 23 === 0) {
-                                    pRect(tree.x + tree.width / 2 + dx, canopyY + dy, 2, 1, isLightMode ? '#86efac' : '#2dd4bf');
-                                }
+                            // Pixel-sized leaf clusters break the smooth ellipse into organic foliage.
+                            if ((dy + index * 3 + tier * 5) % 8 === 0) {
+                                const leafX = cx - halfWidth + ((index * 17 + dy * 3 + 600) % Math.max(2, halfWidth * 2));
+                                pRect(leafX, cy + dy - 1, 3 + (index % 2), 2, canopyShades[3]);
+                                pRect(leafX + 1, cy + dy - 2, 1, 1, isLightMode ? '#86efac' : '#2dd4a0');
                             }
                         }
                     }
-                });
+                }
 
-                // Shafts of warm light filter through the canopy and fade into drifting mist.
-                ctx.fillStyle = isLightMode ? 'rgba(254, 240, 138, 0.055)' : 'rgba(167, 243, 208, 0.035)';
-                for (let ray = 0; ray < 5; ray++) {
-                    const x = Math.round((ray * 103 + Math.sin(time * 0.0005 + ray) * 13) % pw);
-                    for (let y = 22; y < ph * 0.72; y += 3) {
-                        ctx.fillRect(Math.round(x + y * 0.16), y, 4 + ray % 2, 2);
+                // Distant broadleaf crowns fill the middle distance without obscuring the flight space.
+                for (let cluster = 0; cluster < 9; cluster++) {
+                    const cx = cluster * (pw / 8) + Math.sin(cluster * 2.1) * 7;
+                    const cy = ph * (0.39 + (cluster % 3) * 0.055);
+                    const rx = 25 + (cluster % 4) * 7;
+                    const ry = 14 + (cluster % 3) * 5;
+                    for (let dy = -ry; dy <= ry; dy += 2) {
+                        const width = Math.floor(rx * Math.sqrt(Math.max(0, 1 - (dy * dy) / (ry * ry))));
+                        const shade = dy < -3 ? canopyShades[1] : canopyShades[0];
+                        pRect(cx - width, cy + dy, width * 2, 2, shade);
                     }
                 }
-                ctx.fillStyle = isLightMode ? 'rgba(167, 243, 208, 0.07)' : 'rgba(45, 212, 191, 0.045)';
-                for (let band = 0; band < 3; band++) {
-                    const mistY = Math.round(ph * (0.56 + band * 0.075) + Math.sin(time * 0.0007 + band) * 3);
-                    ctx.fillRect(0, mistY, pw, 2);
+
+                // Three buttress-root trees have irregular bark and different depths; none is a flat wall.
+                const forestTrees = [
+                    { x: 5, top: 0, width: 18, end: ph, depth: 1 },
+                    { x: Math.floor(pw * 0.27), top: 44, width: 11, end: Math.floor(ph * 0.82), depth: 0 },
+                    { x: pw - 36, top: 0, width: 22, end: ph, depth: 1 },
+                ];
+                forestTrees.forEach((tree, index) => {
+                    const trunkDark = isLightMode ? '#40271e' : '#1b1a1c';
+                    const trunkMid = isLightMode ? '#68402b' : '#302126';
+                    const trunkLight = isLightMode ? '#8a5a37' : '#49302a';
+                    const startY = Math.max(0, tree.top);
+                    for (let y = startY; y < tree.end; y++) {
+                        const progress = (y - startY) / Math.max(1, tree.end - startY);
+                        const sway = Math.round(Math.sin(y * 0.035 + index * 2.2) * 1.5);
+                        const left = tree.x + sway;
+                        const width = tree.width + Math.floor(progress * (tree.depth ? 12 : 6)) + Math.round(Math.sin(y * 0.09 + index) * 1.2);
+                        pRect(left, y, width, 1, trunkDark);
+                        pRect(left + 3, y, Math.max(2, Math.floor(width * 0.28)), 1, trunkMid);
+                        pRect(left + width - 5, y, 2, 1, trunkLight);
+                        if ((y + index * 13) % 31 === 0) {
+                            pRect(left + 5, y - 1, 2, 3, '#17191a');
+                            pRect(left + 7, y, 2, 1, trunkLight);
+                        }
+                        if ((y + index * 7) % 47 === 0) pRect(left + width - 8, y, 4, 1, isLightMode ? '#a1623b' : '#654237');
+                    }
+
+                    if (tree.depth) {
+                        // Wide buttress roots flare into the damp ground.
+                        for (let side = -1; side <= 1; side += 2) {
+                            for (let step = 0; step < 31; step++) {
+                                const rootX = tree.x + tree.width * 0.52 + side * step * 1.18;
+                                const rootY = ph - 2 - step * 0.74;
+                                const rootW = Math.max(1, 4 - Math.floor(step / 9));
+                                pRect(rootX, rootY, rootW, 2, trunkDark);
+                                if (step % 7 === 0) pRect(rootX + side, rootY - 1, rootW + 2, 1, trunkMid);
+                            }
+                        }
+                    }
+
+                    // Moss pillows and tiny epiphytes cling to the shaded trunk.
+                    for (let moss = 0; moss < 7; moss++) {
+                        const my = startY + 28 + moss * Math.max(8, Math.floor((tree.end - startY - 36) / 7));
+                        const mx = tree.x + tree.width - 2 + Math.sin(moss * 1.8 + index) * 2;
+                        pRect(mx, my, 4, 2, isLightMode ? '#16834c' : '#116044');
+                        if (moss % 2 === 0) pRect(mx + 2, my - 1, 2, 1, '#2ca66b');
+                    }
+                });
+
+                // A few diagonal lianas bridge crowns and trunks rather than hanging as a row of strings.
+                for (let vine = 0; vine < 5; vine++) {
+                    const anchorX = (vine * 137 + 33) % pw;
+                    const length = 36 + (vine % 3) * 17;
+                    for (let step = 0; step < length; step++) {
+                        const t = step / length;
+                        const x = anchorX + Math.sin(t * 2.8 + vine) * (4 + t * 9);
+                        const y = 18 + step;
+                        pRect(x, y, 2, 1, isLightMode ? '#166534' : '#0b593d');
+                        if (step > 5 && step % 11 === 0) {
+                            const side = step % 2 === 0 ? -1 : 1;
+                            pRect(x + side * 2, y - 1, side * 3, 2, '#1fa45d');
+                            pRect(x + side * 4, y - 2, 2, 1, '#58c878');
+                        }
+                    }
+                }
+
+                // Sunbeams arrive in broken, soft shafts; humid mist floats as separate wisps, never screen-wide stripes.
+                for (let ray = 0; ray < 7; ray++) {
+                    const baseX = (ray * 97 + 21) % pw;
+                    for (let segment = 0; segment < 7; segment++) {
+                        const y = 28 + segment * 18 + (ray % 3) * 5;
+                        const x = baseX + Math.round(y * 0.12) + Math.sin(time * 0.0005 + ray + segment) * 2;
+                        pRect(x, y, 2 + (ray % 3), 5 + (segment % 3) * 2,
+                            isLightMode ? 'rgba(254, 240, 138, 0.075)' : 'rgba(167, 243, 208, 0.045)');
+                    }
+                }
+                for (let wisp = 0; wisp < 18; wisp++) {
+                    const drift = (time * (0.002 + (wisp % 3) * 0.0006)) % (pw + 38);
+                    const x = (wisp * 67 + drift) % pw;
+                    const y = ph * (0.43 + (wisp % 5) * 0.055) + Math.sin(time * 0.0007 + wisp) * 2;
+                    const alpha = 0.025 + (wisp % 3) * 0.009;
+                    ctx.fillStyle = isLightMode
+                        ? `rgba(167, 243, 208, ${alpha.toFixed(3)})`
+                        : `rgba(45, 212, 191, ${alpha.toFixed(3)})`;
+                    ctx.fillRect(x, y, 8 + (wisp % 4) * 3, 1 + (wisp % 2));
                 }
             }
 
