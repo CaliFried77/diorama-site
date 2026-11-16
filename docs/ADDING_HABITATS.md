@@ -41,3 +41,14 @@ Yeni `rainforest` profili `PixelParrot` sürüsünü, katmanlı tropik ağaç g�
 Kutup tilkilerinin kullandığı basamaklı kar platformlarının koordinatları ve platformlar arasındaki geçiş bağlantıları `js/arctic-geometry.js` dosyasındadır. Bu modül sahne genişliği ve yüksekliğini parametre olarak alır; DOM veya canvas'a erişmez. Platform konumları, tilki rotaları ve böğürtlenlerin iniş yüzeyleri aynı geometriden hesaplanır. Bunları değiştirirken bu dosyayı ve `tests/arctic-geometry.test.mjs` testini birlikte güncelle.
 
 Kullanıcı tıklamasıyla yem veya uyaran üretimi `js/habitat-interactions.js` dosyasında yapılır. Yeni bir `interactionProfile` eklerken burada ilgili üretim kuralını ekle; ardından üretilen uyaranın güncellenmesi/çizilmesi için `js/habitat-interactions.js` içindeki `drawHabitatStimuli()` fonksiyonunu, canlılar tarafından tüketilmesi için de ilgili canlı sınıfını kontrol et. `js/09-scenery.js` bu fonksiyonu sahne karesinde çağırır. Var olan interaction türlerinin adlarını değiştirirken üç tarafın da aynı tür adını kullandığından emin ol.
+
+## Yeni bir hayvan türü ekleme
+
+Her hayvanın sınıfı ayrı bir dosyada tutulur; mevcut türlerin sınıflarını `js/08-creatures.js` içine ekleme.
+
+1. `js/creature-<tür>.js` dosyasını oluştur ve `export class PixelYeniTur` sınıfını burada tanımla. Yalnızca kullandığın sahne durumlarını `js/07-habitat-state.js` dosyasından içe aktar.
+2. Ortak yem arama gerekiyorsa `findAvailableStimulus` fonksiyonunu `js/creature-utils.js` içinden kullan.
+3. Sınıfı `js/08-creatures.js` dosyasından yeniden dışa aktar.
+4. `js/habitat-initializer.js` içindeki `CREATURE_PROFILES` tablosuna yeni profil ve oluşturucu fonksiyonunu ekle. Yeni bir profil adı kullandıysan `config/habitat-catalog.js` izin listesini güncelle.
+5. Hayvanın yeni bir yem türü üretmesi gerekiyorsa `js/habitat-interactions.js` kodunu ve sahne etkileşim testlerini güncelle.
+6. Yeni sınıf dışa aktarımını, profil kaydını ve açılış testlerini ekle; tüm kalite kontrolleri geçmeden birleştirme.
