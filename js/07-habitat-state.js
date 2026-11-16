@@ -4,15 +4,14 @@ export { HABITATS };
 import { lsRaw, lsPut } from './storage.js';
 import { calculateFrameChance, calculateFrameSmoothing, scaleSceneCollections } from './scene-math.js';
 
-/* HABITAT-STATE — Living Pixel Diorama
-   Native ES module. Cross-file dependencies are declared with imports and exports. */
-/* ============================================================================
-           8. PIXEL ART HABITAT ENGINE
-              - Smart Food Claiming & Quick Sip Cooldown (Zero crowding or lingering!)
-              - Floating Honey Nectar & Drifting Moon-Blossoms (No floor-stalk line!)
-              - Artisan 3/4 Wing-Banking Butterflies & Active-Start Dragonflies
-           ============================================================================ */
-        export const canvas = document.getElementById('habitatCanvas');
+/* HABITAT STATE — Living Pixel Diorama
+   Canvas dimensions, frame timing and shared scene collections for all habitats. */
+// Shared scene state used by habitat, creature, scenery and renderer modules.
+// ============================================================================
+// BÖLÜM BAŞI: CANVAS, KARE ZAMANLAMASI VE ÇİZİM YARDIMCILARI
+// ============================================================================
+
+export const canvas = document.getElementById('habitatCanvas');
         export const ctx = canvas.getContext('2d', { alpha: false });
 
         export const PIXEL_SCALE = 3; // Crisp 3x3 pixel art resolution
@@ -75,7 +74,12 @@ import { calculateFrameChance, calculateFrameSmoothing, scaleSceneCollections } 
             return `rgb(${r},${g},${b})`;
         }
 
-        export let pinnedHabitatId = lsRaw('diorama_pinned_habitat');
+        // ============================================================================
+// BÖLÜM SONU: CANVAS VE ÇİZİM YARDIMCILARI
+// BÖLÜM BAŞI: AKTİF HABİTAT VE PAYLAŞILAN SAHNE DİZİLERİ
+// ============================================================================
+
+export let pinnedHabitatId = lsRaw('diorama_pinned_habitat');
         if (pinnedHabitatId && !HABITAT_IDS.has(pinnedHabitatId)) {
             pinnedHabitatId = null;
             try { localStorage.removeItem('diorama_pinned_habitat'); } catch { /* Storage may be disabled. */ }
@@ -106,3 +110,7 @@ export function setPinnedHabitatId(value) {
 }
 export function setFrameScale(value) { frameScale = value; }
 export function setPrefersReducedMotion(value) { prefersReducedMotion = Boolean(value); }
+
+// ============================================================================
+// BÖLÜM SONU: AKTİF HABİTAT VE PAYLAŞILAN SAHNE DURUMU
+// ============================================================================
