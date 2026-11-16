@@ -528,49 +528,56 @@ export class PixelKoi {
 }
 /* ============================================================================
    CREATURE 2: SHOW-QUALITY HALFMOON & DUMBO BETTA SPLENDENS
-   5 authentic varieties (Royal Sapphire, Red Dragon Scale, Mustard Gas, Koi Galaxy,
-   Black Orchid), rayed 180° silk caudal veil, fluttering Dumbo pectoral fins,
-   trailing ventral "necktie" fins, fin-flaring display behavior, and labyrinth
-   surface-breathing visits!
+   Realistic Betta kinematics: Mid-to-bottom aquascape preference, burst-glide-hover
+   rhythm, horizontal turns without upward drift, fin-flaring displays, and quick
+   labyrinth surface air-sips followed by immediate dives!
    ============================================================================ */
 export class PixelBetta {
     constructor() {
         this.x = 28 + Math.random() * (pw - 56);
-        this.y = 28 + Math.random() * (ph - 72);
-        this.angle = Math.random() < 0.5 ? 0 : Math.PI;
-        this.targetAngle = this.angle;
-        this.speed = 0.25 + Math.random() * 0.12;
+        // Spawn naturally in the middle-to-lower aquascape zone
+        this.y = ph * 0.42 + Math.random() * (ph * 0.42);
+        this.dir = Math.random() < 0.5 ? 1 : -1;
+        this.pitch = 0; // Vertical tilt in radians (-0.45 up to +0.45 down)
+        this.angle = this.dir === 1 ? 0 : Math.PI;
+        this.speed = 0.24 + Math.random() * 0.11;
+        this.curSpeed = this.speed;
         this.phase = Math.random() * Math.PI * 2;
+
+        // Behavioral States: 'cruise' | 'hover' | 'surface_sip'
+        this.state = 'cruise';
+        this.stateTimer = 90 + Math.random() * 140;
+        this.homeY = ph * 0.44 + Math.random() * (ph * 0.38);
         this.eatCooldown = 0;
         this.flareTimer = 0;
-        this.airSipTimer = 0;
+        this.surfaceRipple = 0;
 
         const themes = [
-            // 1. Royal Sapphire Butterfly Halfmoon (Safir Mavi Gövde, İndigo Kuyruk & Beyaz Kelebek Kenar)
+            // 1. Royal Sapphire Butterfly Halfmoon
             {
                 kind: 'butterfly', bodyDark: '#1e3a8a', bodyMid: '#2563eb', bodyHi: '#60a5fa',
                 finBase: '#1d4ed8', finMid: '#4f46e5', finRay: '#93c5fd', finRim: '#f8fafc',
                 pec: 'rgba(186, 230, 253, 0.75)', rgb: [56, 189, 248]
             },
-            // 2. Red Dragon Scale Plakat/Halfmoon (Metalik Gümüş Zırhlı Pullar & Alev Kırmızısı Yüzgeçler)
+            // 2. Red Dragon Scale Halfmoon
             {
                 kind: 'dragon', bodyDark: '#991b1b', bodyMid: '#e2e8f0', bodyHi: '#ffffff',
                 finBase: '#991b1b', finMid: '#e11d48', finRay: '#fb7185', finRim: '#fecdd3',
                 pec: 'rgba(254, 205, 211, 0.75)', rgb: [251, 113, 133]
             },
-            // 3. Mustard Gas / Paradise Betta (Zümrüt-Turkuaz Gövde & Altın Sarısı Dalgalı Kuyruk)
+            // 3. Mustard Gas / Paradise Betta
             {
                 kind: 'mustard', bodyDark: '#115e59', bodyMid: '#0d9488', bodyHi: '#5eead4',
                 finBase: '#0f766e', finMid: '#eab308', finRay: '#fde047', finRim: '#fef08a',
                 pec: 'rgba(254, 240, 138, 0.75)', rgb: [45, 212, 191]
             },
-            // 4. Koi Galaxy Nemo (Fildişi, Yakut, Turuncu & Gece Mavisi Benekli)
+            // 4. Koi Galaxy Nemo
             {
                 kind: 'koi', bodyDark: '#c2410c', bodyMid: '#fffbeb', bodyHi: '#f97316',
                 finBase: '#e11d48', finMid: '#f59e0b', finRay: '#38bdf8', finRim: '#e0f2fe',
                 pec: 'rgba(254, 215, 170, 0.78)', rgb: [251, 146, 60]
             },
-            // 5. Black Orchid & Lavender Dumbo (Kadife Obsidiyen Gövde & Neon Mor/Pembe Yüzgeçler)
+            // 5. Black Orchid & Lavender Dumbo
             {
                 kind: 'orchid', bodyDark: '#090d16', bodyMid: '#312e81', bodyHi: '#818cf8',
                 finBase: '#4c1d95', finMid: '#9333ea', finRay: '#e879f9', finRim: '#f5d0fe',
@@ -583,7 +590,7 @@ export class PixelBetta {
 
         this.history = [];
         for (let i = 0; i < 20; i++) {
-            this.history.push({ x: this.x - Math.cos(this.angle) * i * 0.85, y: this.y });
+            this.history.push({ x: this.x - this.dir * i * 0.85, y: this.y });
         }
     }
 
@@ -595,61 +602,110 @@ export class PixelBetta {
     }
 
     update(t) {
-        this.phase += 0.072 * frameScale;
         if (this.eatCooldown > 0) this.eatCooldown = Math.max(0, this.eatCooldown - frameScale);
         if (this.flareTimer > 0) this.flareTimer = Math.max(0, this.flareTimer - frameScale);
-        if (this.airSipTimer > 0) this.airSipTimer = Math.max(0, this.airSipTimer - frameScale);
+        if (this.surfaceRipple > 0) this.surfaceRipple = Math.max(0, this.surfaceRipple - 0.35 * frameScale);
 
-        // 1. Seek user-dropped crimson bloodworms across the entire aquarium!
+        let targetPitch = 0;
+        let targetSpd = this.speed;
+
+        // 1. PRIORITY: Hunt user-dropped crimson bloodworms anywhere in the aquarium
         const worm = findAvailableStimulus(this, 'bloodworm', Math.max(380, pw * 0.85));
         if (worm) {
-            this.flareTimer = 18; // Excited fin flare when hunting!
+            this.state = 'cruise';
+            this.flareTimer = 20;
             const dx = worm.x - this.x;
             const dy = worm.y - this.y;
-            const dist = Math.hypot(dx, dy);
-            this.targetAngle = Math.atan2(dy, dx);
+            const dist = Math.max(1, Math.hypot(dx, dy));
+
+            if (Math.abs(dx) > 3) this.dir = dx >= 0 ? 1 : -1;
+            targetPitch = Math.max(-0.52, Math.min(0.52, Math.atan2(dy, Math.abs(dx) + 2)));
+            targetSpd = this.speed * 1.65;
+
             if (dist < 7) {
                 worm.life = 0;
-                this.eatCooldown = 85;
+                this.eatCooldown = 80;
                 this.flareTimer = 45;
-                this.targetAngle = (Math.cos(this.angle) >= 0 ? 0 : Math.PI) + (Math.random() - 0.5) * 0.8;
+                this.state = 'hover';
+                this.stateTimer = 40;
+                // Settle back into mid-lower tank after eating
+                this.homeY = Math.max(ph * 0.42, Math.min(ph - 30, this.y + 18));
+            }
+        } else if (this.state === 'surface_sip') {
+            // 2. Quick Labyrinth Organ Surface Breath -> Then immediately dive back down!
+            this.stateTimer -= frameScale;
+            targetPitch = -0.46; // Climb toward water surface
+            targetSpd = this.speed * 1.35;
+
+            if (this.y <= 14 || this.stateTimer <= 0) {
+                if (this.y <= 16) this.surfaceRipple = 8; // Tiny air-sip surface ring
+                this.state = 'cruise';
+                this.stateTimer = 110 + Math.random() * 120;
+                // Immediately assign a deep homeY in the lower-mid plants so it dives down!
+                this.homeY = ph * 0.48 + Math.random() * (ph * 0.36);
+                this.pitch = 0.38;
+            }
+        } else if (this.state === 'hover') {
+            // 3. Contemplative Betta Hover (pausing near driftwood/plants, fluttering pectoral fins & flaring)
+            this.stateTimer -= frameScale;
+            targetSpd = 0.03;
+            // Gentle natural fin-weight sink if hovering too high
+            targetPitch = this.y < ph * 0.38 ? 0.16 : Math.sin(this.phase * 0.5) * 0.06;
+
+            if (this.stateTimer <= 0) {
+                // Occasionally take a quick labyrinth breath at the surface (only ~5% chance)
+                if (Math.random() < 0.05 && this.y > ph * 0.45) {
+                    this.state = 'surface_sip';
+                    this.stateTimer = 95;
+                } else {
+                    this.state = 'cruise';
+                    this.stateTimer = 100 + Math.random() * 160;
+                    if (Math.random() < 0.45) this.dir *= -1;
+                    // Always pick a new target depth in the mid-to-bottom zone (40%..84% of depth)
+                    this.homeY = ph * 0.40 + Math.random() * (ph * 0.44);
+                }
             }
         } else {
-            // 2. Labyrinth organ behavior: occasionally glide up to the water surface / Pistia roots for a sip of air
-            if (this.airSipTimer === 0 && frameChance(0.003) && this.y > 35) {
-                this.airSipTimer = 90;
-                this.targetAngle = -Math.PI * 0.5 + (Math.random() - 0.5) * 0.6;
-            } else if (this.airSipTimer > 0) {
-                if (this.y <= 14) {
-                    this.airSipTimer = 0;
-                    this.flareTimer = 35;
-                    this.targetAngle = (Math.cos(this.angle) >= 0 ? 0.35 : Math.PI - 0.35);
-                }
-            } else if (frameChance(0.018)) {
-                const baseDir = Math.cos(this.angle) >= 0 ? 0 : Math.PI;
-                const turn = Math.random() < 0.28 ? (baseDir === 0 ? Math.PI : 0) : baseDir;
-                this.targetAngle = turn + (Math.random() - 0.5) * 0.65;
-                if (Math.random() < 0.35) this.flareTimer = 40 + Math.random() * 35;
+            // 4. Normal Regal Cruise in Mid-to-Lower Aquascape
+            this.stateTimer -= frameScale;
+            const dyHome = this.homeY - this.y;
+            targetPitch = Math.max(-0.34, Math.min(0.38, dyHome * 0.014 + Math.sin(this.phase * 0.4) * 0.06));
+            // Natural burst-and-glide swimming cadence
+            targetSpd = this.speed * (0.85 + 0.30 * Math.sin(this.phase * 0.75));
+
+            // Turn inward softly before hitting aquarium glass edges
+            if (this.x < 34 && this.dir === -1) {
+                this.dir = 1;
+                this.flareTimer = 35;
+            } else if (this.x > pw - 34 && this.dir === 1) {
+                this.dir = -1;
+                this.flareTimer = 35;
+            }
+
+            if (this.stateTimer <= 0) {
+                this.state = 'hover';
+                this.stateTimer = 45 + Math.random() * 75;
+                if (Math.random() < 0.55) this.flareTimer = 45 + Math.random() * 35;
             }
         }
 
-        if (this.airSipTimer === 0 && this.y < 22) {
-            this.targetAngle = Math.cos(this.angle) >= 0 ? 0.35 : Math.PI - 0.35;
+        // Enforce floor & ceiling safety bounds (prevents any upward trapping!)
+        if (this.state !== 'surface_sip' && !worm && this.y < ph * 0.30) {
+            targetPitch = Math.max(targetPitch, 0.28); // Push gently down into the aquascape
         }
-        if (this.y > ph - 38) {
-            this.targetAngle = Math.cos(this.angle) >= 0 ? -0.35 : Math.PI + 0.35;
+        if (this.y > ph - 26) {
+            targetPitch = Math.min(targetPitch, -0.28); // Keep above substrate pebbles
         }
 
-        let diff = this.targetAngle - this.angle;
-        while (diff > Math.PI) diff -= Math.PI * 2;
-        while (diff < -Math.PI) diff += Math.PI * 2;
-        this.angle += diff * frameSmoothing(worm ? 0.065 : 0.038);
+        this.pitch += (targetPitch - this.pitch) * frameSmoothing(0.08);
+        this.curSpeed += (targetSpd - this.curSpeed) * frameSmoothing(0.09);
+        this.phase += (this.state === 'hover' ? 0.055 : 0.082) * frameScale;
 
-        // Slow, regal hover during fin-flare display; brisk dart when hunting bloodworms
-        const boost = worm ? 1.55 : (this.flareTimer > 0 ? 0.62 : 1.0);
-        const glide = (1 + 0.22 * Math.sin(this.phase * 0.85)) * boost;
-        this.x += Math.cos(this.angle) * this.speed * glide * frameScale;
-        this.y += Math.sin(this.angle) * this.speed * glide * frameScale;
+        // Compute true rendering angle without ever rotating through vertical -PI/2!
+        this.angle = this.dir === 1 ? this.pitch : (Math.PI - this.pitch);
+
+        this.x += Math.cos(this.angle) * this.curSpeed * frameScale;
+        this.y += Math.sin(this.angle) * this.curSpeed * frameScale;
 
         if (this.x < -36) {
             const wrapDelta = pw + 72;
@@ -661,19 +717,23 @@ export class PixelBetta {
             this.shiftHistory(wrapDelta, 0);
         }
 
-        const tailBaseX = this.x - Math.cos(this.angle) * 5;
-        const tailBaseY = this.y - Math.sin(this.angle) * 5;
+        const cos = Math.cos(this.angle);
+        const sin = Math.sin(this.angle);
+        const tailBaseX = this.x - cos * 5;
+        const tailBaseY = this.y - sin * 5;
         this.history[0].x = tailBaseX;
         this.history[0].y = tailBaseY;
 
+        // Veil tail physics: flows behind the fish when cruising, drapes softly downward when hovering
+        const hoverDrape = this.state === 'hover' ? 0.09 : 0.02;
         for (let i = 1; i < this.history.length; i++) {
             const prev = this.history[i - 1];
             const cur = this.history[i];
-            const wave = Math.sin(this.phase - i * 0.32) * (0.26 + i * 0.038);
-            const tx = prev.x - Math.cos(this.angle) * 0.78 - Math.sin(this.angle) * wave;
-            const ty = prev.y - Math.sin(this.angle) * 0.78 + Math.cos(this.angle) * wave;
-            cur.x += (tx - cur.x) * frameSmoothing(0.45);
-            cur.y += (ty - cur.y) * frameSmoothing(0.45);
+            const wave = Math.sin(this.phase - i * 0.32) * (0.24 + i * 0.036);
+            const tx = prev.x - cos * 0.78 - sin * wave;
+            const ty = prev.y - sin * 0.78 + cos * wave + hoverDrape;
+            cur.x += (tx - cur.x) * frameSmoothing(0.42);
+            cur.y += (ty - cur.y) * frameSmoothing(0.42);
         }
     }
 
@@ -682,10 +742,17 @@ export class PixelBetta {
         const sin = Math.sin(this.angle);
         const perpX = -sin;
         const perpY = cos;
-        const upSign = cos >= 0 ? 1 : -1;
+        const upSign = this.dir;
         const flareBonus = this.flareTimer > 0 ? 1.18 : 1.0;
 
-        // 1. 180° Halfmoon / Rosetail Fluted Caudal Veil (with radiating fin rays & scalloped rim)
+        // 0. Tiny Surface Ripple when taking a labyrinth breath at the top
+        if (this.surfaceRipple > 0) {
+            const r = Math.round((8 - this.surfaceRipple) * 1.6);
+            pRect(this.x - r, 3, 2, 1, 'rgba(224, 242, 254, 0.55)');
+            pRect(this.x + r, 3, 2, 1, 'rgba(224, 242, 254, 0.55)');
+        }
+
+        // 1. 180° Halfmoon / Rosetail Fluted Caudal Veil
         for (let i = this.history.length - 1; i >= 0; i--) {
             const pt = this.history[i];
             if (Math.abs(pt.x - this.x) > 42 || Math.abs(pt.y - this.y) > 42) continue;
@@ -694,7 +761,6 @@ export class PixelBetta {
 
             for (let r = -fanRadius; r <= fanRadius; r++) {
                 const rRatio = Math.abs(r) / (fanRadius || 1);
-                // Scalloped rosetail outer edge notch
                 if (tRatio > 0.88 && (Math.abs(r) % 3 === 1)) continue;
 
                 const silkFold = Math.sin(this.phase * 1.15 - i * 0.26 + r * 0.38) * 0.65;
@@ -730,7 +796,7 @@ export class PixelBetta {
             }
         }
 
-        // 3. Long Trailing Dual Ventral "Necktie" Fins beneath the throat (with white pearl tips)
+        // 3. Long Trailing Dual Ventral "Necktie" Fins beneath the throat
         const venBaseX = this.x + cos * 1.2 + perpX * 2.2 * upSign;
         const venBaseY = this.y + sin * 1.2 + perpY * 2.2 * upSign;
         for (let v = 0; v < 6; v++) {
@@ -741,7 +807,7 @@ export class PixelBetta {
             pRect(vx - cos * 1.2, vy - sin * 1.2, 1, 1, v >= 4 ? this.pal.finRim : this.pal.finBase);
         }
 
-        // 4. Sculpted Arched Betta Torso with Dragon-Scale / Koi Galaxy / Iridescent Scales
+        // 4. Sculpted Arched Betta Torso
         for (let b = -5; b <= 6; b++) {
             const halfThick = b > 3 ? (6 - b) * 0.72 : (b < -2 ? (6 + b) * 0.68 : 2.5);
             for (let w = -Math.floor(halfThick); w <= Math.floor(halfThick); w++) {
@@ -750,12 +816,10 @@ export class PixelBetta {
                 let col = this.pal.bodyMid;
 
                 if (this.pal.kind === 'koi') {
-                    // Calico Koi Galaxy spots
                     if ((b + w + this.seed) % 4 === 0) col = '#0f172a';
                     else if ((b * w + this.seed) % 3 === 0) col = this.pal.bodyHi;
                     else if (b < 0) col = this.pal.bodyDark;
                 } else if (this.pal.kind === 'dragon') {
-                    // Metallic diamond dragon-scale lattice
                     col = ((b + w) % 2 === 0 && Math.abs(w) <= 1) ? this.pal.bodyHi : (w * upSign > 1 ? this.pal.bodyDark : this.pal.bodyMid);
                 } else {
                     if (w * upSign < 0) col = (b + w) % 2 === 0 ? this.pal.bodyHi : this.pal.bodyMid;
@@ -765,28 +829,26 @@ export class PixelBetta {
             }
         }
 
-        // 5. Fluttering Translucent "Dumbo Ear" Pectoral Fan Fin on the side of the chest
-        const pecFlutter = Math.sin(this.phase * 2.2) * 1.4;
+        // 5. Fluttering Translucent "Dumbo Ear" Pectoral Fan Fin
+        const pecFlutter = Math.sin(this.phase * (this.state === 'hover' ? 3.2 : 2.2)) * 1.4;
         const pecX = this.x + cos * (1.5 + pecFlutter * 0.35) + perpX * 1.2 * upSign;
         const pecY = this.y + sin * (1.5 + pecFlutter * 0.35) + perpY * 1.2 * upSign;
         pRect(pecX - 1, pecY - 1, 3, 3, this.pal.pec);
         pRect(pecX, pecY, 2, 2, '#ffffff');
 
-        // 6. Upturned Labyrinth Mouth, Flaring Gill Operculum & Jewel Eye
+        // 6. Upturned Labyrinth Mouth, Flaring Gill Beard & Jewel Eye
         const eyeX = this.x + cos * 4.5 - perpX * 0.6 * upSign;
         const eyeY = this.y + sin * 4.5 - perpY * 0.6 * upSign;
         pRect(eyeX, eyeY, 1, 1, '#0f172a');
-        pRect(eyeX - cos * 0.5, eyeY - sin * 0.5, 1, 1, '#e0f2fe'); // Eye ring glint
+        pRect(eyeX - cos * 0.5, eyeY - sin * 0.5, 1, 1, '#e0f2fe');
 
         if (this.flareTimer > 0) {
-            // Flared crimson/dark gill beard when displaying!
             const gillX = this.x + cos * 2.5 + perpX * 2.2 * upSign;
             const gillY = this.y + sin * 2.5 + perpY * 2.2 * upSign;
             pRect(gillX, gillY, 2, 2, '#dc2626');
         }
     }
 }
-
 /* ============================================================================
    CREATURE 3: SERENE EMPEROR DRAGONFLY
    ============================================================================ */
