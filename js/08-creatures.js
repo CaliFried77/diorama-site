@@ -527,25 +527,59 @@ export class PixelKoi {
     }
 }
 /* ============================================================================
-   CREATURE 2: CONTINUOUS SILK-VEIL HALFMOON BETTA FISH
+   CREATURE 2: SHOW-QUALITY HALFMOON & DUMBO BETTA SPLENDENS
+   5 authentic varieties (Royal Sapphire, Red Dragon Scale, Mustard Gas, Koi Galaxy,
+   Black Orchid), rayed 180° silk caudal veil, fluttering Dumbo pectoral fins,
+   trailing ventral "necktie" fins, fin-flaring display behavior, and labyrinth
+   surface-breathing visits!
    ============================================================================ */
 export class PixelBetta {
     constructor() {
-        this.x = Math.random() * pw;
+        this.x = 28 + Math.random() * (pw - 56);
         this.y = 28 + Math.random() * (ph - 72);
         this.angle = Math.random() < 0.5 ? 0 : Math.PI;
         this.targetAngle = this.angle;
-        this.speed = 0.28 + Math.random() * 0.14;
+        this.speed = 0.25 + Math.random() * 0.12;
         this.phase = Math.random() * Math.PI * 2;
         this.eatCooldown = 0;
+        this.flareTimer = 0;
+        this.airSipTimer = 0;
 
         const themes = [
-            { bodyDark: '#1e3a8a', bodyMid: '#2563eb', bodyHi: '#60a5fa', finBase: '#1d4ed8', finMid: '#4f46e5', finRim: '#7dd3fc', rgb: [56, 189, 248] },
-            { bodyDark: '#881337', bodyMid: '#e11d48', bodyHi: '#fb7185', finBase: '#be123c', finMid: '#9f1239', finRim: '#fda4af', rgb: [251, 113, 133] },
-            { bodyDark: '#134e4a', bodyMid: '#0d9488', bodyHi: '#5eead4', finBase: '#0f766e', finMid: '#d97706', finRim: '#fde047', rgb: [45, 212, 191] }
+            // 1. Royal Sapphire Butterfly Halfmoon (Safir Mavi Gövde, İndigo Kuyruk & Beyaz Kelebek Kenar)
+            {
+                kind: 'butterfly', bodyDark: '#1e3a8a', bodyMid: '#2563eb', bodyHi: '#60a5fa',
+                finBase: '#1d4ed8', finMid: '#4f46e5', finRay: '#93c5fd', finRim: '#f8fafc',
+                pec: 'rgba(186, 230, 253, 0.75)', rgb: [56, 189, 248]
+            },
+            // 2. Red Dragon Scale Plakat/Halfmoon (Metalik Gümüş Zırhlı Pullar & Alev Kırmızısı Yüzgeçler)
+            {
+                kind: 'dragon', bodyDark: '#991b1b', bodyMid: '#e2e8f0', bodyHi: '#ffffff',
+                finBase: '#991b1b', finMid: '#e11d48', finRay: '#fb7185', finRim: '#fecdd3',
+                pec: 'rgba(254, 205, 211, 0.75)', rgb: [251, 113, 133]
+            },
+            // 3. Mustard Gas / Paradise Betta (Zümrüt-Turkuaz Gövde & Altın Sarısı Dalgalı Kuyruk)
+            {
+                kind: 'mustard', bodyDark: '#115e59', bodyMid: '#0d9488', bodyHi: '#5eead4',
+                finBase: '#0f766e', finMid: '#eab308', finRay: '#fde047', finRim: '#fef08a',
+                pec: 'rgba(254, 240, 138, 0.75)', rgb: [45, 212, 191]
+            },
+            // 4. Koi Galaxy Nemo (Fildişi, Yakut, Turuncu & Gece Mavisi Benekli)
+            {
+                kind: 'koi', bodyDark: '#c2410c', bodyMid: '#fffbeb', bodyHi: '#f97316',
+                finBase: '#e11d48', finMid: '#f59e0b', finRay: '#38bdf8', finRim: '#e0f2fe',
+                pec: 'rgba(254, 215, 170, 0.78)', rgb: [251, 146, 60]
+            },
+            // 5. Black Orchid & Lavender Dumbo (Kadife Obsidiyen Gövde & Neon Mor/Pembe Yüzgeçler)
+            {
+                kind: 'orchid', bodyDark: '#090d16', bodyMid: '#312e81', bodyHi: '#818cf8',
+                finBase: '#4c1d95', finMid: '#9333ea', finRay: '#e879f9', finRim: '#f5d0fe',
+                pec: 'rgba(245, 208, 254, 0.80)', rgb: [192, 132, 252]
+            }
         ];
         this.pal = themes[Math.floor(Math.random() * themes.length)];
         this.rgb = this.pal.rgb;
+        this.seed = Math.floor(Math.random() * 100);
 
         this.history = [];
         for (let i = 0; i < 20; i++) {
@@ -561,36 +595,59 @@ export class PixelBetta {
     }
 
     update(t) {
-        this.phase += 0.068 * frameScale;
+        this.phase += 0.072 * frameScale;
         if (this.eatCooldown > 0) this.eatCooldown = Math.max(0, this.eatCooldown - frameScale);
+        if (this.flareTimer > 0) this.flareTimer = Math.max(0, this.flareTimer - frameScale);
+        if (this.airSipTimer > 0) this.airSipTimer = Math.max(0, this.airSipTimer - frameScale);
 
-        const worm = findAvailableStimulus(this, 'bloodworm', 140);
+        // 1. Seek user-dropped crimson bloodworms across the entire aquarium!
+        const worm = findAvailableStimulus(this, 'bloodworm', Math.max(380, pw * 0.85));
         if (worm) {
+            this.flareTimer = 18; // Excited fin flare when hunting!
             const dx = worm.x - this.x;
             const dy = worm.y - this.y;
             const dist = Math.hypot(dx, dy);
             this.targetAngle = Math.atan2(dy, dx);
             if (dist < 7) {
                 worm.life = 0;
-                this.eatCooldown = 95;
-                this.targetAngle = (Math.cos(this.angle) >= 0 ? 0 : Math.PI) + (Math.random() - 0.5) * 0.9;
+                this.eatCooldown = 85;
+                this.flareTimer = 45;
+                this.targetAngle = (Math.cos(this.angle) >= 0 ? 0 : Math.PI) + (Math.random() - 0.5) * 0.8;
             }
-        } else if (frameChance(0.015)) {
-            const baseDir = Math.cos(this.angle) >= 0 ? 0 : Math.PI;
-            const turn = Math.random() < 0.25 ? (baseDir === 0 ? Math.PI : 0) : baseDir;
-            this.targetAngle = turn + (Math.random() - 0.5) * 0.55;
+        } else {
+            // 2. Labyrinth organ behavior: occasionally glide up to the water surface / Pistia roots for a sip of air
+            if (this.airSipTimer === 0 && frameChance(0.003) && this.y > 35) {
+                this.airSipTimer = 90;
+                this.targetAngle = -Math.PI * 0.5 + (Math.random() - 0.5) * 0.6;
+            } else if (this.airSipTimer > 0) {
+                if (this.y <= 14) {
+                    this.airSipTimer = 0;
+                    this.flareTimer = 35;
+                    this.targetAngle = (Math.cos(this.angle) >= 0 ? 0.35 : Math.PI - 0.35);
+                }
+            } else if (frameChance(0.018)) {
+                const baseDir = Math.cos(this.angle) >= 0 ? 0 : Math.PI;
+                const turn = Math.random() < 0.28 ? (baseDir === 0 ? Math.PI : 0) : baseDir;
+                this.targetAngle = turn + (Math.random() - 0.5) * 0.65;
+                if (Math.random() < 0.35) this.flareTimer = 40 + Math.random() * 35;
+            }
         }
 
-        if (this.y < 26) this.targetAngle = Math.cos(this.angle) >= 0 ? 0.35 : Math.PI - 0.35;
-        if (this.y > ph - 44) this.targetAngle = Math.cos(this.angle) >= 0 ? -0.35 : Math.PI + 0.35;
+        if (this.airSipTimer === 0 && this.y < 22) {
+            this.targetAngle = Math.cos(this.angle) >= 0 ? 0.35 : Math.PI - 0.35;
+        }
+        if (this.y > ph - 38) {
+            this.targetAngle = Math.cos(this.angle) >= 0 ? -0.35 : Math.PI + 0.35;
+        }
 
         let diff = this.targetAngle - this.angle;
         while (diff > Math.PI) diff -= Math.PI * 2;
         while (diff < -Math.PI) diff += Math.PI * 2;
-        this.angle += diff * frameSmoothing(0.036);
+        this.angle += diff * frameSmoothing(worm ? 0.065 : 0.038);
 
-        const boost = worm ? 1.35 : 1.0;
-        const glide = (1 + 0.2 * Math.sin(this.phase * 0.8)) * boost;
+        // Slow, regal hover during fin-flare display; brisk dart when hunting bloodworms
+        const boost = worm ? 1.55 : (this.flareTimer > 0 ? 0.62 : 1.0);
+        const glide = (1 + 0.22 * Math.sin(this.phase * 0.85)) * boost;
         this.x += Math.cos(this.angle) * this.speed * glide * frameScale;
         this.y += Math.sin(this.angle) * this.speed * glide * frameScale;
 
@@ -612,7 +669,7 @@ export class PixelBetta {
         for (let i = 1; i < this.history.length; i++) {
             const prev = this.history[i - 1];
             const cur = this.history[i];
-            const wave = Math.sin(this.phase - i * 0.32) * (0.25 + i * 0.035);
+            const wave = Math.sin(this.phase - i * 0.32) * (0.26 + i * 0.038);
             const tx = prev.x - Math.cos(this.angle) * 0.78 - Math.sin(this.angle) * wave;
             const ty = prev.y - Math.sin(this.angle) * 0.78 + Math.cos(this.angle) * wave;
             cur.x += (tx - cur.x) * frameSmoothing(0.45);
@@ -626,60 +683,107 @@ export class PixelBetta {
         const perpX = -sin;
         const perpY = cos;
         const upSign = cos >= 0 ? 1 : -1;
+        const flareBonus = this.flareTimer > 0 ? 1.18 : 1.0;
 
+        // 1. 180° Halfmoon / Rosetail Fluted Caudal Veil (with radiating fin rays & scalloped rim)
         for (let i = this.history.length - 1; i >= 0; i--) {
             const pt = this.history[i];
             if (Math.abs(pt.x - this.x) > 42 || Math.abs(pt.y - this.y) > 42) continue;
             const tRatio = i / (this.history.length - 1);
-            const fanRadius = Math.round(2 + Math.sin(tRatio * Math.PI * 0.82) * 9.5);
+            const fanRadius = Math.round((2.2 + Math.sin(tRatio * Math.PI * 0.85) * 9.8) * flareBonus);
 
             for (let r = -fanRadius; r <= fanRadius; r++) {
                 const rRatio = Math.abs(r) / (fanRadius || 1);
-                const silkFold = Math.sin(this.phase * 1.1 - i * 0.25 + r * 0.35) * 0.6;
-                const px = pt.x + perpX * (r * 0.85 + silkFold);
-                const py = pt.y + perpY * (r * 0.85 + silkFold);
+                // Scalloped rosetail outer edge notch
+                if (tRatio > 0.88 && (Math.abs(r) % 3 === 1)) continue;
+
+                const silkFold = Math.sin(this.phase * 1.15 - i * 0.26 + r * 0.38) * 0.65;
+                const px = pt.x + perpX * (r * 0.82 + silkFold);
+                const py = pt.y + perpY * (r * 0.82 + silkFold);
 
                 let col = this.pal.finBase;
-                if (tRatio > 0.78 || rRatio > 0.82) col = this.pal.finRim;
-                else if (tRatio > 0.38 || (Math.abs(r) % 3 === 0)) col = this.pal.finMid;
+                if (tRatio > 0.80 || rRatio > 0.84) {
+                    col = this.pal.finRim;
+                } else if (Math.abs(r) % 3 === 0) {
+                    col = tRatio > 0.45 ? this.pal.finRay : this.pal.finMid;
+                } else if (tRatio > 0.36) {
+                    col = this.pal.finMid;
+                }
 
-                pRect(px, py, 2, 2, col);
+                pRect(px, py, 1, 2, col);
             }
         }
 
-        for (let i = 0; i < 11; i++) {
+        // 2. Sweeping Dorsal Sail Fin & Broad Trapezoidal Anal Veil
+        for (let i = 0; i < 12; i++) {
             const pt = this.history[i];
             if (Math.abs(pt.x - this.x) > 42) continue;
-            const dorsalH = Math.round(2 + Math.sin((i / 10) * Math.PI) * 5);
+            const dorsalH = Math.round((2 + Math.sin((i / 11) * Math.PI) * 5.5) * flareBonus);
             for (let d = 1; d <= dorsalH; d++) {
-                pRect(pt.x - perpX * d * upSign, pt.y - perpY * d * upSign, 2, 1, d === dorsalH ? this.pal.finRim : this.pal.finMid);
+                const col = d === dorsalH ? this.pal.finRim : (i % 2 === 0 ? this.pal.finRay : this.pal.finMid);
+                pRect(pt.x - perpX * d * upSign, pt.y - perpY * d * upSign, 2, 1, col);
             }
-            const analH = Math.round(3 + (i / 10) * 6);
+            const analH = Math.round((3 + (i / 11) * 6.5) * flareBonus);
             for (let a = 1; a <= analH; a++) {
-                pRect(pt.x + perpX * a * upSign, pt.y + perpY * a * upSign, 2, 1, a === analH ? this.pal.finRim : this.pal.finBase);
+                const col = a === analH ? this.pal.finRim : (a > analH - 2 ? this.pal.finRay : this.pal.finBase);
+                pRect(pt.x + perpX * a * upSign, pt.y + perpY * a * upSign, 2, 1, col);
             }
         }
 
+        // 3. Long Trailing Dual Ventral "Necktie" Fins beneath the throat (with white pearl tips)
+        const venBaseX = this.x + cos * 1.2 + perpX * 2.2 * upSign;
+        const venBaseY = this.y + sin * 1.2 + perpY * 2.2 * upSign;
+        for (let v = 0; v < 6; v++) {
+            const vSway = Math.sin(this.phase - v * 0.4) * 0.6;
+            const vx = venBaseX - cos * v * 0.55 + perpX * (v * 0.85 * upSign + vSway);
+            const vy = venBaseY - sin * v * 0.55 + perpY * (v * 0.85 * upSign + vSway);
+            pRect(vx, vy, 1, 1, v >= 4 ? '#ffffff' : this.pal.finMid);
+            pRect(vx - cos * 1.2, vy - sin * 1.2, 1, 1, v >= 4 ? this.pal.finRim : this.pal.finBase);
+        }
+
+        // 4. Sculpted Arched Betta Torso with Dragon-Scale / Koi Galaxy / Iridescent Scales
         for (let b = -5; b <= 6; b++) {
-            const halfThick = b > 3 ? (6 - b) * 0.7 : (b < -2 ? (6 + b) * 0.65 : 2.3);
+            const halfThick = b > 3 ? (6 - b) * 0.72 : (b < -2 ? (6 + b) * 0.68 : 2.5);
             for (let w = -Math.floor(halfThick); w <= Math.floor(halfThick); w++) {
                 const bx = this.x + cos * b + perpX * w;
                 const by = this.y + sin * b + perpY * w;
                 let col = this.pal.bodyMid;
-                if (w * upSign < 0) col = this.pal.bodyHi;
-                else if (w * upSign > 0) col = this.pal.bodyDark;
+
+                if (this.pal.kind === 'koi') {
+                    // Calico Koi Galaxy spots
+                    if ((b + w + this.seed) % 4 === 0) col = '#0f172a';
+                    else if ((b * w + this.seed) % 3 === 0) col = this.pal.bodyHi;
+                    else if (b < 0) col = this.pal.bodyDark;
+                } else if (this.pal.kind === 'dragon') {
+                    // Metallic diamond dragon-scale lattice
+                    col = ((b + w) % 2 === 0 && Math.abs(w) <= 1) ? this.pal.bodyHi : (w * upSign > 1 ? this.pal.bodyDark : this.pal.bodyMid);
+                } else {
+                    if (w * upSign < 0) col = (b + w) % 2 === 0 ? this.pal.bodyHi : this.pal.bodyMid;
+                    else if (w * upSign > 0) col = this.pal.bodyDark;
+                }
                 pRect(bx, by, 1, 1, col);
             }
         }
 
-        const eyeX = this.x + cos * 4.5 - perpX * 0.5 * upSign;
-        const eyeY = this.y + sin * 4.5 - perpY * 0.5 * upSign;
-        pRect(eyeX, eyeY, 1, 1, '#e0f2fe');
+        // 5. Fluttering Translucent "Dumbo Ear" Pectoral Fan Fin on the side of the chest
+        const pecFlutter = Math.sin(this.phase * 2.2) * 1.4;
+        const pecX = this.x + cos * (1.5 + pecFlutter * 0.35) + perpX * 1.2 * upSign;
+        const pecY = this.y + sin * (1.5 + pecFlutter * 0.35) + perpY * 1.2 * upSign;
+        pRect(pecX - 1, pecY - 1, 3, 3, this.pal.pec);
+        pRect(pecX, pecY, 2, 2, '#ffffff');
 
-        const chinX = this.x + cos * 1 + perpX * 3 * upSign;
-        const chinY = this.y + sin * 1 + perpY * 3 * upSign;
-        pRect(chinX, chinY, 1, 3, this.pal.finMid);
-        pRect(chinX, chinY + 3 * upSign, 1, 1, '#ffffff');
+        // 6. Upturned Labyrinth Mouth, Flaring Gill Operculum & Jewel Eye
+        const eyeX = this.x + cos * 4.5 - perpX * 0.6 * upSign;
+        const eyeY = this.y + sin * 4.5 - perpY * 0.6 * upSign;
+        pRect(eyeX, eyeY, 1, 1, '#0f172a');
+        pRect(eyeX - cos * 0.5, eyeY - sin * 0.5, 1, 1, '#e0f2fe'); // Eye ring glint
+
+        if (this.flareTimer > 0) {
+            // Flared crimson/dark gill beard when displaying!
+            const gillX = this.x + cos * 2.5 + perpX * 2.2 * upSign;
+            const gillY = this.y + sin * 2.5 + perpY * 2.2 * upSign;
+            pRect(gillX, gillY, 2, 2, '#dc2626');
+        }
     }
 }
 
