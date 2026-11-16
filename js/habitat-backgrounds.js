@@ -647,7 +647,8 @@ export function buildStaticEnvironmentLayer(hab) {
         // BÖLÜM BAŞI: KYOTO ZEN GÖLETİ — KATMANLI MANZARA
         // Suyun tonu, uzak kıyı, akçaağaç, köprü ve taş işçiliği tek bir
         // önbellek katmanında çizilir; canlılar ve etkileşimler ayrı kalır.
-        const water = sCtx.createLinearGradient(0, 0, 0, ph);
+        const waterTop = Math.round(ph * 0.225);
+        const water = sCtx.createLinearGradient(0, waterTop, 0, ph);
         if (isLightMode) {
             water.addColorStop(0, '#9bcfc4');
             water.addColorStop(0.18, '#77b9ad');
@@ -662,14 +663,14 @@ export function buildStaticEnvironmentLayer(hab) {
             water.addColorStop(1, '#103a46');
         }
         sCtx.fillStyle = water;
-        sCtx.fillRect(0, 0, pw, ph);
+        sCtx.fillRect(0, waterTop, pw, ph - waterTop);
 
         const waterGlow = sCtx.createRadialGradient(pw * 0.43, ph * 0.36, 2, pw * 0.43, ph * 0.36, pw * 0.58);
         waterGlow.addColorStop(0, isLightMode ? 'rgba(255, 246, 205, 0.20)' : 'rgba(168, 230, 205, 0.10)');
         waterGlow.addColorStop(0.58, isLightMode ? 'rgba(194, 235, 215, 0.08)' : 'rgba(77, 191, 164, 0.055)');
         waterGlow.addColorStop(1, 'rgba(0, 12, 22, 0)');
         sCtx.fillStyle = waterGlow;
-        sCtx.fillRect(0, 0, pw, ph);
+        sCtx.fillRect(0, waterTop, pw, ph - waterTop);
 
         const stoneDark = isLightMode ? '#354b50' : '#0b2029';
         const stoneMid = isLightMode ? '#536c6d' : '#18333a';
