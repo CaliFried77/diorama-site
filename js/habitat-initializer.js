@@ -8,6 +8,7 @@ import {
 } from './08-creatures.js';
 import { sceneCache } from './scene-state.js';
 import { populateHabitatFlora } from './habitat-flora-generator.js';
+import { createBackgroundSilhouettes } from './scene-math.js';
 
 /* HABITAT INITIALIZER — resets shared state and builds the selected habitat's scene data. */
 
@@ -46,12 +47,7 @@ export function initHabitat(idx) {
     shootingStars.length = 0;
     sceneCache.staticEnvCache = null;
 
-    for (let x = 0; x < pw; x += 3) {
-        const nx = x / Math.max(1, pw);
-        const valleyMask = 0.55 + Math.pow(Math.abs(nx - 0.5) * 1.8, 1.4) * 0.75;
-        const h1 = Math.round((18 + Math.sin(x * 0.016) * 10 + Math.cos(x * 0.042) * 5) * valleyMask);
-        bgSilhouettes.push({ x, h: h1 });
-    }
+    bgSilhouettes.push(...createBackgroundSilhouettes(pw));
 
     for (let i = 0; i < 40; i++) {
         ambientParticles.push({
