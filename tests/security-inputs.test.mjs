@@ -44,9 +44,10 @@ test('persisted tasks and notes are bounded and normalized', () => {
 });
 
 test('habitat catalog has unique IDs and re-usable renderer, creature and interaction profiles', () => {
-  assert.equal(HABITATS.length, 7);
+  assert.equal(HABITATS.length, 8);
   assert.equal(HABITAT_IDS.size, HABITATS.length);
   assert.ok(HABITATS.some((habitat) => habitat.id === 'rainforest' && habitat.creatureProfile === 'parrot' && habitat.interactionProfile === 'fruit'));
+  assert.ok(HABITATS.some((habitat) => habitat.id === 'arctic-aurora' && habitat.sceneProfile === 'arctic-tundra' && habitat.creatureProfile === 'arctic_fox' && habitat.interactionProfile === 'cloudberry'));
   for (const habitat of HABITATS) {
     assert.ok(habitat.id && habitat.name && habitat.sceneProfile && habitat.creatureProfile && habitat.interactionProfile);
     assert.ok(HABITAT_SCENE_PROFILES.includes(habitat.sceneProfile));

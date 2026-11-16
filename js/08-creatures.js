@@ -122,8 +122,7 @@ canvas.addEventListener('pointerdown', (e) => {
                 claimedBy: null
             });
         }
-    }
-   } else if (interactionProfile === 'cloudberry') {
+    } else if (interactionProfile === 'cloudberry') {
         // Spawn Golden Arctic Cloudberries that fall and land onto the nearest snow platform below!
         const ledges = [
             { xMin: 0.01, xMax: 0.25, y: Math.round(ph * 0.72) },
@@ -1898,7 +1897,9 @@ export class PixelParrot {
             px(-9, 11 + liftY, 3, 2, p.wingTip);
         }
     }
-   /* ============================================================================
+}
+
+ /* ============================================================================
    CREATURE 8: ARCTIC FOXES ON STEPPED FJORD LEDGES & SOARING SNOWY OWLS
    True platformer navigation: Foxes walk along multi-tiered snow ledges, curl
    their fluffy tails while sitting, perform parabolic physics jumps between
@@ -2293,5 +2294,4 @@ export class PixelArcticFox {
         px(8, hy + 1, 2, 2, p.main);    // Snout
         px(9, hy + 1, 1, 1, p.nose);    // Black button nose
     }
-}
 }

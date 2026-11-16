@@ -203,7 +203,7 @@ async def assert_app_smoke(browser_type, name: str, base_url: str):
     # Habitat picker and cycle.
     await page.locator("#habitatMenuBtn").click()
     await page.locator("#habitatPopover.open").wait_for(state="visible")
-    assert await page.locator("#habitatListContainer button").count() == 7
+    assert await page.locator("#habitatListContainer button").count() == 8
     await page.locator("#habitatListContainer button").nth(6).click()
     selected_habitat = await page.locator("#habitatNameLabel").inner_text()
     assert "Yağmur Ormanı" in selected_habitat, f"{name}: rainforest habitat selection failed: {selected_habitat!r}"
@@ -213,6 +213,15 @@ async def assert_app_smoke(browser_type, name: str, base_url: str):
     await page.wait_for_timeout(450)
     ARTIFACTS.mkdir(exist_ok=True)
     await page.screenshot(path=str(ARTIFACTS / f"{name}-rainforest-1440x900.png"), full_page=True)
+
+    # Select the new Arctic habitat and capture it too, so profile registration is tested in-browser.
+    await page.locator("#habitatMenuBtn").click()
+    await page.locator("#habitatPopover.open").wait_for(state="visible")
+    await page.locator("#habitatListContainer button").nth(7).click()
+    selected_habitat = await page.locator("#habitatNameLabel").inner_text()
+    assert "Kuzey Işıkları" in selected_habitat, f"{name}: Arctic habitat selection failed: {selected_habitat!r}"
+    await page.wait_for_timeout(450)
+    await page.screenshot(path=str(ARTIFACTS / f"{name}-arctic-1440x900.png"), full_page=True)
     await page.locator("#habitatCycleBtn").click()
 
     # Theme toggle.
