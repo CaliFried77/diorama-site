@@ -16,7 +16,7 @@ Bu belge, projeyi ileride düzenlerken doğru dosyayı bulmayı ve değişiklikl
 | `js/06-data-manager.js` | JSON yedek alma, geri yükleme ve veri doğrulama | Yedekleme biçimi veya veri taşıma davranışı değişirken |
 | `js/07-habitat-state.js` | Sahne canvas'ı, ortak sahne dizileri, aktif habitat ve kare/zaman ölçekleri | Bütün habitatların paylaştığı temel durum değişirken |
 | `js/08-creatures.js` | Canlı sınıfları ve canlıların güncellenmesi/çizimi | Hayvan davranışı veya görünümü değişirken |
-| `js/habitat-interactions.js` | Canvas tıklamalarını aktif habitatın yem/uyaran türüne çevirir | Yeni yem türü veya tıklamayla etkileşim eklerken |
+| `js/habitat-interactions.js` | Canvas tıklamalarını yem/uyarana çevirir; yemlerin animasyon, çizim ve ömür döngüsünü yürütür | Yeni yem türü, tıklama etkileşimi veya yem çizimi eklerken |
 | `js/arctic-geometry.js` | Kutup platform koordinatları ve tilki platform bağlantı grafiği; DOM/canvas bağımlılığı olmayan saf geometri | Kutup platformlarının boyutu, konumu veya tilki rotaları değişirken |
 | `js/09-scenery.js` | Habitatın kurulması, arka plan/bitki/zemin katmanları ve sahne çizimi | Orman, çayır, akvaryum, kutup gibi çevreler değişirken |
 | `js/10-glass-renderer.js` | Animasyon döngüsü, canlıların sahneye çizilmesi, cam yansıma katmanı ve klavye kısayolları | Animasyon, çizim sırası veya cam efektleri değişirken |
@@ -128,9 +128,9 @@ Amaç dosyaları sırf daha kısa görünsün diye bölmek veya satır sayısın
 Bunlar hemen taşınacak veya silinecek kodlar değildir. Önce mevcut kullanım ilişkileri ve testleri doğrulanmalı; her biri ayrı bir küçük değişiklik olarak ele alınmalıdır.
 
 1. **Tamamlandı — Kutup platform geometrisi:** `getArcticLedges(width, height)` ve platform bağlantı grafiği, canlı sınıflarından ayrılarak saf `js/arctic-geometry.js` modülüne taşındı. Modül DOM/canvas durumuna erişmez; iki boyut parametresiyle çalışır ve ayrı birim testleri vardır.
-2. **Tamamlandı — Yem bırakma etkileşimi:** Canvas `pointerdown` dinleyicisi ve habitat profiline göre yem/uyaran üretimi `js/habitat-interactions.js` dosyasına taşındı. `js/08-creatures.js` artık yalnızca canlı davranışını, hareketini ve çizimini yönetiyor. Yemlerin mevcut üretim davranışı bu taşıma sırasında değiştirilmedi.
+2. **Tamamlandı — Yem bırakma etkileşimi:** Canvas `pointerdown` dinleyicisi ve habitat profiline göre yem/uyaran üretimi `js/habitat-interactions.js` dosyasına taşındı. `js/08-creatures.js` artık yalnızca canlı davranışını, hareketini ve çizimini yönetiyor. Yemlerin üretimi ile kare bazlı animasyon/çizim/ömür yönetimi etkileşim modülünde toplanıyor. Çizim sırası korunarak taşındı.
 3. **Sahne çizim dosyasının boyutu:** `js/09-scenery.js` habitat kurulumunu, statik arka planı ve kare bazlı animasyonlu çizimi aynı dosyada tutuyor. Önce statik katman ile animasyonlu katmanı ayırmak; her biyomu ayrı dosyaya bölmekten daha düşük riskli ilk adım olur.
 4. **Haber ve hava modülleri:** `js/02-news.js` veri/önbellek, RSS istekleri ve arayüzü; `js/03-weather.js` servis verisi, panel ve sahne efektlerini birlikte yönetiyor. İleride veri katmanı ile çizim katmanı ayrılabilir. Önce mevcut fonksiyonların veri akışı belgelenmeli.
 5. **Ortak arayüz modülü:** `js/01-core-ui.js` tema, saat, arama, kısayollar ve popover davranışlarını içeriyor. Büyüyen bu modül özellik gruplarına ayrılabilir; ancak ortak popover ve cam kart durumu tek bir noktada kalmalı.
 
-Bu çalışmada dört kullanılmayan import kaldırıldı; kutup platform geometrisi `js/arctic-geometry.js` dosyasına, kullanıcı tıklamasıyla yem/uyaran bırakma kodu ise `js/habitat-interactions.js` dosyasına taşındı. Her iki değişiklikte de canlıların mevcut hareket/çizim kodu yerinde bırakıldı.
+Bu çalışmada dört kullanılmayan import kaldırıldı; kutup platform geometrisi `js/arctic-geometry.js` dosyasına, yem/uyaran üretimi ve kare bazlı çizim döngüsü ise `js/habitat-interactions.js` dosyasına taşındı. Canlıların mevcut hareket/çizim kodu ve sahne çizim sırası korundu.
