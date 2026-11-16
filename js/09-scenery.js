@@ -150,22 +150,22 @@ export function initHabitat(idx) {
             });
         }
 
-    } else if (hab.sceneProfile === 'wetland') {
-        // 1. Cascading Weeping Willow Fronds hanging from upper left & right boughs
+   } else if (hab.sceneProfile === 'wetland') {
+        // 1. Cascading Weeping Willow Fronds (anchored strictly to the branch curve & reach)
+        const reach = Math.min(145, Math.round(pw * 0.26));
         const willowZones = [
-            { startX: 4, endX: pw * 0.32, arch: 28, dir: 1 },
-            { startX: pw * 0.68, endX: pw - 4, arch: 26, dir: -1 }
+            { startX: 6, endX: reach - 4, isLeft: true },
+            { startX: pw - reach + 4, endX: pw - 6, isLeft: false }
         ];
-        willowZones.forEach((zone, zIdx) => {
-            for (let x = zone.startX; x < zone.endX; x += 6 + Math.floor(Math.random() * 4)) {
-                const norm = zIdx === 0 ? (1 - (x - zone.startX) / (zone.endX - zone.startX))
-                                        : ((x - zone.startX) / (zone.endX - zone.startX));
-                const startY = Math.round(2 + (1 - norm) * 14 + Math.sin(x * 0.09) * 2);
-                const len = Math.round(24 + norm * 46 + Math.random() * 18);
+        willowZones.forEach(zone => {
+            for (let x = zone.startX; x <= zone.endX; x += 5 + Math.floor(Math.random() * 4)) {
+                const t = zone.isLeft ? (x / reach) : ((pw - x) / reach);
+                const branchY = Math.round(6 + Math.pow(t, 1.2) * 14 + Math.sin(x * 0.08) * 1.5);
+                const len = Math.round((1 - t * 0.55) * 48 + 14 + Math.random() * 14);
                 flora.push({
                     type: 'willow_frond',
                     x: Math.round(x),
-                    startY,
+                    startY: branchY,
                     len,
                     phase: Math.random() * Math.PI * 2
                 });
@@ -592,57 +592,58 @@ function buildStaticEnvironmentLayer(hab) {
             }
         });
 
-        // D. Left & Right Gnarled Weeping Willow Trees (Trunks & Overhanging Boughs)
+        // D. Left & Right Gnarled Weeping Willow Trees (Connected Trunks, Boughs & Overlapping Canopy)
         const willowDark = isLightMode ? '#3b281e' : '#14141b';
         const willowMid = isLightMode ? '#573b2c' : '#24222c';
         const willowHi = isLightMode ? '#78523d' : '#363240';
         const canopyDark = isLightMode ? '#14532d' : '#062e24';
         const canopyMid = isLightMode ? '#15803d' : '#0b4635';
         const canopyHi = isLightMode ? '#22c55e' : '#136348';
+        const reach = Math.min(145, Math.round(pw * 0.26));
 
-        // Left & Right leaning willow trunks rooted into the banks
         [
-            { baseX: 4, dir: 1, reachX: Math.round(pw * 0.30) },
-            { baseX: pw - 8, dir: -1, reachX: Math.round(pw * 0.70) }
+            { isLeft: true, dir: 1 },
+            { isLeft: false, dir: -1 }
         ].forEach(wTree => {
-            const bankY = getGroundY(wTree.baseX, 'wetland') + 4;
+            const edgeX = wTree.isLeft ? 0 : pw - 1;
+            const bankY = getGroundY(edgeX, 'wetland') + 4;
+
+            // 1. Trunk rooted into the bank
             for (let y = 0; y < bankY; y++) {
                 const prog = y / bankY;
-                const lean = Math.sin((1 - prog) * Math.PI * 0.5) * 14 * wTree.dir;
+                const lean = Math.sin((1 - prog) * Math.PI * 0.5) * 12 * wTree.dir;
                 const rootFlare = prog > 0.72 ? Math.pow((prog - 0.72) / 0.28, 2) * 16 : 0;
-                const tw = Math.round(12 + prog * 6 + rootFlare);
-                const tx = wTree.dir === 1 ? Math.round(lean) : Math.round(pw - tw + lean);
+                const tw = Math.round(13 + prog * 6 + rootFlare);
+                const tx = wTree.isLeft ? Math.max(0, Math.round(lean)) : Math.min(pw - tw, Math.round(pw - tw + lean));
                 sRect(tx, y, tw, 1, willowDark);
-                sRect(tx + (wTree.dir === 1 ? tw - 4 : 2), y, 3, 1, willowMid);
-                sRect(tx + (wTree.dir === 1 ? tw - 1 : 0), y, 1, 1, willowHi);
+                sRect(tx + (wTree.isLeft ? tw - 4 : 2), y, 3, 1, willowMid);
+                sRect(tx + (wTree.isLeft ? tw - 1 : 0), y, 1, 1, willowHi);
             }
 
-            // Overhanging arched willow limb across top corner
-            const spanW = Math.abs(wTree.reachX - wTree.baseX);
-            for (let s = 0; s < spanW; s++) {
-                const t = s / Math.max(1, spanW);
-                const bx = wTree.baseX + s * wTree.dir;
-                const by = Math.round(2 + Math.pow(t, 1.3) * 16 + Math.sin(s * 0.1) * 2);
-                const thick = Math.max(2, Math.round(10 * (1 - t * 0.75)));
-                sRect(bx, by, 1, thick, willowDark);
-                sRect(bx, by + thick - 1, 1, 1, willowHi);
-            }
-        });
+            // 2. Continuous Overlapping Foliage Canopy (hugs the top edge & follows the branch curve down)
+            [0.08, 0.30, 0.52, 0.74, 0.92].forEach(tNode => {
+                const cx = Math.round(wTree.isLeft ? (tNode * reach) : (pw - tNode * reach));
+                const branchY = Math.round(6 + Math.pow(tNode, 1.2) * 14);
+                const rx = Math.round(28 * (1 - tNode * 0.32));
+                const bottomY = branchY + Math.round(8 * (1 - tNode * 0.3));
 
-        // Willow Crown Foliage Clouds in Upper Left & Right Corners
-        const willowCrowns = [
-            { cx: pw * 0.05, cy: 8, rx: 38, ry: 16 },
-            { cx: pw * 0.16, cy: 5, rx: 32, ry: 13 },
-            { cx: pw * 0.26, cy: 3, rx: 24, ry: 10 },
-            { cx: pw * 0.74, cy: 3, rx: 24, ry: 10 },
-            { cx: pw * 0.84, cy: 5, rx: 32, ry: 13 },
-            { cx: pw * 0.95, cy: 8, rx: 38, ry: 16 }
-        ];
-        willowCrowns.forEach(c => {
-            for (let dy = -c.ry; dy <= c.ry; dy++) {
-                const span = Math.round(c.rx * Math.sqrt(Math.max(0, 1 - (dy * dy) / (c.ry * c.ry))));
-                const col = dy < -c.ry * 0.25 ? canopyHi : (dy > c.ry * 0.35 ? canopyDark : canopyMid);
-                sRect(Math.round(c.cx) - span, c.cy + dy, span * 2, 1, col);
+                for (let y = 0; y <= bottomY; y++) {
+                    const normY = (y - branchY * 0.5) / Math.max(1, bottomY - branchY * 0.5);
+                    const ellipse = Math.max(0, 1 - normY * normY);
+                    const span = Math.round(rx * (y < branchY * 0.5 ? 1 : Math.sqrt(ellipse)));
+                    const col = y < branchY * 0.35 ? canopyHi : (y > branchY ? canopyDark : canopyMid);
+                    sRect(cx - span, y, span * 2, 1, col);
+                }
+            });
+
+            // 3. Overhanging Willow Bough (drawn across the lower canopy so leaves & branch never separate)
+            for (let s = 0; s <= reach; s++) {
+                const t = s / Math.max(1, reach);
+                const bx = wTree.isLeft ? s : (pw - 1 - s);
+                const by = Math.round(6 + Math.pow(t, 1.2) * 14 + Math.sin(bx * 0.08) * 1.5);
+                const thick = Math.max(2, Math.round(9 * (1 - t * 0.75)));
+                sRect(bx, by - Math.floor(thick * 0.5), 1, thick, willowDark);
+                sRect(bx, by + Math.ceil(thick * 0.5) - 1, 1, 1, willowHi);
             }
         });
 
