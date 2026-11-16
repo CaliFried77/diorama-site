@@ -926,15 +926,6 @@ export function buildStaticEnvironmentLayer(hab) {
             drawFoliageDome(tree.x + 14, tree.top + 8, tree.rx * 0.75, tree.ry * 0.75, 1);
             drawFoliageDome(tree.x, tree.top, tree.rx, tree.ry, isFarTree ? 1 : 2);
 
-            if (!isFarTree) {
-                [-1, 1].forEach(dir => {
-                    for (let step = 0; step <= 15; step += 3) {
-                        const rootX = tree.x + dir * step;
-                        const rootY = ph - 2 - Math.round(step * 0.22);
-                        sRect(rootX - 1, rootY, 3, 2, trunkCol);
-                    }
-                });
-            }
         });
 
         const edgeGiants = [
@@ -988,6 +979,20 @@ export function buildStaticEnvironmentLayer(hab) {
             sRect(x, gy, 1, ph - gy, isLightMode ? '#0b3b2b' : '#041713');
             sRect(x, gy, 1, 2, isLightMode ? '#15803d' : '#0c4a37');
         }
+
+        // Buttress roots sit above the forest floor so they remain visible after ground fill.
+        midgroundTrees.filter(tree => tree.depth !== 'far').forEach(tree => {
+            const groundY = getGroundY(tree.x, 'rainforest');
+            const rootCol = isLightMode ? '#2c221e' : '#101c1a';
+            [-1, 1].forEach(dir => {
+                for (let step = 0; step <= 18; step += 2) {
+                    const x = tree.x + dir * step;
+                    const y = groundY + Math.round(step * 0.34);
+                    sRect(x, y, 2, 2, rootCol);
+                    if (step > 8) sRect(x + dir, y + 2, 2, 1, rootCol);
+                }
+            });
+        });
         // BÖLÜM SONU: YAĞMUR ORMANI STATİK ÇEVRESİ
     }
 
