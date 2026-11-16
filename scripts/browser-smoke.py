@@ -214,8 +214,8 @@ async def assert_app_smoke(browser_type, name: str, base_url: str):
     ARTIFACTS.mkdir(exist_ok=True)
     await page.screenshot(path=str(ARTIFACTS / f"{name}-rainforest-1440x900.png"), full_page=True)
 
-    # Capture the Kyoto koi pond so its dedicated pixel-art environment is covered by browser QA.
-    await page.locator("#habitatMenuBtn").click()
+    # The habitat popover is still open after the rainforest capture; select Kyoto directly.
+    # This covers the koi pond's dedicated pixel-art environment in browser QA.
     await page.locator("#habitatPopover.open").wait_for(state="visible")
     await page.locator("#habitatListContainer button").nth(5).click()
     selected_habitat = await page.locator("#habitatNameLabel").inner_text()
