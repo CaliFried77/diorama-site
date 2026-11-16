@@ -87,28 +87,28 @@ export function buildStaticEnvironmentLayer(hab) {
         for (let x = 0; x < pw; x++) {
             const nx = x / Math.max(1, pw);
             const h = Math.round(14 + Math.sin(nx * Math.PI * 2.5) * 8 + Math.cos(x * 0.04) * 3);
-            const gy = getGroundY(x, 'meadow');
+            const gy = getGroundY(x, 'meadow', pw, ph);
             sRect(x, gy - h, 1, h, hillCol);
         }
 
         const leftTree1X = 24;
         const leftTree2X = Math.round(pw * 0.19);
-        drawOrchardTree(leftTree2X, getGroundY(leftTree2X, 'meadow') + 2, 90, 9, 1, true, '#fbbf24');
-        drawOrchardTree(leftTree1X, getGroundY(leftTree1X, 'meadow') + 3, 116, 13, 1, true, '#fda4af');
+        drawOrchardTree(leftTree2X, getGroundY(leftTree2X, 'meadow', pw, ph) + 2, 90, 9, 1, true, '#fbbf24');
+        drawOrchardTree(leftTree1X, getGroundY(leftTree1X, 'meadow', pw, ph) + 3, 116, 13, 1, true, '#fda4af');
 
         const rightTreeX = pw - 20;
-        drawOrchardTree(rightTreeX, getGroundY(rightTreeX, 'meadow') + 3, 102, 11, -1, true, '#fda4af');
+        drawOrchardTree(rightTreeX, getGroundY(rightTreeX, 'meadow', pw, ph) + 3, 102, 11, -1, true, '#fda4af');
 
         const turfTop = isLightMode ? '#16a34a' : '#0f392b';
         const turfDeep = isLightMode ? '#14532d' : '#071f18';
         for (let x = 0; x < pw; x++) {
-            const gy = getGroundY(x, 'meadow');
+            const gy = getGroundY(x, 'meadow', pw, ph);
             sRect(x, gy, 1, ph - gy, turfDeep);
             sRect(x, gy, 1, 2, turfTop);
         }
 
         const hx = Math.round(pw * 0.84);
-        const hgy = getGroundY(hx, 'meadow') + 1;
+        const hgy = getGroundY(hx, 'meadow', pw, ph) + 1;
 
         drawLeafCluster(hx - 20, hgy - 11, 14, 10, true, '#c084fc');
         drawLeafCluster(hx + 19, hgy - 13, 16, 11, true, '#fb7185');
@@ -220,7 +220,7 @@ export function buildStaticEnvironmentLayer(hab) {
             { isLeft: false, dir: -1 }
         ].forEach(wTree => {
             const edgeX = wTree.isLeft ? 0 : pw - 1;
-            const bankY = getGroundY(edgeX, 'wetland') + 4;
+            const bankY = getGroundY(edgeX, 'wetland', pw, ph) + 4;
 
             for (let y = 0; y < bankY; y++) {
                 const prog = y / bankY;
@@ -261,7 +261,7 @@ export function buildStaticEnvironmentLayer(hab) {
         for (let x = 0; x < pw; x++) {
             const nx = x / Math.max(1, pw);
             if (nx > 0.36 && nx < 0.64) continue;
-            const gy = getGroundY(x, 'wetland');
+            const gy = getGroundY(x, 'wetland', pw, ph);
             sRect(x, gy + 3, 1, 4, 'rgba(2, 10, 16, 0.45)');
             sRect(x, gy, 1, ph - gy, isLightMode ? '#14532d' : '#052019');
             sRect(x, gy, 1, 2, isLightMode ? '#16a34a' : '#0d4a38');
@@ -431,7 +431,7 @@ export function buildStaticEnvironmentLayer(hab) {
         const glassFrameCol = isLightMode ? 'rgba(30, 58, 95, 0.22)' : 'rgba(30, 27, 75, 0.52)';
         const glassPaneCol = isLightMode ? 'rgba(224, 242, 254, 0.18)' : 'rgba(129, 140, 248, 0.06)';
         const domeCx = Math.round(pw * 0.50);
-        const domeBaseY = getGroundY(domeCx, 'botanical') - 2;
+        const domeBaseY = getGroundY(domeCx, 'botanical', pw, ph) - 2;
         const domeRx = Math.min(76, Math.round(pw * 0.16));
         const domeRy = 42;
 
@@ -466,7 +466,7 @@ export function buildStaticEnvironmentLayer(hab) {
             { isLeft: false, dir: -1 }
         ].forEach(tree => {
             const edgeX = tree.isLeft ? 0 : pw - 1;
-            const groundY = getGroundY(edgeX, 'botanical') + 4;
+            const groundY = getGroundY(edgeX, 'botanical', pw, ph) + 4;
 
             for (let y = 0; y < groundY; y++) {
                 const prog = y / groundY;
@@ -506,7 +506,7 @@ export function buildStaticEnvironmentLayer(hab) {
         });
 
         const gx = pw - 68;
-        const archBaseY = getGroundY(gx + 16, 'botanical') + 2;
+        const archBaseY = getGroundY(gx + 16, 'botanical', pw, ph) + 2;
         const pillarH = 44;
         const archTopY = archBaseY - pillarH;
         const stoneDark = isLightMode ? '#475569' : '#171c2e';
@@ -542,7 +542,7 @@ export function buildStaticEnvironmentLayer(hab) {
         }
 
         const fx = Math.round(pw * 0.18);
-        const fy = getGroundY(fx, 'botanical') + 1;
+        const fy = getGroundY(fx, 'botanical', pw, ph) + 1;
         sRect(fx - 9, fy - 2, 19, 3, stoneDark);
         sRect(fx - 6, fy - 4, 13, 2, stoneMid);
         sRect(fx - 3, fy - 18, 7, 14, stoneMid);
@@ -556,7 +556,7 @@ export function buildStaticEnvironmentLayer(hab) {
         const mossTop = isLightMode ? '#16a34a' : '#0f3d32';
         const mossDeep = isLightMode ? '#14532d' : '#061a17';
         for (let x = 0; x < pw; x++) {
-            const gy = getGroundY(x, 'botanical');
+            const gy = getGroundY(x, 'botanical', pw, ph);
             sRect(x, gy, 1, ph - gy, mossDeep);
             sRect(x, gy, 1, 2, mossTop);
         }
@@ -581,14 +581,14 @@ export function buildStaticEnvironmentLayer(hab) {
         const colShade = isLightMode ? 'rgba(15, 42, 68, 0.38)' : 'rgba(17, 14, 48, 0.62)';
         const colHi = isLightMode ? 'rgba(56, 189, 248, 0.24)' : 'rgba(139, 92, 246, 0.22)';
         const ruinX = Math.round(pw * 0.26);
-        const ruinBaseY = getGroundY(ruinX, 'reef') + 2;
+        const ruinBaseY = getGroundY(ruinX, 'reef', pw, ph) + 2;
 
         [
             { cx: ruinX - 15, ch: 52, broken: false },
             { cx: ruinX + 15, ch: 40, broken: true },
             { cx: Math.round(pw * 0.76), ch: 46, broken: true }
         ].forEach(col => {
-            const cy = getGroundY(col.cx, 'reef') + 2;
+            const cy = getGroundY(col.cx, 'reef', pw, ph) + 2;
             sRect(col.cx - 2, cy - 3, 13, 4, colShade);
             sRect(col.cx, cy - col.ch, 9, col.ch, colShade);
             sRect(col.cx + 1, cy - col.ch, 2, col.ch, colHi);
@@ -632,7 +632,7 @@ export function buildStaticEnvironmentLayer(hab) {
             const nx = x / Math.max(1, pw);
             const sideMound = nx < 0.26 ? Math.pow((0.26 - nx) / 0.26, 1.5) * 34
                             : (nx > 0.74 ? Math.pow((nx - 0.74) / 0.26, 1.5) * 34 : 0);
-            const gy = Math.round(getGroundY(x, 'reef') - sideMound);
+            const gy = Math.round(getGroundY(x, 'reef', pw, ph) - sideMound);
             sRect(x, gy, 1, ph - gy, rockDark);
             sRect(x, gy + 1, 1, Math.max(1, Math.floor((ph - gy) * 0.45)), rockMid);
             sRect(x, gy, 1, 2, x % 9 === 0 ? '#38bdf8' : rockHi);
@@ -691,7 +691,7 @@ export function buildStaticEnvironmentLayer(hab) {
         const mapleHi = isLightMode ? '#f87171' : '#dc2626';
         const mapleGold = '#f59e0b';
 
-        const leftBankY = getGroundY(0, 'koi-pond') + 2;
+        const leftBankY = getGroundY(0, 'koi-pond', pw, ph) + 2;
         for (let y = 0; y < leftBankY; y++) {
             const prog = y / leftBankY;
             const lean = Math.sin((1 - prog) * Math.PI * 0.5) * 10;
@@ -730,7 +730,7 @@ export function buildStaticEnvironmentLayer(hab) {
         for (let x = 0; x < pw; x++) {
             const nx = x / Math.max(1, pw);
             if (nx > 0.28 && nx < 0.70) continue;
-            const gy = getGroundY(x, 'koi-pond');
+            const gy = getGroundY(x, 'koi-pond', pw, ph);
             sRect(x, gy - 2, 1, 3, 'rgba(2, 8, 16, 0.45)');
             sRect(x, gy, 1, ph - gy, mossDark);
             sRect(x, gy, 1, 2, mossMid);
@@ -801,7 +801,7 @@ export function buildStaticEnvironmentLayer(hab) {
             const nx = x / Math.max(1, pw);
             const valleyMask = 0.42 + Math.pow(Math.abs(nx - 0.5) * 1.9, 1.3) * 0.85;
             const peakH = Math.round((28 + Math.abs(Math.sin(x * 0.022)) * 26 + Math.cos(x * 0.055) * 8) * valleyMask);
-            const gy = getGroundY(x, 'arctic-tundra');
+            const gy = getGroundY(x, 'arctic-tundra', pw, ph);
             sRect(x, gy - peakH, 1, peakH, isLightMode ? 'rgba(148, 163, 184, 0.35)' : 'rgba(15, 35, 62, 0.65)');
             if (peakH > 26) {
                 sRect(x, gy - peakH, 1, 6, isLightMode ? 'rgba(255, 255, 255, 0.65)' : 'rgba(186, 230, 253, 0.25)');
@@ -851,7 +851,7 @@ export function buildStaticEnvironmentLayer(hab) {
         }
 
         for (let x = 0; x < pw; x++) {
-            const gy = getGroundY(x, 'arctic-tundra');
+            const gy = getGroundY(x, 'arctic-tundra', pw, ph);
             sRect(x, gy, 1, ph - gy, snowMid);
             sRect(x, gy, 1, 3, snowTop);
             sRect(x, gy + 3, 1, 2, snowShadow);
@@ -975,14 +975,14 @@ export function buildStaticEnvironmentLayer(hab) {
         }
 
         for (let x = 0; x < pw; x++) {
-            const gy = getGroundY(x, 'rainforest');
+            const gy = getGroundY(x, 'rainforest', pw, ph);
             sRect(x, gy, 1, ph - gy, isLightMode ? '#0b3b2b' : '#041713');
             sRect(x, gy, 1, 2, isLightMode ? '#15803d' : '#0c4a37');
         }
 
         // Buttress roots sit above the forest floor so they remain visible after ground fill.
         midgroundTrees.filter(tree => tree.depth !== 'far').forEach(tree => {
-            const groundY = getGroundY(tree.x, 'rainforest');
+            const groundY = getGroundY(tree.x, 'rainforest', pw, ph);
             const rootCol = isLightMode ? '#2c221e' : '#101c1a';
             [-1, 1].forEach(dir => {
                 for (let step = 0; step <= 18; step += 2) {
