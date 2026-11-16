@@ -20,6 +20,7 @@ function findAvailableStimulus(creature, type, maxDist = 145) {
     return best;
 }
 
+//#region YEM ETKİLEŞİMİ — tıklamayla habitat profiline uygun uyaran oluşturulur
 canvas.addEventListener('pointerdown', (e) => {
     const px = e.clientX / PIXEL_SCALE;
     const py = e.clientY / PIXEL_SCALE;
@@ -157,6 +158,8 @@ canvas.addEventListener('pointerdown', (e) => {
     }
 });
 
+//#endregion YEM ETKİLEŞİMİ
+//#region CANLI: PixelBee — arı davranışı, beslenme ve çizim
 /* ============================================================================
    CREATURE 1: ARTISAN HONEYBEE, ROYAL BUMBLEBEE & VIOLET CARPENTER BEE
    Multi-state foraging AI: Visits all meadow wildflowers, fills hind-leg pollen
@@ -381,6 +384,8 @@ export class PixelBee {
     }
 }
 
+//#endregion CANLI: PixelBee
+//#region CANLI: PixelKoi — koi balığı hareketi ve çizimi
 /* ============================================================================
    CREATURE 6: MAJESTIC ARTICULATED NISHIKIGOI (Japon Zen Koi Balığı)
    ============================================================================ */
@@ -601,6 +606,8 @@ export class PixelKoi {
     }
 }
 
+//#endregion CANLI: PixelKoi
+//#region CANLI: PixelBetta — betta davranışı ve yüzgeç çizimi
 /* ============================================================================
    CREATURE 2: SHOW-QUALITY HALFMOON & DUMBO BETTA SPLENDENS
    ============================================================================ */
@@ -894,6 +901,8 @@ export class PixelBetta {
     }
 }
 
+//#endregion CANLI: PixelBetta
+//#region CANLI: PixelDragonfly — paletler, uçuş davranışı ve çizim
 /* ============================================================================
    CREATURE 3: ARTISTIC EMPEROR DRAGONFLY & DAMSELFLY FLOCK
    ============================================================================ */
@@ -1099,6 +1108,8 @@ export class PixelDragonfly {
     }
 }
 
+//#endregion CANLI: PixelDragonfly
+//#region CANLI: PixelButterfly — kelebek davranışı ve kanat çizimi
 /* ============================================================================
    CREATURE 4: TRUE 4-LOBED ORNATE SWALLOWTAIL & MORPHO BUTTERFLIES
    ============================================================================ */
@@ -1269,6 +1280,8 @@ export class PixelButterfly {
     }
 }
 
+//#endregion CANLI: PixelButterfly
+//#region CANLI: PixelJellyfish — davranış ve biyolüminesans çizimi
 /* ============================================================================
    CREATURE 5: ARTISTIC 360° BIOLUMINESCENT JELLYFISH
    ============================================================================ */
@@ -1505,6 +1518,8 @@ export class PixelJellyfish {
     }
 }
 
+//#endregion CANLI: PixelJellyfish
+//#region CANLI: PixelParrot — papağan sürüsü, uçuş ve tüy çizimi
 /* ============================================================================
    CREATURE 7: ARTISTIC & REALISTIC MACAW PARROT FLOCK
    ============================================================================ */
@@ -1899,12 +1914,14 @@ export class PixelParrot {
     }
 }
 
+//#endregion CANLI: PixelParrot
  /* ============================================================================
    CREATURE 8: ARCTIC FOXES ON STEPPED FJORD LEDGES & SOARING SNOWY OWLS
    True platformer navigation: Foxes walk along multi-tiered snow ledges, curl
    their fluffy tails while sitting, perform parabolic physics jumps between
    platforms, and pounce into the snow for Golden Cloudberries!
    ============================================================================ */
+//#region KUTUP SAHNESİ GEOMETRİSİ — tilkinin kullandığı kar platformları ve geçiş bağlantıları
 export function getArcticLedges() {
     return [
         // 0: Main Valley Snow Floor (Center & Shores)
@@ -1940,6 +1957,8 @@ const LEDGE_LINKS = Object.freeze({
 
 let arcticSpawnCounter = 0;
 
+//#endregion KUTUP SAHNESİ GEOMETRİSİ
+//#region CANLI: PixelArcticFox — kutup tilkisi ve baykuş davranışı/çizimi
 export class PixelArcticFox {
     constructor() {
         const idx = arcticSpawnCounter++;
@@ -2295,3 +2314,4 @@ export class PixelArcticFox {
         px(9, hy + 1, 1, 1, p.nose);    // Black button nose
     }
 }
+//#endregion CANLI: PixelArcticFox
