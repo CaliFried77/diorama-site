@@ -1,4 +1,5 @@
-import { stimuli, canvas, PIXEL_SCALE, HABITATS, currentHabitatIdx, pw, ph, frameScale, frameChance, flora, pRect, frameSmoothing } from './07-habitat-state.js';
+import { stimuli, pw, ph, frameScale, frameChance, flora, pRect, frameSmoothing } from './07-habitat-state.js';
+import { ARCTIC_ARCTIC_LEDGE_LINKS, getArcticLedges } from './arctic-geometry.js';
 
 /* CREATURES — Living Pixel Diorama
    Native ES module. Cross-file dependencies are declared with imports and exports. */
@@ -19,143 +20,6 @@ function findAvailableStimulus(creature, type, maxDist = 145) {
     if (best) best.claimedBy = creature;
     return best;
 }
-
-canvas.addEventListener('pointerdown', (e) => {
-    const px = e.clientX / PIXEL_SCALE;
-    const py = e.clientY / PIXEL_SCALE;
-    const interactionProfile = HABITATS[currentHabitatIdx].interactionProfile;
-
-    if (interactionProfile === 'nectar') {
-        for (let i = 0; i < 3; i++) {
-            const angle = (i / 3) * Math.PI * 2 + Math.random();
-            const dist = i === 0 ? 0 : 7 + Math.random() * 8;
-            stimuli.push({
-                type: 'honey_nectar',
-                x: px + Math.cos(angle) * dist,
-                y: py + Math.sin(angle) * dist,
-                baseY: py + Math.sin(angle) * dist,
-                phase: Math.random() * Math.PI * 2,
-                ripple: 0,
-                life: 240,
-                claimedBy: null
-            });
-        }
-    } else if (interactionProfile === 'blossom') {
-        for (let i = 0; i < 2; i++) {
-            stimuli.push({
-                type: 'floating_blossom',
-                x: px + (i - 0.5) * 12,
-                y: py + (Math.random() - 0.5) * 8,
-                vx: (Math.random() - 0.5) * 0.08,
-                vy: -0.03 + Math.random() * 0.06,
-                phase: Math.random() * Math.PI * 2,
-                color: i === 0 ? '#f0abfc' : '#7dd3fc',
-                core: '#fef08a',
-                life: 250,
-                claimedBy: null
-            });
-        }
-    } else if (interactionProfile === 'bloodworm') {
-        for (let i = 0; i < 3; i++) {
-            stimuli.push({
-                type: 'bloodworm',
-                x: px + (Math.random() - 0.5) * 14,
-                y: py + (Math.random() - 0.5) * 8,
-                vy: 0.13 + Math.random() * 0.06,
-                phase: Math.random() * Math.PI * 2,
-                life: 260,
-                claimedBy: null
-            });
-        }
-    } else if (interactionProfile === 'midge') {
-        for (let i = 0; i < 3; i++) {
-            const bx = px + (Math.random() - 0.5) * 18;
-            const by = py + (Math.random() - 0.5) * 12;
-            stimuli.push({
-                type: 'midge',
-                x: bx,
-                y: by,
-                baseX: bx,
-                baseY: by,
-                phase: Math.random() * Math.PI * 2,
-                life: 240,
-                claimedBy: null
-            });
-        }
-    } else if (interactionProfile === 'plankton') {
-        for (let i = 0; i < 2; i++) {
-            stimuli.push({
-                type: 'plankton_swarm',
-                x: px + (i - 0.5) * 14,
-                y: py + (Math.random() - 0.5) * 10,
-                phase: Math.random() * Math.PI * 2,
-                life: 220,
-                claimedBy: null
-            });
-        }
-    } else if (interactionProfile === 'pellet') {
-        for (let i = 0; i < 3; i++) {
-            stimuli.push({
-                type: 'koi_pellet',
-                x: px + (Math.random() - 0.5) * 14,
-                y: py + (Math.random() - 0.5) * 10,
-                ripple: 1,
-                life: 250,
-                claimedBy: null
-            });
-        }
-    } else if (interactionProfile === 'fruit') {
-        // Spawn a trio of detailed pixel-art tropical fruits: Mango, Pink Guava & Golden Banana Cluster
-        const kinds = ['mango', 'guava', 'banana'];
-        for (let i = 0; i < 3; i++) {
-            const offset = (i - 1) * 11;
-            const fruitX = px + offset + (Math.random() - 0.5) * 3;
-            const fruitY = py + (Math.random() - 0.5) * 6;
-            stimuli.push({
-                type: 'tropical_fruit',
-                kind: kinds[i],
-                x: fruitX,
-                y: fruitY,
-                baseY: fruitY,
-                phase: Math.random() * Math.PI * 2,
-                life: 300,
-                claimedBy: null
-            });
-        }
-    } else if (interactionProfile === 'cloudberry') {
-        // Spawn Golden Arctic Cloudberries that fall and land onto the nearest snow platform below!
-        const ledges = [
-            { xMin: 0.01, xMax: 0.25, y: Math.round(ph * 0.72) },
-            { xMin: 0.02, xMax: 0.19, y: Math.round(ph * 0.52) },
-            { xMin: 0.20, xMax: 0.36, y: Math.round(ph * 0.62) },
-            { xMin: 0.64, xMax: 0.80, y: Math.round(ph * 0.60) },
-            { xMin: 0.75, xMax: 0.99, y: Math.round(ph * 0.72) },
-            { xMin: 0.81, xMax: 0.98, y: Math.round(ph * 0.50) }
-        ];
-        for (let i = 0; i < 2; i++) {
-            const bx = Math.max(12, Math.min(pw - 12, px + (i - 0.5) * 14));
-            const nx = bx / Math.max(1, pw);
-            const valleyGround = Math.round(ph - 5 - Math.pow(Math.abs(nx - 0.5) * 1.9, 1.45) * 18);
-            let landY = valleyGround;
-            for (const l of ledges) {
-                if (nx >= l.xMin && nx <= l.xMax && l.y >= py - 12 && l.y < landY) {
-                    landY = l.y;
-                }
-            }
-            stimuli.push({
-                type: 'cloudberry',
-                x: bx,
-                y: Math.min(py, landY - 12),
-                targetY: landY - 2,
-                vy: 0.4,
-                landed: false,
-                phase: Math.random() * Math.PI * 2,
-                life: 360,
-                claimedBy: null
-            });
-        }
-    }
-});
 
 /* ============================================================================
    CREATURE 1: ARTISAN HONEYBEE, ROYAL BUMBLEBEE & VIOLET CARPENTER BEE
@@ -1905,39 +1769,6 @@ export class PixelParrot {
    their fluffy tails while sitting, perform parabolic physics jumps between
    platforms, and pounce into the snow for Golden Cloudberries!
    ============================================================================ */
-export function getArcticLedges() {
-    return [
-        // 0: Main Valley Snow Floor (Center & Shores)
-        { id: 0, x1: Math.round(pw * 0.14), x2: Math.round(pw * 0.86), yFn: (x) => {
-            const nx = x / Math.max(1, pw);
-            return Math.round(ph - 5 - Math.pow(Math.abs(nx - 0.5) * 1.9, 1.45) * 18 - Math.sin(x * 0.04) * 1.5);
-        }},
-        // 1: Left Lower Glacial Ledge
-        { id: 1, x1: 6, x2: Math.round(pw * 0.25), yFn: (x) => Math.round(ph * 0.72 + Math.sin(x * 0.06) * 1.5) },
-        // 2: Left Mid Overlook Ledge
-        { id: 2, x1: Math.round(pw * 0.20), x2: Math.round(pw * 0.36), yFn: (x) => Math.round(ph * 0.62 + Math.cos(x * 0.06) * 1.5) },
-        // 3: Left High Pine Cliff Ledge
-        { id: 3, x1: 8, x2: Math.round(pw * 0.19), yFn: (x) => Math.round(ph * 0.52 + Math.sin(x * 0.07) * 1.5) },
-        // 4: Right Lower Glacial Ledge
-        { id: 4, x1: Math.round(pw * 0.75), x2: pw - 6, yFn: (x) => Math.round(ph * 0.72 + Math.cos(x * 0.06) * 1.5) },
-        // 5: Right Mid Overlook Ledge (Near Nordic Cabin)
-        { id: 5, x1: Math.round(pw * 0.64), x2: Math.round(pw * 0.80), yFn: (x) => Math.round(ph * 0.60 + Math.sin(x * 0.06) * 1.5) },
-        // 6: Right High Ridge Ledge
-        { id: 6, x1: Math.round(pw * 0.81), x2: pw - 8, yFn: (x) => Math.round(ph * 0.50 + Math.cos(x * 0.07) * 1.5) }
-    ];
-}
-
-// Graph of which platforms a fox can realistically leap between
-const LEDGE_LINKS = Object.freeze({
-    0: [1, 2, 4, 5],
-    1: [0, 2, 3],
-    2: [0, 1, 3],
-    3: [1, 2],
-    4: [0, 5, 6],
-    5: [0, 4, 6],
-    6: [4, 5]
-});
-
 let arcticSpawnCounter = 0;
 
 export class PixelArcticFox {
@@ -1957,7 +1788,7 @@ export class PixelArcticFox {
             return;
         }
 
-        const ledges = getArcticLedges();
+        const ledges = getArcticLedges(pw, ph);
         this.ledgeId = idx % ledges.length;
         const l = ledges[this.ledgeId];
         this.x = l.x1 + 10 + Math.random() * Math.max(8, (l.x2 - l.x1 - 20));
@@ -1987,7 +1818,7 @@ export class PixelArcticFox {
     }
 
     startJump(toLedgeId, destX) {
-        const ledges = getArcticLedges();
+        const ledges = getArcticLedges(pw, ph);
         const destLedge = ledges[toLedgeId];
         const clampedX = Math.max(destLedge.x1 + 8, Math.min(destLedge.x2 - 8, destX));
         const destY = destLedge.yFn(clampedX);
@@ -2004,7 +1835,7 @@ export class PixelArcticFox {
     }
 
     findLedgeForPoint(px, py) {
-        const ledges = getArcticLedges();
+        const ledges = getArcticLedges(pw, ph);
         let bestId = 0;
         let bestD = 999;
         for (const l of ledges) {
@@ -2031,7 +1862,7 @@ export class PixelArcticFox {
             return;
         }
 
-        const ledges = getArcticLedges();
+        const ledges = getArcticLedges(pw, ph);
         const curLedge = ledges[this.ledgeId] || ledges[0];
         if (this.eatCooldown > 0) this.eatCooldown = Math.max(0, this.eatCooldown - frameScale);
 
@@ -2096,7 +1927,7 @@ export class PixelArcticFox {
                 }
             } else {
                 // Berry is on another platform! Hop along connected ledges to reach it!
-                const links = LEDGE_LINKS[this.ledgeId] || [0];
+                const links = ARCTIC_LEDGE_LINKS[this.ledgeId] || [0];
                 let nextLedge = links[0];
                 let bestDist = 9999;
                 for (const candidateId of links) {
@@ -2125,7 +1956,7 @@ export class PixelArcticFox {
             this.y = curLedge.yFn(this.x);
             if (this.stateTimer <= 0) {
                 // 42% chance to leap to an adjacent snow platform!
-                const links = LEDGE_LINKS[this.ledgeId] || [0];
+                const links = ARCTIC_LEDGE_LINKS[this.ledgeId] || [0];
                 if (Math.random() < 0.42 && links.length > 0) {
                     const nextId = links[Math.floor(Math.random() * links.length)];
                     const nl = ledges[nextId];
@@ -2159,7 +1990,7 @@ export class PixelArcticFox {
                 this.dir = (this.x < pw * 0.5) ? 1 : -1;
             } else {
                 // Or leap to another snow platform!
-                const links = LEDGE_LINKS[this.ledgeId] || [0];
+                const links = ARCTIC_LEDGE_LINKS[this.ledgeId] || [0];
                 const nextId = links[Math.floor(Math.random() * links.length)];
                 const nl = ledges[nextId];
                 const tx = nl.x1 + 10 + Math.random() * Math.max(8, nl.x2 - nl.x1 - 20);
