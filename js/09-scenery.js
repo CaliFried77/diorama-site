@@ -5,6 +5,7 @@ import { isLightMode } from './01-core-ui.js';
 import { wxFxOn, drawWxSky } from './03-weather.js';
 import { sceneCache } from './scene-state.js';
 
+//#region HABİTAT PROFİLLERİ VE ZEMİN — katalog profillerini sınıflara bağlar ve zemin yüksekliğini hesaplar
 const CREATURE_PROFILES = Object.freeze({
     bee: { count: 8, create: () => new PixelBee() },
     betta: { count: 7, create: () => new PixelBetta() },
@@ -50,9 +51,11 @@ function getGroundY(x, profile) {
     return ph;
 }
 
+//#endregion HABİTAT PROFİLLERİ VE ZEMİN — katalog profillerini sınıflara bağlar ve zemin yüksekliğini hesaplar
 /* ============================================================================
    DIORAMA INITIALIZATION & LAYERED ENVIRONMENT GENERATOR
    ============================================================================ */
+//#region HABİTAT KURULUMU — sahne verilerini temizler, flora/arka planı üretir ve canlıları yerleştirir
 export function initHabitat(idx) {
     setCurrentHabitatIndex(idx);
     const hab = HABITATS[currentHabitatIdx];
@@ -619,9 +622,11 @@ export function initHabitat(idx) {
     }
 }
 
+//#endregion HABİTAT KURULUMU — sahne verilerini temizler, flora/arka planı üretir ve canlıları yerleştirir
 /* ============================================================================
    STATIC LAYER RENDERER (Cached once per habitat/resize for 60 FPS performance)
    ============================================================================ */
+//#region STATİK ÇEVRE ÇİZİMİ — habitat değişince veya boyut değişince yeniden üretilen katman
 function buildStaticEnvironmentLayer(hab) {
     const off = document.createElement('canvas');
     off.width = pw;
@@ -1567,9 +1572,11 @@ function buildStaticEnvironmentLayer(hab) {
     return off;
 }
 
+//#endregion STATİK ÇEVRE ÇİZİMİ — habitat değişince veya boyut değişince yeniden üretilen katman
 /* ============================================================================
    CONTINUOUS SEAMLESS DIORAMA RENDERER (DAY & NIGHT ADAPTIVE)
    ============================================================================ */
+//#region KARE BAZLI HABİTAT ÇİZİMİ — gökyüzü ve hareketli çevre efektlerini çizer
 export function drawHabitatEnvironment(time) {
     const hab = HABITATS[currentHabitatIdx];
     const topCol = isLightMode ? hab.lightTop : hab.skyTop;
@@ -2635,3 +2642,4 @@ export function drawHabitatEnvironment(time) {
         if (s.life <= 0) stimuli.splice(i, 1);
     }
 }
+//#endregion KARE BAZLI HABİTAT ÇİZİMİ
