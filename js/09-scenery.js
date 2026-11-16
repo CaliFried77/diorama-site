@@ -354,49 +354,33 @@ export function initHabitat(idx) {
         }
 
     } else if (hab.sceneProfile === 'reef') {
-        const archReach = Math.min(135, Math.round(pw * 0.25));
-        [
-            { startX: 6, endX: archReach - 4, isLeft: true },
-            { startX: pw - archReach + 4, endX: pw - 6, isLeft: false }
-        ].forEach(zone => {
-            for (let x = zone.startX; x <= zone.endX; x += 8 + Math.floor(Math.random() * 5)) {
-                const t = zone.isLeft ? (x / archReach) : ((pw - x) / archReach);
-                const archY = Math.round(4 + Math.pow(1 - t, 1.3) * 18);
-                flora.push({
-                    type: 'sea_vine',
-                    x: Math.round(x),
-                    startY: archY,
-                    len: Math.round((1 - t * 0.6) * 28 + 10 + Math.random() * 12),
-                    col: Math.random() < 0.5 ? '#38bdf8' : '#e879f9',
-                    phase: Math.random() * Math.PI * 2
-                });
-            }
-        });
-
+        // Diverse Bioluminescent Reef Biodiversity anchored naturally along the sloped coral mounds
         for (let x = 10; x < pw - 10; x += 9 + Math.floor(Math.random() * 6)) {
             const nx = x / Math.max(1, pw);
-            const baseY = getGroundY(x, 'reef') + Math.round((Math.random() - 0.5) * 2);
+            const sideMound = nx < 0.26 ? Math.pow((0.26 - nx) / 0.26, 1.5) * 34
+                            : (nx > 0.74 ? Math.pow((nx - 0.74) / 0.26, 1.5) * 34 : 0);
+            const baseY = Math.round(getGroundY(x, 'reef') - sideMound);
             const r = Math.random();
             const hue = [285, 325, 190, 165, 45][Math.floor(Math.random() * 5)];
 
-            if ((nx < 0.22 || nx > 0.78) && r < 0.36) {
+            if ((nx < 0.24 || nx > 0.76) && r < 0.38) {
                 flora.push({
                     type: 'kelp',
                     x,
                     baseY,
-                    h: 52 + Math.random() * 62,
+                    h: 48 + Math.random() * 56,
                     phase: Math.random() * Math.PI * 2
                 });
-            } else if (r < 0.24) {
+            } else if (r < 0.25) {
                 flora.push({
                     type: 'staghorn_coral',
                     x,
                     baseY,
-                    h: 18 + Math.random() * 20,
+                    h: 16 + Math.random() * 18,
                     hue,
                     phase: Math.random() * Math.PI * 2
                 });
-            } else if (r < 0.44) {
+            } else if (r < 0.45) {
                 flora.push({
                     type: 'brain_coral',
                     x,
@@ -405,12 +389,12 @@ export function initHabitat(idx) {
                     hue,
                     phase: Math.random() * Math.PI * 2
                 });
-            } else if (r < 0.64) {
+            } else if (r < 0.65) {
                 flora.push({
                     type: 'tube_sponge',
                     x,
                     baseY,
-                    h: 16 + Math.random() * 24,
+                    h: 15 + Math.random() * 22,
                     hue,
                     phase: Math.random() * Math.PI * 2
                 });
@@ -428,13 +412,12 @@ export function initHabitat(idx) {
                     type: 'sea_fan',
                     x,
                     baseY,
-                    h: 24 + Math.random() * 30,
+                    h: 22 + Math.random() * 28,
                     hue,
                     phase: Math.random() * Math.PI * 2
                 });
             }
         }
-
     } else if (hab.sceneProfile === 'koi-pond') {
         // 1. Cascading Crimson Japanese Maple (Momiji) Leaf Clusters along the top-left bough
         const mapleReach = Math.min(150, Math.round(pw * 0.30));
@@ -1132,22 +1115,22 @@ function buildStaticEnvironmentLayer(hab) {
         }
     }
 
-    // 6. REEF STATIC SCENERY
+   // 6. REEF STATIC SCENERY (Natural Sloped Coral Bommies, Distant Seamounts & Sunken Atlantean Columns)
     if (hab.sceneProfile === 'reef') {
         const rockDark = isLightMode ? '#0f2942' : '#090d24';
         const rockMid = isLightMode ? '#163e5c' : '#13193b';
         const rockHi = isLightMode ? '#1e5678' : '#232d5e';
-        const neonRim = isLightMode ? '#38bdf8' : '#6366f1';
 
-        const colShade = isLightMode ? 'rgba(15, 42, 68, 0.42)' : 'rgba(17, 14, 48, 0.68)';
-        const colHi = isLightMode ? 'rgba(56, 189, 248, 0.28)' : 'rgba(139, 92, 246, 0.26)';
-        const ruinX = Math.round(pw * 0.24);
+        // A. Distant Underwater Seamounts & Sunken Atlantean Columns in the Abyssal Haze
+        const colShade = isLightMode ? 'rgba(15, 42, 68, 0.38)' : 'rgba(17, 14, 48, 0.62)';
+        const colHi = isLightMode ? 'rgba(56, 189, 248, 0.24)' : 'rgba(139, 92, 246, 0.22)';
+        const ruinX = Math.round(pw * 0.26);
         const ruinBaseY = getGroundY(ruinX, 'reef') + 2;
 
         [
-            { cx: ruinX - 16, ch: 56, broken: false },
-            { cx: ruinX + 16, ch: 44, broken: true },
-            { cx: Math.round(pw * 0.77), ch: 50, broken: true }
+            { cx: ruinX - 15, ch: 52, broken: false },
+            { cx: ruinX + 15, ch: 40, broken: true },
+            { cx: Math.round(pw * 0.76), ch: 46, broken: true }
         ].forEach(col => {
             const cy = getGroundY(col.cx, 'reef') + 2;
             sRect(col.cx - 2, cy - 3, 13, 4, colShade);
@@ -1161,53 +1144,50 @@ function buildStaticEnvironmentLayer(hab) {
                 sRect(col.cx, cy - col.ch - 2, 5, 2, colShade);
             }
         });
-        sRect(ruinX - 18, ruinBaseY - 58, 24, 3, colShade);
-        sRect(ruinX - 18, ruinBaseY - 58, 22, 1, colHi);
+        sRect(ruinX - 17, ruinBaseY - 54, 22, 3, colShade);
+        sRect(ruinX - 17, ruinBaseY - 54, 20, 1, colHi);
 
-        const archReach = Math.min(135, Math.round(pw * 0.25));
-        [
-            { isLeft: true, dir: 1 },
-            { isLeft: false, dir: -1 }
-        ].forEach(wall => {
-            const wallH = Math.round(ph * 0.75);
-            for (let y = 0; y < wallH; y++) {
-                const prog = y / wallH;
-                const jag = Math.sin(y * 0.14) * 3 + Math.cos(y * 0.06) * 2;
-                const topArch = prog < 0.25 ? Math.pow((0.25 - prog) / 0.25, 1.4) * (archReach - 18) : 0;
-                const botShelf = prog > 0.65 ? Math.pow((prog - 0.65) / 0.35, 1.5) * 26 : 0;
-                const w = Math.max(6, Math.round(12 + topArch + botShelf + jag));
-                const wx = wall.isLeft ? 0 : pw - w;
+        // B. Grounded Left & Right Coral Reef Bommies (Natural stepped rock mounds rising from the seabed)
+        const bommies = [
+            { cx: Math.round(pw * 0.06), rx: Math.round(pw * 0.18), h: 52 },
+            { cx: Math.round(pw * 0.17), rx: Math.round(pw * 0.12), h: 32 },
+            { cx: Math.round(pw * 0.83), rx: Math.round(pw * 0.12), h: 34 },
+            { cx: Math.round(pw * 0.94), rx: Math.round(pw * 0.18), h: 54 }
+        ];
+        bommies.forEach((bm, bIdx) => {
+            const baseY = ph;
+            const topY = ph - bm.h;
+            for (let y = topY; y < baseY; y++) {
+                const prog = (y - topY) / bm.h;
+                const strata = Math.sin(y * 0.22 + bIdx) * 3;
+                const halfW = Math.round(bm.rx * Math.pow(prog, 0.65) + strata);
+                const left = Math.max(0, bm.cx - halfW);
+                const right = Math.min(pw, bm.cx + halfW);
+                const w = Math.max(1, right - left);
 
-                sRect(wx, y, w, 1, rockDark);
-                sRect(wall.isLeft ? w - 4 : wx + 1, y, 3, 1, rockMid);
-                if (y % 4 === 0) {
-                    sRect(wall.isLeft ? w - 1 : wx, y, 1, 2, neonRim);
+                sRect(left, y, w, 1, rockDark);
+                sRect(left + 2, y, Math.max(1, w - 4), 1, prog < 0.35 ? rockHi : rockMid);
+                if (y % 7 === 0 && w > 10) {
+                    sRect(left + 3, y, Math.max(2, w - 6), 1, rockHi);
                 }
             }
-
-            [0.46, 0.64, 0.78].forEach((ledgeProg, lIdx) => {
-                const ly = Math.round(ph * ledgeProg);
-                const lw = 18 + (lIdx % 2) * 8;
-                const lx = wall.isLeft ? 8 + lIdx * 4 : pw - 8 - lIdx * 4 - lw;
-                const plateCol = lIdx % 2 === 0 ? '#a21caf' : '#0e7490';
-                const rimCol = lIdx % 2 === 0 ? '#f0abfc' : '#67e8f9';
-                sRect(lx, ly, lw, 3, rockDark);
-                sRect(lx - 2, ly - 2, lw + 4, 2, plateCol);
-                sRect(lx - 2, ly - 3, lw + 4, 1, rimCol);
-            });
         });
 
+        // C. Continuous Terraced Coral Reef Floor across the bottom
         for (let x = 0; x < pw; x++) {
-            const gy = getGroundY(x, 'reef');
+            const nx = x / Math.max(1, pw);
+            const sideMound = nx < 0.26 ? Math.pow((0.26 - nx) / 0.26, 1.5) * 34
+                            : (nx > 0.74 ? Math.pow((nx - 0.74) / 0.26, 1.5) * 34 : 0);
+            const gy = Math.round(getGroundY(x, 'reef') - sideMound);
             sRect(x, gy, 1, ph - gy, rockDark);
             sRect(x, gy + 1, 1, Math.max(1, Math.floor((ph - gy) * 0.45)), rockMid);
-            sRect(x, gy, 1, 2, x % 7 === 0 ? '#38bdf8' : rockHi);
+            sRect(x, gy, 1, 2, x % 9 === 0 ? '#38bdf8' : rockHi);
             if (!isLightMode && (x % 19 === 0)) {
-                sRect(x, gy + 4 + (x % 5), 3, 1, 'rgba(56, 189, 248, 0.38)');
+                sRect(x, gy + 4 + (x % 5), 3, 1, 'rgba(56, 189, 248, 0.35)');
             }
         }
     }
-
+    
     // 7. KOI POND STATIC SCENERY (Kyoto Zen Courtyard, Momiji Red Maple Tree, Arched Taiko Bridge, Mossy Boulders & Yukimi Lantern)
     if (hab.sceneProfile === 'koi-pond') {
         const stoneDark = isLightMode ? '#334155' : '#0f172a';
