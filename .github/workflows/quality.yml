@@ -33,7 +33,7 @@ jobs:
       - name: Run static security audit
         run: npm run security
       - name: Validate Cloudflare Worker bundle without deploying
-        if: github.ref == 'refs/heads/migration/cloudflare-pages'
+        if: github.ref == 'refs/heads/migration/cloudflare-pages' || (github.event_name == 'pull_request' && github.base_ref == 'migration/cloudflare-pages')
         run: npx --yes wrangler@4.162.0 deploy --dry-run --outdir .wrangler-cloudflare-dry-run
       - name: Upload build artifact
         uses: actions/upload-artifact@v7
