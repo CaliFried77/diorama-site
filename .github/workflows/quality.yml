@@ -2,7 +2,11 @@ name: Diorama quality gate
 
 on:
   push:
+    branches:
+      - migration/cloudflare-pages
   pull_request:
+    branches:
+      - migration/cloudflare-pages
   workflow_dispatch:
 
 permissions:
