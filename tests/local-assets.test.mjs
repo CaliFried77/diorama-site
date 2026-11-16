@@ -15,6 +15,7 @@ const coreUiModule = await readFile(new URL('../js/01-core-ui.js', import.meta.u
 const dataManagerModule = await readFile(new URL('../js/06-data-manager.js', import.meta.url), 'utf8');
 const sceneryModule = await readFile(new URL('../js/09-scenery.js', import.meta.url), 'utf8');
 const backgroundsModule = await readFile(new URL('../js/habitat-backgrounds.js', import.meta.url), 'utf8');
+const floraModule = await readFile(new URL('../js/habitat-flora-renderer.js', import.meta.url), 'utf8');
 const creatureModule = await readFile(new URL('../js/08-creatures.js', import.meta.url), 'utf8');
 const interactionModule = await readFile(new URL('../js/habitat-interactions.js', import.meta.url), 'utf8');
 const habitatCatalog = await readFile(new URL('../config/habitat-catalog.js', import.meta.url), 'utf8');
@@ -167,11 +168,11 @@ test('rainforest habitat connects its layered canopy, flora, parrot flock and ed
   assert.ok(backgroundsModule.includes('const edgeGiants = ['));
   assert.ok(backgroundsModule.includes('const canopyDomes = ['));
   assert.ok(backgroundsModule.includes('rootFlare = prog > 0.78'));
-  assert.ok(sceneryModule.includes("f.type === 'canopy_vine'"));
-  assert.ok(sceneryModule.includes("f.type === 'jungle_fern'"));
-  assert.ok(sceneryModule.includes("f.type === 'heliconia'"));
-  assert.ok(sceneryModule.includes("f.type === 'epiphyte'"));
-  assert.ok(sceneryModule.includes("f.type === 'orchid'"));
+  assert.ok(floraModule.includes("f.type === 'canopy_vine'"));
+  assert.ok(floraModule.includes("f.type === 'jungle_fern'"));
+  assert.ok(floraModule.includes("f.type === 'heliconia'"));
+  assert.ok(floraModule.includes("f.type === 'epiphyte'"));
+  assert.ok(floraModule.includes("f.type === 'orchid'"));
   assert.ok(interactionModule.includes("s.type === 'tropical_fruit'"));
   assert.ok(interactionModule.includes('export function drawHabitatStimuli()'));
   assert.ok(sceneryModule.includes('drawHabitatStimuli()'));
