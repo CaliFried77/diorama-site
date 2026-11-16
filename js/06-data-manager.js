@@ -28,7 +28,7 @@ import { NEWS_CATEGORY_IDS } from '../config/news-feeds.js';
 // Kullanıcıya gösterilen durum, kayıt boyutu ve yerel veri istatistikleri.
 // ============================================================================
 
-function setDataManagerStatus(message, tone = 'normal') {
+        function setDataManagerStatus(message, tone = 'normal') {
             dataManagerStatus.textContent = message;
             dataManagerStatus.className = `text-[11px] mt-3 min-h-8 ${tone === 'error' ? 'text-rose-200' : tone === 'success' ? 'text-emerald-200' : 'text-white/65'}`;
         }
@@ -71,7 +71,7 @@ function setDataManagerStatus(message, tone = 'normal') {
 // BÖLÜM BAŞI: YEDEK OLUŞTURMA VE DIŞA AKTARMA
 // ============================================================================
 
-function makeBackup(scope = 'all') {
+        function makeBackup(scope = 'all') {
             const data = {};
             if (scope === 'all' || scope === 'tasks') data.tasks = tasks;
             if (scope === 'all' || scope === 'notes') data.notes = notes;
@@ -119,7 +119,7 @@ function makeBackup(scope = 'all') {
 // BÖLÜM BAŞI: İÇE AKTARILAN JSON'UN ŞEMA VE VERİ DOĞRULAMASI
 // ============================================================================
 
-function isPlainRecord(value) {
+        function isPlainRecord(value) {
             return value !== null && typeof value === 'object' && !Array.isArray(value);
         }
 
@@ -277,7 +277,7 @@ function isPlainRecord(value) {
 // BÖLÜM BAŞI: DOĞRULANMIŞ YEDEĞİ GÜVENLİ ŞEKİLDE UYGULAMA
 // ============================================================================
 
-function persistImportedBackup(validated) {
+        function persistImportedBackup(validated) {
             const writes = {};
             if (validated.data.tasks) writes.diorama_tasks = JSON.stringify(validated.data.tasks);
             if (validated.data.notes) writes.diorama_notes = JSON.stringify(validated.data.notes);
