@@ -28,6 +28,8 @@ test('Arctic Aurora registers its scene, creature, and interaction profiles', as
   assert.match(creatures, /export class PixelArcticFox/);
   assert.match(interactions, /interactionProfile === 'cloudberry'/);
   assert.match(interactions, /canvas\.addEventListener\('pointerdown'/);
+  assert.match(interactions, /export function drawHabitatStimuli\(\)/);
+  assert.match(scenery, /drawHabitatStimuli\(\)/);
   assert.match(entrypoint, /import '\.\/habitat-interactions\.js';/);
   assert.match(scenery, /s\.type === 'cloudberry'/);
 });
