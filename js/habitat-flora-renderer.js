@@ -56,20 +56,26 @@ export function drawHabitatFlora(time, hab) {
             }
 
         } else if (f.type === 'bamboo_stalk') {
-            const culmCol = isLightMode ? '#15803d' : '#0d593d';
-            const nodeCol = isLightMode ? '#86efac' : '#34d399';
-            const leafCol = isLightMode ? '#22c55e' : '#10b981';
+            const culmDark = isLightMode ? '#17613f' : '#073e30';
+            const culmCol = isLightMode ? '#269052' : '#0d593d';
+            const culmHi = isLightMode ? '#62b66c' : '#2b8057';
+            const nodeCol = isLightMode ? '#a5d98d' : '#70b98a';
+            const leafCol = isLightMode ? '#3d9b53' : '#176647';
             for (let y = 0; y < f.h; y += 2) {
                 const prog = y / f.h;
                 const sway = Math.sin(time * 0.0012 + f.phase) * prog * 3.2 + f.lean * y;
                 const px = f.x + sway;
                 const py = baseGroundY - y;
-                pRect(px, py, 2, 2, culmCol);
-                if (y > 6 && y % 12 === 0) {
+                pRect(px, py, 1, 2, culmDark);
+                pRect(px + 1, py, 1, 2, culmCol);
+                if (y % 10 < 2) pRect(px + 1, py, 1, 1, culmHi);
+                if (y > 8 && y % 16 === 0) {
                     pRect(px - 1, py, 4, 1, nodeCol);
-                    const side = (y % 24 === 0) ? -1 : 1;
-                    pRect(px + side * 2, py - 1, 4 * side, 1, leafCol);
-                    pRect(px + side * 3, py - 2, 3 * side, 1, nodeCol);
+                    const side = (y % 32 === 0) ? -1 : 1;
+                    const branchX = side < 0 ? px - 5 : px + 2;
+                    pRect(branchX, py - 1, 4, 1, leafCol);
+                    pRect(branchX + (side < 0 ? -2 : 3), py - 3, 3, 1, nodeCol);
+                    pRect(branchX + (side < 0 ? -1 : 2), py - 2, 2, 1, culmHi);
                 }
             }
 
@@ -506,22 +512,40 @@ export function drawHabitatFlora(time, hab) {
             f.tipY = baseGroundY - f.h;
 
         } else if (f.type === 'lily') {
-            const padCol1 = isLightMode ? '#15803d' : '#0f4c3a';
-            const padCol2 = isLightMode ? '#16a34a' : '#14634b';
+            const padDeep = isLightMode ? '#17643b' : '#0b4032';
+            const padMid = isLightMode ? '#25834b' : '#145a43';
+            const padHi = isLightMode ? '#57a85f' : '#2c8056';
+            const veinCol = isLightMode ? 'rgba(196, 231, 151, 0.72)' : 'rgba(116, 184, 128, 0.54)';
             const driftX = f.x + Math.sin(time * 0.001 + (f.phase || 0)) * 1.2;
-            pRect(driftX - f.r + 1, f.y + 2, f.r * 2 - 2, 2, 'rgba(2, 10, 18, 0.35)');
-            for (let dy = -Math.ceil(f.r * 0.55); dy <= Math.ceil(f.r * 0.55); dy++) {
+            const padRy = Math.max(3, Math.ceil(f.r * 0.52));
+            pRect(driftX - f.r + 1, f.y + padRy + 1, f.r * 2 - 2, 2, 'rgba(2, 10, 18, 0.24)');
+            for (let dy = -padRy; dy <= padRy; dy++) {
                 for (let dx = -f.r; dx <= f.r; dx++) {
-                    if ((dx * dx) / (f.r * f.r) + (dy * dy) / ((f.r * 0.55) * (f.r * 0.55)) <= 1) {
-                        if (dx > 0 && Math.abs(dy) <= 0) continue;
-                        pRect(driftX + dx, f.y + dy, 1, 1, (dx + dy) % 2 === 0 ? padCol1 : padCol2);
-                    }
+                    const inside = (dx * dx) / (f.r * f.r) + (dy * dy) / (padRy * padRy) <= 1;
+                    const notch = dx > f.r * 0.42 && Math.abs(dy) <= 1;
+                    if (!inside || notch) continue;
+                    const shade = dy < -1 ? padHi : (dy > 1 ? padDeep : padMid);
+                    pRect(driftX + dx, f.y + dy, 1, 1, shade);
+                }
+            }
+            // A slim central vein and two branching veins make the pads read as leaves.
+            for (let v = 0; v < Math.floor(f.r * 0.62); v += 2) {
+                const vx = driftX + Math.floor(f.r * 0.40) - v;
+                pRect(vx, f.y, 1, 1, veinCol);
+                if (v > 1) {
+                    pRect(vx + 1, f.y - 2, 1, 1, veinCol);
+                    pRect(vx + 1, f.y + 2, 1, 1, veinCol);
                 }
             }
             if (f.flower) {
-                pRect(driftX - 2, f.y - 2, 5, 2, f.flowerCol || '#f472b6');
-                pRect(driftX - 1, f.y - 3, 3, 3, f.flowerCol || '#f472b6');
-                pRect(driftX, f.y - 2, 1, 1, '#fef08a');
+                const blossom = f.flowerCol || '#f7a6c8';
+                pRect(driftX - 1, f.y - 3, 2, 2, blossom);
+                pRect(driftX - 4, f.y - 1, 3, 2, blossom);
+                pRect(driftX + 2, f.y - 1, 3, 2, blossom);
+                pRect(driftX - 3, f.y + 1, 2, 2, blossom);
+                pRect(driftX + 1, f.y + 1, 2, 2, blossom);
+                pRect(driftX - 1, f.y - 1, 3, 3, '#fff2c2');
+                pRect(driftX, f.y, 1, 1, '#fff9e8');
             }
 
             // BÖLÜM SONU: SULAK ALAN VE AKVARYUM BİTKİLERİ

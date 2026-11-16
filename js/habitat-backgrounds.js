@@ -644,131 +644,279 @@ export function buildStaticEnvironmentLayer(hab) {
     }
 
     else if (hab.sceneProfile === 'koi-pond') {
-        // BÖLÜM BAŞI: KOİ GÖLETİ STATİK ÇEVRESİ
-        const stoneDark = isLightMode ? '#334155' : '#0f172a';
-        const stoneMid = isLightMode ? '#475569' : '#1e293b';
-        const stoneHi = isLightMode ? '#64748b' : '#334155';
-        const mossDark = isLightMode ? '#14532d' : '#062e22';
-        const mossMid = isLightMode ? '#15803d' : '#0d4a36';
-        const mossHi = isLightMode ? '#22c55e' : '#10b981';
+        // BÖLÜM BAŞI: KYOTO ZEN GÖLETİ — KATMANLI MANZARA
+        // Suyun tonu, uzak kıyı, akçaağaç, köprü ve taş işçiliği tek bir
+        // önbellek katmanında çizilir; canlılar ve etkileşimler ayrı kalır.
+        const waterTop = Math.round(ph * 0.225);
+        const water = sCtx.createLinearGradient(0, waterTop, 0, ph);
+        if (isLightMode) {
+            water.addColorStop(0, '#9bcfc4');
+            water.addColorStop(0.18, '#77b9ad');
+            water.addColorStop(0.44, '#4e9b91');
+            water.addColorStop(0.74, '#347d79');
+            water.addColorStop(1, '#20565b');
+        } else {
+            water.addColorStop(0, '#173e48');
+            water.addColorStop(0.18, '#205b5d');
+            water.addColorStop(0.43, '#247a73');
+            water.addColorStop(0.72, '#175d5e');
+            water.addColorStop(1, '#103a46');
+        }
+        sCtx.fillStyle = water;
+        sCtx.fillRect(0, waterTop, pw, ph - waterTop);
 
+        const waterGlow = sCtx.createRadialGradient(pw * 0.43, ph * 0.36, 2, pw * 0.43, ph * 0.36, pw * 0.58);
+        waterGlow.addColorStop(0, isLightMode ? 'rgba(255, 246, 205, 0.20)' : 'rgba(168, 230, 205, 0.10)');
+        waterGlow.addColorStop(0.58, isLightMode ? 'rgba(194, 235, 215, 0.08)' : 'rgba(77, 191, 164, 0.055)');
+        waterGlow.addColorStop(1, 'rgba(0, 12, 22, 0)');
+        sCtx.fillStyle = waterGlow;
+        sCtx.fillRect(0, waterTop, pw, ph - waterTop);
+
+        const stoneDark = isLightMode ? '#354b50' : '#0b2029';
+        const stoneMid = isLightMode ? '#536c6d' : '#18333a';
+        const stoneHi = isLightMode ? '#78918a' : '#35535a';
+        const mossDark = isLightMode ? '#245b45' : '#062c25';
+        const mossMid = isLightMode ? '#347b52' : '#0d4939';
+        const mossHi = isLightMode ? '#6ba66a' : '#25775a';
+        const barkDark = isLightMode ? '#42271e' : '#21171a';
+        const barkMid = isLightMode ? '#70412b' : '#382328';
+        const barkHi = isLightMode ? '#9b6340' : '#65402f';
+
+        const shoreY = (x) => Math.round(ph * 0.225 + Math.sin(x * 0.016) * 2.2 + Math.cos(x * 0.039) * 1.2);
+
+        // Uzak kıyı: suyla ufku birbirinden ayıran alçak yosun ve taş sırtı.
         for (let x = 0; x < pw; x++) {
-            const bankH = Math.round(18 + Math.sin(x * 0.03) * 4 + Math.cos(x * 0.08) * 2);
-            sRect(x, 0, 1, bankH, isLightMode ? '#1e293b' : '#09131c');
-            if (x % 3 === 0) sRect(x, bankH - 5, 2, 2, mossDark);
-            sRect(x, bankH - 3, 1, 2, stoneDark);
-            sRect(x, bankH - 1, 1, 1, stoneHi);
-            sRect(x, bankH, 1, 3, 'rgba(2, 8, 16, 0.42)');
+            const sy = shoreY(x);
+            const bankTone = x % 17 < 7 ? mossDark : mossMid;
+            sRect(x, sy, 1, 3, isLightMode ? '#628d72' : '#123e35');
+            sRect(x, sy + 3, 1, 3 + (x % 5 === 0 ? 2 : 0), bankTone);
+            sRect(x, sy + 2, 1, 1, mossHi);
+            if (x % 11 === 0) sRect(x, sy - 1, 2, 1, isLightMode ? '#b2c79a' : '#527b59');
+            if (x % 23 === 0) sRect(x, sy + 5, 3, 1, stoneHi);
         }
 
-        const brStart = Math.round(pw * 0.60);
-        const brWidth = Math.min(88, Math.round(pw * 0.20));
-        const redDark = isLightMode ? '#991b1b' : '#7f1d1d';
-        const redMid = isLightMode ? '#dc2626' : '#b91c1c';
-        const redHi = isLightMode ? '#fca5a5' : '#ef4444';
+        const drawPine = (cx, baseY, height, maxWidth, muted = false) => {
+            const trunkCol = muted ? 'rgba(31, 39, 34, 0.72)' : barkDark;
+            const deep = muted ? 'rgba(8, 44, 37, 0.76)' : (isLightMode ? '#174b39' : '#082b25');
+            const mid = muted ? 'rgba(22, 79, 60, 0.72)' : (isLightMode ? '#286d4b' : '#10503b');
+            const lit = muted ? 'rgba(72, 126, 82, 0.62)' : (isLightMode ? '#4d9660' : '#2b7651');
+            sRect(cx - 1, baseY - 3, 3, 4, trunkCol);
+            for (let y = 0; y < height; y++) {
+                const t = y / Math.max(1, height - 1);
+                const tier = Math.sin(t * Math.PI * 5.2) * 0.10;
+                const span = Math.max(1, Math.round(maxWidth * (0.06 + t * 0.92 + tier)));
+                const py = baseY - height + y;
+                const shade = y % 9 < 3 ? lit : (y % 9 < 6 ? mid : deep);
+                sRect(cx - span, py, span * 2 + 1, 1, shade);
+                if (y % 7 === 0 && span > 3) {
+                    sRect(cx - span + 2, py, Math.max(1, span - 3), 1, lit);
+                }
+            }
+            sRect(cx, baseY - height - 3, 1, 4, deep);
+        };
 
-        for (let bx = 0; bx <= brWidth; bx++) {
-            const t = bx / brWidth;
-            const arch = Math.round(Math.sin(t * Math.PI) * 9);
-            const wx = brStart + bx;
-            const wy = 21 - arch;
-            sRect(wx, 25 + Math.floor(arch * 0.5), 1, 2, 'rgba(185, 28, 28, 0.22)');
-            sRect(wx, wy + 4, 1, 3, '#451a03');
-            sRect(wx, wy, 1, 2, redMid);
-            sRect(wx, wy, 1, 1, redHi);
-            if (bx % 9 === 0 || bx === brWidth) {
-                sRect(wx, wy - 2, 2, 6, redDark);
-                sRect(wx, wy - 2, 2, 1, '#fef08a');
+        drawPine(Math.round(pw * 0.105), shoreY(pw * 0.105) + 1, Math.round(ph * 0.105), Math.round(pw * 0.026), true);
+        drawPine(Math.round(pw * 0.205), shoreY(pw * 0.205) + 1, Math.round(ph * 0.085), Math.round(pw * 0.022), true);
+        drawPine(Math.round(pw * 0.835), shoreY(pw * 0.835) + 1, Math.round(ph * 0.092), Math.round(pw * 0.024), true);
+        drawPine(Math.round(pw * 0.925), shoreY(pw * 0.925) + 1, Math.round(ph * 0.12), Math.round(pw * 0.03), true);
+
+        // Uzak kıyıdaki küçük çay köşkü; düşük kontrastı sayesinde suyun önüne geçmez.
+        const houseX = Math.round(pw * 0.405);
+        const houseBase = shoreY(houseX) + 7;
+        const houseW = Math.max(17, Math.round(pw * 0.043));
+        sRect(houseX - houseW + 2, houseBase - 19, houseW * 2 - 4, 19, isLightMode ? '#614333' : '#241e20');
+        sRect(houseX - houseW + 4, houseBase - 17, houseW * 2 - 8, 15, isLightMode ? '#987052' : '#49302b');
+        sRect(houseX - houseW + 5, houseBase - 16, houseW * 2 - 10, 2, isLightMode ? '#c7a477' : '#80553c');
+        for (let col = -1; col <= 1; col++) {
+            const cx = houseX + col * Math.round(houseW * 0.62);
+            sRect(cx - 1, houseBase - 17, 2, 17, barkDark);
+            sRect(cx, houseBase - 16, 1, 15, barkHi);
+        }
+        sRect(houseX - 5, houseBase - 12, 10, 8, isLightMode ? '#d8bd8e' : '#8c6848');
+        sRect(houseX - 4, houseBase - 11, 8, 6, isLightMode ? '#f6dfb2' : '#f0bf76');
+        sRect(houseX - 1, houseBase - 11, 2, 6, isLightMode ? '#79513a' : '#49302b');
+        sRect(houseX - houseW + 1, houseBase - 20, houseW * 2 - 2, 2, barkDark);
+        // Kiremitli, yukarı kıvrılan Japon çatı çizgisi.
+        for (let row = 0; row < 9; row++) {
+            const span = houseW + 6 + Math.round(row * 0.75);
+            const roofY = houseBase - 29 + row;
+            const roofCol = row < 2 ? (isLightMode ? '#36464a' : '#101d25') : (row % 3 === 0 ? '#24363b' : '#18282e');
+            sRect(houseX - span, roofY, span * 2, 1, roofCol);
+            if (row % 3 === 0) {
+                sRect(houseX - span + 3, roofY, Math.max(1, span * 2 - 6), 1, isLightMode ? '#78847b' : '#40504c');
             }
         }
-
-        const mapleReach = Math.min(150, Math.round(pw * 0.30));
-        const trunkDark = isLightMode ? '#3b1d14' : '#181014';
-        const trunkMid = isLightMode ? '#5c2d1e' : '#291b21';
-        const trunkHi = isLightMode ? '#7c3f2a' : '#3d2830';
-        const mapleDark = isLightMode ? '#991b1b' : '#65121b';
-        const mapleMid = isLightMode ? '#dc2626' : '#991b1b';
-        const mapleHi = isLightMode ? '#f87171' : '#dc2626';
-        const mapleGold = '#f59e0b';
-
-        const leftBankY = getGroundY(0, 'koi-pond', pw, ph) + 2;
-        for (let y = 0; y < leftBankY; y++) {
-            const prog = y / leftBankY;
-            const lean = Math.sin((1 - prog) * Math.PI * 0.5) * 10;
-            const rootFlare = prog > 0.72 ? Math.pow((prog - 0.72) / 0.28, 2) * 16 : 0;
-            const tw = Math.round(12 + prog * 5 + rootFlare);
-            const tx = Math.max(0, Math.round(lean));
-            sRect(tx, y, tw, 1, trunkDark);
-            sRect(tx + tw - 4, y, 3, 1, trunkMid);
-            sRect(tx + tw - 1, y, 1, 1, trunkHi);
+        sRect(houseX - houseW - 2, houseBase - 30, 5, 2, barkDark);
+        sRect(houseX + houseW - 3, houseBase - 30, 5, 2, barkDark);
+        sRect(houseX - 2, houseBase - 32, 4, 3, isLightMode ? '#53645c' : '#263b39');
+        // Köşkün arkasında kalan çalılar ve taş sınır.
+        for (let x = houseX - houseW - 10; x <= houseX + houseW + 10; x += 3) {
+            const h = 2 + (x % 5);
+            sRect(x, houseBase + 2 - h, 3, h, x % 2 === 0 ? mossDark : mossMid);
         }
 
-        [0.06, 0.28, 0.50, 0.72, 0.90].forEach((tNode, idx) => {
-            const cx = Math.round(tNode * mapleReach);
-            const branchY = Math.round(6 + Math.pow(tNode, 1.2) * 14);
-            const rx = Math.round(29 * (1 - tNode * 0.28));
-            const bottomY = branchY + Math.round(8 * (1 - tNode * 0.28));
+        // Akçaağaç: gövde, yatay ana dal ve katmanlı kızıl taç.
+        const mapleReach = Math.min(Math.round(pw * 0.31), 166);
+        const mapleRootX = Math.round(pw * 0.035);
+        const mapleBaseY = getGroundY(mapleRootX, 'koi-pond', pw, ph) + 2;
+        for (let y = 0; y < mapleBaseY; y++) {
+            const prog = y / Math.max(1, mapleBaseY);
+            const bend = Math.sin(prog * 1.45) * 7;
+            const flare = prog > 0.76 ? Math.pow((prog - 0.76) / 0.24, 2) * 11 : 0;
+            const trunkX = Math.round(mapleRootX + bend);
+            const trunkW = Math.round(7 + prog * 4 + flare);
+            sRect(trunkX, y, trunkW, 1, barkDark);
+            sRect(trunkX + Math.max(1, Math.floor(trunkW * 0.34)), y, Math.max(1, Math.floor(trunkW * 0.30)), 1, barkMid);
+            sRect(trunkX + trunkW - 1, y, 1, 1, barkHi);
+        }
+        for (let x = mapleRootX + 2; x < mapleReach; x++) {
+            const t = (x - mapleRootX) / Math.max(1, mapleReach - mapleRootX);
+            const branchY = Math.round(34 - Math.sin(t * Math.PI * 0.82) * 13);
+            const thickness = Math.max(2, Math.round(6 - t * 3));
+            sRect(x, branchY, 2, thickness, barkDark);
+            sRect(x, branchY, 1, 1, barkHi);
+        }
 
-            for (let y = 0; y <= bottomY; y++) {
-                const normY = (y - branchY * 0.5) / Math.max(1, bottomY - branchY * 0.5);
-                const ellipse = Math.max(0, 1 - normY * normY);
-                const span = Math.round(rx * (y < branchY * 0.5 ? 1 : Math.sqrt(ellipse)));
-                let col = y < branchY * 0.35 ? mapleHi : (y > branchY ? mapleDark : mapleMid);
-                if ((y + idx) % 6 === 0 && span > 6) col = mapleGold;
-                sRect(cx - span, y, span * 2, 1, col);
+        const maplePalette = isLightMode
+            ? ['#7f1d1d', '#b91c1c', '#dc2626', '#f97316', '#fbbf24']
+            : ['#44151c', '#731d28', '#a52c32', '#d64a38', '#f18b3e'];
+        const drawMapleCloud = (cx, cy, rx, ry, variant = 0) => {
+            for (let dy = -ry; dy <= ry; dy++) {
+                const ratio = 1 - (dy * dy) / Math.max(1, ry * ry);
+                if (ratio <= 0) continue;
+                const scallop = Math.sin(dy * 0.63 + cx * 0.07 + variant) * 2.4;
+                const span = Math.max(1, Math.round(rx * Math.sqrt(ratio) + scallop));
+                const shade = dy < -ry * 0.30 ? 4 : (dy > ry * 0.36 ? 0 : (dy % 5 === 0 ? 3 : 2));
+                sRect(cx - span, cy + dy, span * 2 + 1, 1, maplePalette[shade]);
             }
-        });
+            for (let dot = 0; dot < Math.max(3, Math.floor(rx / 5)); dot++) {
+                const dx = Math.round(Math.sin((dot + 1) * 8.17 + variant) * rx * 0.72);
+                const dy = Math.round(Math.cos((dot + 1) * 4.31 + variant) * ry * 0.45);
+                sRect(cx + dx, cy + dy, 2, 1, maplePalette[3 + (dot % 2)]);
+            }
+        };
+        drawMapleCloud(Math.round(pw * 0.025), 16, 42, 24, 0.4);
+        drawMapleCloud(Math.round(pw * 0.115), 17, 48, 25, 1.2);
+        drawMapleCloud(Math.round(pw * 0.215), 10, 42, 22, 2.1);
+        drawMapleCloud(Math.round(pw * 0.285), 28, 25, 17, 3.0);
 
-        for (let s = 0; s <= mapleReach; s++) {
-            const t = s / Math.max(1, mapleReach);
-            const by = Math.round(6 + Math.pow(t, 1.2) * 14 + Math.sin(s * 0.09) * 1.5);
-            const thick = Math.max(2, Math.round(8 * (1 - t * 0.75)));
-            sRect(s, by - Math.floor(thick * 0.5), 1, thick, trunkDark);
-            sRect(s, by + Math.ceil(thick * 0.5) - 1, 1, 1, trunkHi);
+        // Köprünün kemeri, alt taşıyıcıları ve korkuluğu ayrı tonlarla çizilir.
+        const bridgeStart = Math.round(pw * 0.575);
+        const bridgeWidth = Math.max(48, Math.min(138, Math.round(pw * 0.235)));
+        const bridgeBaseY = shoreY(Math.round(bridgeStart + bridgeWidth * 0.5)) + 17;
+        const bridgeRise = Math.max(8, Math.round(ph * 0.047));
+        const bridgeDark = isLightMode ? '#7f1d1d' : '#57191e';
+        const bridgeMid = isLightMode ? '#b91c1c' : '#9f3030';
+        const bridgeRed = isLightMode ? '#dc4a3d' : '#c34b40';
+        const bridgeLight = isLightMode ? '#f3a184' : '#ed8564';
+        for (let x = 0; x <= bridgeWidth; x++) {
+            const t = x / bridgeWidth;
+            const arch = Math.sin(t * Math.PI);
+            const deckY = bridgeBaseY - Math.round(arch * bridgeRise);
+            sRect(bridgeStart + x, deckY + 4, 1, 2, 'rgba(3, 17, 23, 0.48)');
+            sRect(bridgeStart + x, deckY + 2, 1, 3, bridgeDark);
+            sRect(bridgeStart + x, deckY, 1, 2, bridgeRed);
+            if (x % 7 === 0) sRect(bridgeStart + x, deckY + 1, 1, 1, bridgeLight);
+            const railY = deckY - 9;
+            sRect(bridgeStart + x, railY, 1, 2, bridgeMid);
+            if (x % 8 === 0 || x === bridgeWidth) {
+                sRect(bridgeStart + x, railY, 2, 9, bridgeDark);
+                sRect(bridgeStart + x, railY, 1, 2, bridgeLight);
+                sRect(bridgeStart + x, railY + 8, 2, 2, bridgeRed);
+            }
+        }
+        sRect(bridgeStart - 4, bridgeBaseY + 1, 8, 5, stoneDark);
+        sRect(bridgeStart + bridgeWidth - 3, bridgeBaseY + 1, 8, 5, stoneDark);
+        sRect(bridgeStart - 2, bridgeBaseY, 4, 2, stoneHi);
+        sRect(bridgeStart + bridgeWidth - 1, bridgeBaseY, 4, 2, stoneHi);
+
+        // Gölet yüzeyinde ince, kırık ışık izleri ve köprü/akçaağaç yansımaları.
+        for (let band = 0; band < 23; band++) {
+            const y = Math.round(ph * (0.31 + (band % 11) * 0.057));
+            const count = 2 + (band % 3);
+            for (let seg = 0; seg < count; seg++) {
+                const x = Math.round((band * 37 + seg * 83 + Math.sin(band * 1.7 + seg) * 19) % Math.max(1, pw - 34));
+                const len = 5 + ((band * 7 + seg * 11) % 17);
+                const col = band % 4 === 0
+                    ? 'rgba(193, 238, 215, 0.20)'
+                    : (band % 3 === 0 ? 'rgba(105, 193, 173, 0.16)' : 'rgba(6, 34, 43, 0.12)');
+                sRect(x, y, len, 1, col);
+                if (band % 5 === 0) sRect(x + 2, y + 2, Math.max(2, len - 7), 1, 'rgba(205, 238, 218, 0.09)');
+            }
+        }
+        for (let x = 10; x < mapleReach; x += 9) {
+            const reflectX = Math.round(x + Math.sin(x * 0.14) * 2);
+            for (let y = Math.round(ph * 0.31); y < Math.round(ph * 0.68); y += 9 + (x % 4)) {
+                if ((x + y) % 3 === 0) sRect(reflectX, y, 2 + (x % 3), 1, 'rgba(205, 103, 82, 0.10)');
+            }
+        }
+        for (let x = bridgeStart; x <= bridgeStart + bridgeWidth; x += 4) {
+            const t = (x - bridgeStart) / bridgeWidth;
+            const reflectionY = bridgeBaseY + 7 + Math.round(Math.sin(t * Math.PI) * 5);
+            sRect(x, reflectionY, 3, 1, 'rgba(220, 83, 68, 0.12)');
+            if (x % 12 === 0) sRect(x + 1, reflectionY + 3, 2, 1, 'rgba(220, 83, 68, 0.08)');
         }
 
+        // Ön kıyılar: taş katmanları, koyu toprak ve yumuşak yosun çizgisi.
         for (let x = 0; x < pw; x++) {
             const nx = x / Math.max(1, pw);
-            if (nx > 0.28 && nx < 0.70) continue;
+            if (nx > 0.27 && nx < 0.73) continue;
             const gy = getGroundY(x, 'koi-pond', pw, ph);
-            sRect(x, gy - 2, 1, 3, 'rgba(2, 8, 16, 0.45)');
-            sRect(x, gy, 1, ph - gy, mossDark);
-            sRect(x, gy, 1, 2, mossMid);
-            if (x % 5 === 0) sRect(x, gy - 1, 2, 1, mossHi);
+            sRect(x, gy - 3, 1, 1, 'rgba(5, 20, 25, 0.55)');
+            sRect(x, gy - 2, 1, 2, stoneHi);
+            sRect(x, gy, 1, 3, mossMid);
+            sRect(x, gy + 3, 1, Math.max(1, ph - gy - 3), mossDark);
+            if (x % 4 === 0) sRect(x, gy - 1, 2, 1, mossHi);
+            if (x % 9 === 0) sRect(x, gy + 6, 3, 1, 'rgba(89, 111, 82, 0.42)');
         }
 
-        [
-            { cx: 22, cy: ph - 10, rx: 14, ry: 7 },
-            { cx: 46, cy: ph - 6, rx: 11, ry: 5 },
-            { cx: pw - 68, cy: ph - 8, rx: 13, ry: 6 }
-        ].forEach(rock => {
-            sRect(rock.cx - rock.rx, rock.cy + 2, rock.rx * 2, 4, 'rgba(2, 8, 16, 0.45)');
-            for (let dy = -rock.ry; dy <= 2; dy++) {
-                const span = Math.round(rock.rx * Math.sqrt(Math.max(0, 1 - (dy * dy) / ((rock.ry + 2) * (rock.ry + 2)))));
-                sRect(rock.cx - span, rock.cy + dy, span * 2, 1, dy < -2 ? stoneHi : (dy > 0 ? stoneDark : stoneMid));
-                if (dy === -rock.ry + 1) sRect(rock.cx - Math.floor(span * 0.6), rock.cy + dy, Math.floor(span * 1.2), 1, mossHi);
+        const drawRock = (cx, cy, rx, ry, moss = true) => {
+            sRect(cx - rx, cy + 1, rx * 2, 3, 'rgba(1, 12, 18, 0.40)');
+            for (let dy = -ry; dy <= 2; dy++) {
+                const span = Math.round(rx * Math.sqrt(Math.max(0, 1 - (dy * dy) / Math.max(1, (ry + 2) * (ry + 2)))));
+                const shade = dy < -2 ? stoneHi : (dy > 0 ? stoneDark : stoneMid);
+                sRect(cx - span, cy + dy, span * 2, 1, shade);
+                if (dy === -ry + 1) {
+                    sRect(cx - Math.floor(span * 0.62), cy + dy, Math.max(1, Math.floor(span * 1.1)), 1, moss ? mossHi : stoneHi);
+                }
             }
-        });
+            sRect(cx - Math.floor(rx * 0.55), cy - ry + 2, Math.max(2, Math.floor(rx * 0.45)), 1, 'rgba(220, 232, 205, 0.22)');
+        };
+        drawRock(20, ph - 11, 17, 8);
+        drawRock(51, ph - 7, 12, 6);
+        drawRock(Math.round(pw * 0.82), ph - 7, 14, 6);
+        drawRock(Math.round(pw * 0.94), ph - 12, 19, 9);
 
-        const bx = pw - 42;
-        const by = ph - 18;
-        sRect(bx - 20, by + 6, 56, 12, isLightMode ? '#1e3a3a' : '#0a1720');
-        sRect(bx - 16, by + 4, 46, 4, mossDark);
-        sRect(bx - 12, by + 3, 36, 2, mossHi);
+        // Sağ kıyıdaki taş fener (tōrō): yosunlu taban, kaide ve sıcak ışık penceresi.
+        const lanternX = Math.round(pw * 0.91);
+        const lanternBase = getGroundY(lanternX, 'koi-pond', pw, ph) + 1;
+        sRect(lanternX - 16, lanternBase + 2, 32, 5, 'rgba(1, 12, 18, 0.55)');
+        sRect(lanternX - 13, lanternBase - 1, 26, 3, mossDark);
+        sRect(lanternX - 11, lanternBase - 3, 22, 3, stoneDark);
+        sRect(lanternX - 8, lanternBase - 7, 16, 4, stoneMid);
+        sRect(lanternX - 5, lanternBase - 22, 10, 15, stoneDark);
+        sRect(lanternX - 3, lanternBase - 21, 3, 13, stoneHi);
+        sRect(lanternX - 5, lanternBase - 19, 10, 7, isLightMode ? '#b78d58' : '#d39a45');
+        sRect(lanternX - 3, lanternBase - 18, 6, 5, isLightMode ? '#f8e2a4' : '#ffcf73');
+        sRect(lanternX - 1, lanternBase - 18, 2, 5, isLightMode ? '#96683c' : '#8b552c');
+        sRect(lanternX - 11, lanternBase - 24, 22, 3, stoneDark);
+        sRect(lanternX - 13, lanternBase - 26, 26, 2, stoneHi);
+        sRect(lanternX - 15, lanternBase - 28, 30, 2, stoneDark);
+        sRect(lanternX - 10, lanternBase - 31, 20, 2, stoneMid);
+        sRect(lanternX - 4, lanternBase - 34, 8, 3, stoneDark);
+        sRect(lanternX - 1, lanternBase - 35, 2, 2, stoneHi);
+        sRect(lanternX - 16, lanternBase - 2, 4, 1, mossHi);
+        sRect(lanternX + 11, lanternBase - 2, 4, 1, mossHi);
 
-        sRect(bx - 6, by, 13, 4, stoneDark);
-        sRect(bx - 3, by - 10, 7, 10, stoneMid);
-        sRect(bx - 2, by - 10, 2, 10, stoneHi);
-        sRect(bx - 5, by - 17, 11, 7, stoneDark);
-        sRect(bx - 10, by - 19, 21, 2, stoneDark);
-        sRect(bx - 8, by - 21, 17, 2, stoneMid);
-        sRect(bx - 5, by - 23, 11, 2, stoneHi);
-        sRect(bx - 1, by - 25, 3, 2, stoneHi);
-
-        sRect(bx - 22, by - 4, 12, 2, '#65a30d');
-        sRect(bx - 22, by - 4, 12, 1, '#a3e635');
-        sRect(bx - 14, by - 8, 2, 12, '#4d7c0f');
-        // BÖLÜM SONU: KOİ GÖLETİ STATİK ÇEVRESİ
+        // Ön planda birkaç eğri taş ve yosun izi; göletin orta alanı açık bırakılır.
+        for (let step = 0; step < 4; step++) {
+            const sx = Math.round(pw * 0.11 + step * 13);
+            const sy = getGroundY(sx, 'koi-pond', pw, ph) - 3 + (step % 2);
+            sRect(sx - 5, sy + 2, 11, 2, 'rgba(1, 12, 18, 0.32)');
+            sRect(sx - 4, sy, 9, 2, stoneMid);
+            sRect(sx - 3, sy, 6, 1, stoneHi);
+        }
+        // BÖLÜM SONU: KYOTO ZEN GÖLETİ — KATMANLI MANZARA
     }
 
     else if (hab.sceneProfile === 'arctic-tundra') {

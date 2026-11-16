@@ -328,28 +328,53 @@ export function drawHabitatEnvironment(time) {
     }
 
     if (hab.sceneProfile === 'koi-pond') {
-        for (let s = 0; s < 12; s++) {
-            const wy = 34 + s * Math.floor((ph - 46) / 12);
-            const sx = Math.round(((s * 73 + Math.sin(time * 0.001 + s) * 16) % (pw * 0.56)) + pw * 0.20);
-            pRect(sx, wy, 9 + (s % 3) * 5, 1, isLightMode ? 'rgba(224, 242, 254, 0.32)' : 'rgba(125, 211, 252, 0.12)');
+        // Su yüzeyinde farklı hızlarda kayan ışık kırıkları ve küçük dalga çizgileri.
+        for (let band = 0; band < 18; band++) {
+            const lane = band % 9;
+            const wy = Math.round(ph * (0.29 + lane * 0.073));
+            const speed = 0.004 + (band % 4) * 0.0011;
+            const drift = (time * speed + band * 47) % (pw + 52);
+            const sx = Math.round(drift - 26 + Math.sin(time * 0.0008 + band) * 5);
+            const length = 8 + (band % 5) * 4;
+            const glintAlpha = 0.08 + (band % 3) * 0.035;
+            pRect(sx, wy, length, 1, isLightMode
+                ? 'rgba(255, 255, 235, 0.26)'
+                : 'rgba(190, 240, 220, ' + glintAlpha.toFixed(2) + ')');
+            pRect(sx + 4, wy + 2, Math.max(3, length - 7), 1, isLightMode
+                ? 'rgba(224, 250, 233, 0.16)'
+                : 'rgba(85, 176, 158, 0.11)');
         }
 
-        const bx = pw - 42;
-        const by = ph - 18;
-        const dropOffset = Math.floor((time * 0.022) % 6);
-        pRect(bx - 23, by - 2 + dropOffset, 1, 3, '#bae6fd');
-        pRect(bx - 23, by + 3, 1, 1, '#e0f2fe');
-        const rippleR = (time * 0.014) % 9;
-        pRect(bx - 23 - rippleR, by + 5, 2, 1, 'rgba(224, 242, 254, 0.45)');
-        pRect(bx - 23 + rippleR, by + 5, 2, 1, 'rgba(224, 242, 254, 0.45)');
+        // Uzak köprü ve ağaçların suya düşen, parçalı yansımaları.
+        for (let i = 0; i < 10; i++) {
+            const x = Math.round(pw * 0.12 + i * pw * 0.075);
+            const y = Math.round(ph * 0.39 + Math.sin(time * 0.0015 + i * 0.8) * 3);
+            const width = 5 + (i % 4) * 3;
+            pRect(x, y, width, 1, i % 2 === 0
+                ? 'rgba(214, 105, 82, 0.12)'
+                : 'rgba(129, 192, 153, 0.12)');
+            if (i % 3 === 0) pRect(x + 2, y + 3, width - 2, 1, 'rgba(210, 226, 195, 0.09)');
+        }
 
-        const glowAlpha = (0.78 + 0.2 * Math.sin(time * 0.004)).toFixed(2);
-        pRect(bx - 3, by - 15, 7, 4, `rgba(253, 224, 71, ${glowAlpha})`);
-        pRect(bx - 1, by - 14, 3, 2, '#ffffff');
-        pRect(bx - 6, by - 17, 13, 8, 'rgba(251, 191, 36, 0.15)');
-        for (let ry = 0; ry < 5; ry++) {
-            const drift = Math.sin(time * 0.003 + ry * 1.4) * 2.5;
-            pRect(bx - 3 + drift, by + 10 + ry * 2, 6 - ry, 1, `rgba(251, 191, 36, ${(0.32 - ry * 0.05).toFixed(2)})`);
+        // Sağ kıyıdaki fenerden suya düşen sıcak ışık ve damla halkaları.
+        const bx = Math.round(pw * 0.91);
+        const by = getGroundY(bx, 'koi-pond', pw, ph) - 15;
+        const dropOffset = Math.floor((time * 0.022) % 6);
+        pRect(bx - 5, by - 2 + dropOffset, 1, 3, '#bae6fd');
+        pRect(bx - 5, by + 3, 1, 1, '#e0f2fe');
+        const rippleR = (time * 0.014) % 11;
+        pRect(bx - 5 - rippleR, by + 5, 3, 1, 'rgba(224, 242, 254, 0.42)');
+        pRect(bx - 5 + rippleR, by + 5, 3, 1, 'rgba(224, 242, 254, 0.42)');
+
+        // The warm pulse sits in the lantern window, with a short reflection on the pond.
+        const glowAlpha = (0.72 + 0.22 * Math.sin(time * 0.0035)).toFixed(2);
+        pRect(bx - 3, by - 1, 7, 4, 'rgba(255, 196, 104, ' + glowAlpha + ')');
+        pRect(bx - 1, by, 3, 3, '#fff2c5');
+        pRect(bx - 8, by - 4, 17, 10, 'rgba(251, 191, 36, 0.12)');
+        for (let ry = 0; ry < 6; ry++) {
+            const drift = Math.sin(time * 0.0025 + ry * 1.2) * 3.2;
+            pRect(bx - 3 + drift, by + 10 + ry * 2, 7 - ry, 1,
+                'rgba(251, 191, 36, ' + (0.28 - ry * 0.035).toFixed(2) + ')');
         }
     }
 

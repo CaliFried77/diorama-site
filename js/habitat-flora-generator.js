@@ -376,15 +376,18 @@ export function populateHabitatFlora(hab) {
             });
         }
 
-        const bambooStart = Math.max(pw - 86, Math.round(pw * 0.78));
-        for (let x = bambooStart; x < pw - 6; x += 7 + Math.floor(Math.random() * 4)) {
+        // Sağ kıyıda sık bir duvar yerine aralıklı, farklı boylarda bambu kümesi.
+        const bambooStart = Math.max(pw - 104, Math.round(pw * 0.80));
+        const lanternX = Math.round(pw * 0.91);
+        for (let x = bambooStart; x < pw - 6; x += 12 + Math.floor(Math.random() * 6)) {
+            if (Math.abs(x - lanternX) < 18) continue;
             const baseY = getGroundY(x, 'koi-pond', pw, ph) - 2;
             flora.push({
                 type: 'bamboo_stalk',
                 x,
                 baseY,
-                h: Math.round(ph * 0.58 + Math.random() * (ph * 0.32)),
-                lean: (Math.random() - 0.55) * 0.06,
+                h: Math.round(ph * (0.40 + Math.random() * 0.35)),
+                lean: (Math.random() - 0.5) * 0.08,
                 phase: Math.random() * Math.PI * 2
             });
         }
@@ -411,30 +414,47 @@ export function populateHabitatFlora(hab) {
             }
         }
 
-        for (let i = 0; i < 36; i++) {
+        // Su yüzeyindeki küçük izler seyrek ve düşük kontrastlı tutulur.
+        for (let i = 0; i < 20; i++) {
             flora.push({
                 type: 'pebble',
                 x: 20 + Math.random() * (pw - 40),
                 y: 36 + Math.random() * (ph - 48),
-                w: 3 + Math.floor(Math.random() * 5),
-                h: 2 + Math.floor(Math.random() * 3),
-                shade: ['#0c2536', '#123347', '#194158', '#081b29'][i % 4]
+                w: 2 + Math.floor(Math.random() * 3),
+                h: 1 + Math.floor(Math.random() * 2),
+                shade: [
+                    'rgba(13, 48, 57, 0.20)',
+                    'rgba(28, 74, 76, 0.18)',
+                    'rgba(63, 119, 112, 0.13)',
+                    'rgba(8, 37, 43, 0.16)'
+                ][i % 4]
             });
         }
 
-        for (let i = 0; i < 14; i++) {
-            const lx = 26 + Math.random() * (pw - 95);
-            const ly = 36 + Math.random() * (ph - 58);
-            flora.push({
-                type: 'lily',
-                x: Math.round(lx),
-                y: Math.round(ly),
-                r: 7 + Math.floor(Math.random() * 5),
-                flower: i % 2 === 0,
-                flowerCol: ['#f472b6', '#f8fafc', '#fde047'][i % 3],
-                phase: Math.random() * Math.PI * 2
-            });
-        }
+        // Nilüferler rastgele tek tek dağılmak yerine küçük, doğal kümeler oluşturur.
+        const lilyPockets = [
+            { x: pw * 0.17, y: ph * 0.67, count: 5 },
+            { x: pw * 0.38, y: ph * 0.47, count: 3 },
+            { x: pw * 0.69, y: ph * 0.64, count: 3 },
+            { x: pw * 0.81, y: ph * 0.43, count: 2 }
+        ];
+        let lilyIndex = 0;
+        lilyPockets.forEach((pocket, pocketIndex) => {
+            for (let i = 0; i < pocket.count; i++) {
+                const lx = pocket.x + (Math.random() - 0.5) * 34;
+                const ly = pocket.y + (Math.random() - 0.5) * 22;
+                flora.push({
+                    type: 'lily',
+                    x: Math.round(lx),
+                    y: Math.round(ly),
+                    r: 6 + Math.floor(Math.random() * 4),
+                    flower: (lilyIndex + pocketIndex) % 3 !== 1,
+                    flowerCol: ['#f7a6c8', '#fff4dc', '#f2d57e'][lilyIndex % 3],
+                    phase: Math.random() * Math.PI * 2
+                });
+                lilyIndex++;
+            }
+        });
 
         // BÖLÜM SONU: KOİ GÖLETİ BAŞLANGIÇ FLORASI
     } else if (hab.sceneProfile === 'rainforest') {
