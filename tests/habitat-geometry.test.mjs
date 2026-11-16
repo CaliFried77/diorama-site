@@ -47,7 +47,7 @@ const GEOMETRY_CALLER_FILES = [
 test('all habitat scene modules pass viewport dimensions to ground geometry', () => {
   for (const file of GEOMETRY_CALLER_FILES) {
     const source = readFileSync(new URL(file, import.meta.url), 'utf8');
-    const calls = [...source.matchAll(/\\bgetGroundY\\(([^)]*)\\)/g)];
+    const calls = [...source.matchAll(/\bgetGroundY\(([^)]*)\)/g)];
     assert.ok(calls.length > 0, `${file} contains ground geometry calls`);
 
     for (const [, args] of calls) {
