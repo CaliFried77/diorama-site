@@ -377,6 +377,7 @@ const CREATURE_PROFILES = Object.freeze({
                         shade: ['#123a32', '#1a4a3b', '#245847', '#315d46'][i % 4]
                     });
                 }
+            }
 
             const creatureProfile = CREATURE_PROFILES[hab.creatureProfile];
             if (creatureProfile) {
