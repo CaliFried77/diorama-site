@@ -1,10 +1,10 @@
-import { stimuli, canvas, PIXEL_SCALE, HABITATS, currentHabitatIdx, pw, ph, frameScale, frameChance, flora, pRect, frameSmoothing } from './07-habitat-state.js';
+import { stimuli, pw, ph, frameScale, frameChance, flora, pRect, frameSmoothing } from './07-habitat-state.js';
 import { getArcticLedges, ARCTIC_LEDGE_LINKS } from './arctic-geometry.js';
 
 /* CREATURES — Living Pixel Diorama
    Native ES module. Cross-file dependencies are declared with imports and exports. */
 // ============================================================================
-// BÖLÜM BAŞI: YEM/UYARAN HEDEFLEME VE TÜRLERİN ORTAK ETKİLEŞİMİ
+// BÖLÜM BAŞI: CANLILARIN ORTAK YEM HEDEFLEME YARDIMCISI
 // Canlılar burada sahneye bırakılan yemleri bulur; tıklama olayları uyaran üretir.
 // ============================================================================
 
@@ -26,142 +26,7 @@ function findAvailableStimulus(creature, type, maxDist = 145) {
     return best;
 }
 
-canvas.addEventListener('pointerdown', (e) => {
-    const px = e.clientX / PIXEL_SCALE;
-    const py = e.clientY / PIXEL_SCALE;
-    const interactionProfile = HABITATS[currentHabitatIdx].interactionProfile;
 
-    if (interactionProfile === 'nectar') {
-        for (let i = 0; i < 3; i++) {
-            const angle = (i / 3) * Math.PI * 2 + Math.random();
-            const dist = i === 0 ? 0 : 7 + Math.random() * 8;
-            stimuli.push({
-                type: 'honey_nectar',
-                x: px + Math.cos(angle) * dist,
-                y: py + Math.sin(angle) * dist,
-                baseY: py + Math.sin(angle) * dist,
-                phase: Math.random() * Math.PI * 2,
-                ripple: 0,
-                life: 240,
-                claimedBy: null
-            });
-        }
-    } else if (interactionProfile === 'blossom') {
-        for (let i = 0; i < 2; i++) {
-            stimuli.push({
-                type: 'floating_blossom',
-                x: px + (i - 0.5) * 12,
-                y: py + (Math.random() - 0.5) * 8,
-                vx: (Math.random() - 0.5) * 0.08,
-                vy: -0.03 + Math.random() * 0.06,
-                phase: Math.random() * Math.PI * 2,
-                color: i === 0 ? '#f0abfc' : '#7dd3fc',
-                core: '#fef08a',
-                life: 250,
-                claimedBy: null
-            });
-        }
-    } else if (interactionProfile === 'bloodworm') {
-        for (let i = 0; i < 3; i++) {
-            stimuli.push({
-                type: 'bloodworm',
-                x: px + (Math.random() - 0.5) * 14,
-                y: py + (Math.random() - 0.5) * 8,
-                vy: 0.13 + Math.random() * 0.06,
-                phase: Math.random() * Math.PI * 2,
-                life: 260,
-                claimedBy: null
-            });
-        }
-    } else if (interactionProfile === 'midge') {
-        for (let i = 0; i < 3; i++) {
-            const bx = px + (Math.random() - 0.5) * 18;
-            const by = py + (Math.random() - 0.5) * 12;
-            stimuli.push({
-                type: 'midge',
-                x: bx,
-                y: by,
-                baseX: bx,
-                baseY: by,
-                phase: Math.random() * Math.PI * 2,
-                life: 240,
-                claimedBy: null
-            });
-        }
-    } else if (interactionProfile === 'plankton') {
-        for (let i = 0; i < 2; i++) {
-            stimuli.push({
-                type: 'plankton_swarm',
-                x: px + (i - 0.5) * 14,
-                y: py + (Math.random() - 0.5) * 10,
-                phase: Math.random() * Math.PI * 2,
-                life: 220,
-                claimedBy: null
-            });
-        }
-    } else if (interactionProfile === 'pellet') {
-        for (let i = 0; i < 3; i++) {
-            stimuli.push({
-                type: 'koi_pellet',
-                x: px + (Math.random() - 0.5) * 14,
-                y: py + (Math.random() - 0.5) * 10,
-                ripple: 1,
-                life: 250,
-                claimedBy: null
-            });
-        }
-    } else if (interactionProfile === 'fruit') {
-        // Spawn a trio of detailed pixel-art tropical fruits: Mango, Pink Guava & Golden Banana Cluster
-        const kinds = ['mango', 'guava', 'banana'];
-        for (let i = 0; i < 3; i++) {
-            const offset = (i - 1) * 11;
-            const fruitX = px + offset + (Math.random() - 0.5) * 3;
-            const fruitY = py + (Math.random() - 0.5) * 6;
-            stimuli.push({
-                type: 'tropical_fruit',
-                kind: kinds[i],
-                x: fruitX,
-                y: fruitY,
-                baseY: fruitY,
-                phase: Math.random() * Math.PI * 2,
-                life: 300,
-                claimedBy: null
-            });
-        }
-    } else if (interactionProfile === 'cloudberry') {
-        // Spawn Golden Arctic Cloudberries that fall and land onto the nearest snow platform below!
-        const ledges = [
-            { xMin: 0.01, xMax: 0.25, y: Math.round(ph * 0.72) },
-            { xMin: 0.02, xMax: 0.19, y: Math.round(ph * 0.52) },
-            { xMin: 0.20, xMax: 0.36, y: Math.round(ph * 0.62) },
-            { xMin: 0.64, xMax: 0.80, y: Math.round(ph * 0.60) },
-            { xMin: 0.75, xMax: 0.99, y: Math.round(ph * 0.72) },
-            { xMin: 0.81, xMax: 0.98, y: Math.round(ph * 0.50) }
-        ];
-        for (let i = 0; i < 2; i++) {
-            const bx = Math.max(12, Math.min(pw - 12, px + (i - 0.5) * 14));
-            const nx = bx / Math.max(1, pw);
-            const valleyGround = Math.round(ph - 5 - Math.pow(Math.abs(nx - 0.5) * 1.9, 1.45) * 18);
-            let landY = valleyGround;
-            for (const l of ledges) {
-                if (nx >= l.xMin && nx <= l.xMax && l.y >= py - 12 && l.y < landY) {
-                    landY = l.y;
-                }
-            }
-            stimuli.push({
-                type: 'cloudberry',
-                x: bx,
-                y: Math.min(py, landY - 12),
-                targetY: landY - 2,
-                vy: 0.4,
-                landed: false,
-                phase: Math.random() * Math.PI * 2,
-                life: 360,
-                claimedBy: null
-            });
-        }
-    }
-});
 
 /* ============================================================================
    CREATURE 1: ARTISAN HONEYBEE, ROYAL BUMBLEBEE & VIOLET CARPENTER BEE
@@ -170,7 +35,7 @@ canvas.addEventListener('pointerdown', (e) => {
    Sanctuary to deposit pollen, and performs figure-8 hover dances!
    ============================================================================ */
 // ============================================================================
-// BÖLÜM SONU: YEM/UYARAN ETKİLEŞİMİ
+// BÖLÜM SONU: CANLILARIN ORTAK YEM HEDEFLEME YARDIMCISI
 // BÖLÜM BAŞI: ARI SINIFI
 // ============================================================================
 
