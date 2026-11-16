@@ -129,6 +129,12 @@ canvas.addEventListener('pointerdown', (e) => {
    baskets (corbiculae) after sipping nectar, returns to the hanging Skep Hive or
    Right Apiary Box to deposit pollen, and performs figure-8 hover dances!
    ============================================================================ */
+/* ============================================================================
+   CREATURE 1: ARTISAN HONEYBEE, ROYAL BUMBLEBEE & VIOLET CARPENTER BEE
+   Multi-state foraging AI: Visits all meadow wildflowers, fills hind-leg pollen
+   baskets (corbiculae) after sipping nectar, returns to the Grand Right Apiary
+   Sanctuary to deposit pollen, and performs figure-8 hover dances!
+   ============================================================================ */
 export class PixelBee {
     constructor() {
         this.x = 24 + Math.random() * (pw - 48);
@@ -139,7 +145,6 @@ export class PixelBee {
         this.phase = Math.random() * Math.PI * 2;
 
         const roll = Math.random();
-        // 'honey' (Bal Arısı), 'bumble' (Tombul Bombus), 'carpenter' (Mor Kanatlı Marangoz Arısı)
         this.species = roll < 0.50 ? 'honey' : (roll < 0.85 ? 'bumble' : 'carpenter');
         this.isBumble = this.species !== 'honey';
         this.rgb = this.species === 'carpenter' ? [192, 132, 252] : [251, 191, 36];
@@ -156,7 +161,6 @@ export class PixelBee {
         this.phase += (this.sipTimer > 0 ? 0.12 : 0.38) * frameScale;
         if (this.eatCooldown > 0) this.eatCooldown = Math.max(0, this.eatCooldown - frameScale);
 
-        // 1. Currently perched on a flower or at the hive entrance
         if (this.sipTimer > 0) {
             this.sipTimer = Math.max(0, this.sipTimer - frameScale);
             this.vx *= Math.pow(0.80, frameScale);
@@ -173,8 +177,8 @@ export class PixelBee {
             }
 
             if (this.sipTimer === 0) {
-                if (this.perchedFlower) this.hasPollen = true; // Pollen basket is now full!
-                if (this.visitingHive) this.hasPollen = false;  // Delivered pollen to hive!
+                if (this.perchedFlower) this.hasPollen = true;
+                if (this.visitingHive) this.hasPollen = false;
                 this.perchedFlower = null;
                 this.visitingHive = null;
 
@@ -187,7 +191,6 @@ export class PixelBee {
             return;
         }
 
-        // 2. Priority: Seek user-dropped Golden Honey Nectar anywhere on screen!
         const nectar = findAvailableStimulus(this, 'honey_nectar', Math.max(350, pw * 0.8));
         if (nectar) {
             const dx = nectar.x - this.x;
@@ -202,13 +205,11 @@ export class PixelBee {
             this.vx += (dx / dist) * 0.045 * frameScale;
             this.vy += (dy / dist) * 0.045 * frameScale;
         } else if (this.eatCooldown === 0 && this.hasPollen && frameChance(0.008)) {
-            // 3. If carrying pollen, occasionally fly back to the Left Skep Hive or Right Apiary Box!
-            const skepY = Math.round(ph * 0.42) + 13;
-            const apiaryX = Math.round(pw * 0.86);
-            const apiaryY = ph - 26;
+            // Fly back to the Grand Right-Side Apiary Sanctuary!
+            const apiaryX = Math.round(pw * 0.84);
             const hiveTargets = [
-                { x: 64, y: skepY },
-                { x: apiaryX - 5, y: apiaryY }
+                { x: apiaryX - 2, y: ph - 22 },
+                { x: apiaryX - 1, y: ph - 36 }
             ];
             const target = hiveTargets[Math.floor(Math.random() * hiveTargets.length)];
             const dx = target.x - this.x;
@@ -224,7 +225,6 @@ export class PixelBee {
                 }
             }
         } else if (this.eatCooldown === 0 && frameChance(0.014)) {
-            // 4. Foraging: Visit Sunflowers, Foxgloves, or Blooming Meadow Flowers (Lavender/Poppy/Daisy)
             const flowers = flora.filter(f => f.type === 'sunflower' || f.type === 'foxglove' || (f.type === 'meadow' && f.hasBloom));
             if (flowers.length > 0) {
                 const fl = flowers[Math.floor(Math.random() * flowers.length)];
@@ -244,7 +244,6 @@ export class PixelBee {
                 }
             }
         } else {
-            // 5. Gentle figure-8 waggle & meadow cruising
             this.vx += (Math.random() - 0.5) * 0.028 * frameScale;
             this.vy += ((Math.random() - 0.5) * 0.022 + Math.sin(this.phase * 0.16) * 0.011) * frameScale;
         }
@@ -286,7 +285,6 @@ export class PixelBee {
         const isPerched = this.sipTimer > 0;
         const tilt = isPerched ? 0 : 1;
 
-        // Golden pollen mote trail
         for (let i = 0; i < this.trail.length; i++) {
             const tr = this.trail[i];
             const tCol = this.species === 'carpenter'
@@ -295,13 +293,11 @@ export class PixelBee {
             pRect(tr.x - dir * 6, tr.y, 1, 1, tCol);
         }
 
-        // 1. Back Wing (translucent ice-blue or violet-iridescent shimmer)
         const flap = isPerched ? 0 : Math.round(Math.sin(this.phase * 2.2) * 3);
         const wingH = 4 + Math.abs(flap);
         const backWingCol = this.species === 'carpenter' ? 'rgba(192, 132, 252, 0.52)' : 'rgba(186, 230, 253, 0.48)';
         pRect(bx - dir * 3, by - 2 - wingH, 4, wingH, backWingCol);
 
-        // 2. Plump Banded Abdomen (Rear section: -7 to -2 along dir)
         const abLen = this.isBumble ? 7 : 6;
         for (let s = -abLen; s <= -2; s++) {
             const yOff = by + (s < -4 ? tilt : 0);
@@ -314,7 +310,7 @@ export class PixelBee {
                 } else if (band === 3 || band === 4 || (this.isBumble && band === 6)) {
                     col = dy < 0 ? '#fde047' : '#f59e0b';
                 } else if (this.species === 'bumble' && band === 7) {
-                    col = '#f8fafc'; // Characteristic white tail-tuft of Bombus terrestris!
+                    col = '#f8fafc';
                 } else if (dy === -halfH) {
                     col = '#3f3f46';
                 }
@@ -323,7 +319,6 @@ export class PixelBee {
         }
         pRect(bx - (abLen + 1) * dir, by + tilt, 1, 1, '#09090b');
 
-        // 3. Fuzzy Thorax (Center section: -1 to +2 along dir)
         for (let s = -1; s <= 2; s++) {
             for (let dy = -3; dy <= 2; dy++) {
                 if ((s === -1 || s === 2) && Math.abs(dy) === 3) continue;
@@ -335,7 +330,6 @@ export class PixelBee {
             }
         }
 
-        // 4. Sculpted Head, Glossy Compound Eye & Bent Antennae
         for (let s = 3; s <= 4; s++) {
             for (let dy = -2; dy <= 1; dy++) {
                 pRect(bx + s * dir, by + dy, 1, 1, '#18181b');
@@ -346,7 +340,6 @@ export class PixelBee {
         pRect(bx + 5 * dir, by - 2, 1, 1, '#27272a');
         pRect(bx + 6 * dir, by - 3, 1, 1, '#fbbf24');
 
-        // 5. Hanging Legs & Hind-Leg Pollen Basket (Corbicula swells with golden pollen when hasPollen is true!)
         pRect(bx + 1 * dir, by + 3, 1, 2, '#18181b');
         pRect(bx - 2 * dir, by + 3, 1, 2, '#18181b');
         if (this.hasPollen) {
@@ -354,19 +347,13 @@ export class PixelBee {
             pRect(bx - 2 * dir, by + 4, 1, 1, '#f59e0b');
         }
 
-        // 6. Forewing (Crisp veined translucent foreground wing)
         const fwY = by - 3 - Math.abs(flap);
         const foreWingCol = this.species === 'carpenter' ? 'rgba(233, 213, 255, 0.78)' : 'rgba(240, 249, 255, 0.84)';
         pRect(bx - dir * 1, fwY, 5, 3, foreWingCol);
         pRect(bx, fwY - 1, 3, 1, 'rgba(255, 255, 255, 0.94)');
     }
 }
-/* ============================================================================
-   CREATURE 6: MAJESTIC ARTICULATED NISHIKIGOI (Japon Zen Koi Balığı)
-   18-node fluid S-curve spine, 5 authentic Japanese Nishikigoi varieties
-   (including Tancho & Asagi), feathered teardrop pectoral fins, spine-aligned
-   dorsal veil, barbels, and surface feeding ripples!
-   ============================================================================ */
+
 export class PixelKoi {
     constructor() {
         this.x = 28 + Math.random() * (pw - 56);
