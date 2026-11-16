@@ -83,22 +83,31 @@ export function initHabitat(idx) {
         });
     }
 
-    if (hab.sceneProfile === 'meadow') {
-        for (let x = 12; x < pw - 10; x += 6 + Math.floor(Math.random() * 5)) {
+   if (hab.sceneProfile === 'meadow') {
+        // Rich Wildflower Meadow: Sunflowers, Foxgloves, Lavender, Poppies, Daisies, Buttercups & Fluffy Dandelions
+        for (let x = 12; x < pw - 12; x += 6 + Math.floor(Math.random() * 4)) {
+            const nx = x / Math.max(1, pw);
+            // Leave space around the right-side wooden apiary hive box (nx ~ 0.84..0.90)
+            if (nx > 0.83 && nx < 0.90) continue;
+
+            const baseY = getGroundY(x, 'meadow') + Math.round((Math.random() - 0.5) * 2);
             const r = Math.random();
-            if (r < 0.16 && (x > 68 && x < pw * 0.42 || x > pw * 0.68)) {
+
+            if (r < 0.18 && (nx > 0.12 && nx < 0.42 || nx > 0.66 && nx < 0.82)) {
                 flora.push({
                     type: 'sunflower',
                     x,
-                    h: 30 + Math.random() * 22,
+                    baseY,
+                    h: 32 + Math.random() * 24,
                     headR: 4 + Math.floor(Math.random() * 2),
                     phase: Math.random() * Math.PI * 2
                 });
-            } else if (r < 0.34) {
+            } else if (r < 0.38) {
                 flora.push({
                     type: 'foxglove',
                     x,
-                    h: 22 + Math.random() * 20,
+                    baseY,
+                    h: 24 + Math.random() * 22,
                     hue: Math.random() < 0.5 ? '#c084fc' : '#f472b6',
                     phase: Math.random() * Math.PI * 2
                 });
@@ -106,8 +115,9 @@ export function initHabitat(idx) {
                 flora.push({
                     type: 'meadow',
                     x,
-                    h: 12 + Math.random() * 22,
-                    hasBloom: Math.random() < 0.68,
+                    baseY,
+                    h: 14 + Math.random() * 22,
+                    hasBloom: Math.random() < 0.78,
                     kind: ['lavender', 'daisy', 'poppy', 'buttercup'][Math.floor(Math.random() * 4)],
                     phase: Math.random() * Math.PI * 2
                 });
@@ -612,24 +622,38 @@ function buildStaticEnvironmentLayer(hab) {
     const mistCol = isLightMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(148, 163, 184, 0.035)';
     sRect(0, ph - 28, pw, 10, mistCol);
 
-    // 2. MEADOW STATIC SCENERY
+   // 2. MEADOW STATIC SCENERY (Ancient Framing Oak, Blossoming Right Orchard Bough, Distant Rolling Hills & Artisan Apiary Box)
     if (hab.sceneProfile === 'meadow') {
-        const trunkCol = isLightMode ? '#451a03' : '#1c1217';
-        const barkHi = isLightMode ? '#78350f' : '#2e1d24';
-        const leafDark = isLightMode ? '#14532d' : '#0b221e';
-        const leafMid = isLightMode ? '#15803d' : '#11332b';
-        const leafHi = isLightMode ? '#22c55e' : '#1b4d3e';
+        const trunkDark = isLightMode ? '#451a03' : '#181014';
+        const trunkMid = isLightMode ? '#78350f' : '#291b22';
+        const trunkHi = isLightMode ? '#92400e' : '#3d2832';
+        const leafDark = isLightMode ? '#14532d' : '#08221d';
+        const leafMid = isLightMode ? '#15803d' : '#10382e';
+        const leafHi = isLightMode ? '#22c55e' : '#1b5442';
+        const leafGold = isLightMode ? '#84cc16' : '#2dd4bf';
 
-        const groveX = Math.round(pw * 0.26);
-        for (let y = ph - 82; y < ph; y++) {
-            const prog = (y - (ph - 82)) / 82;
-            const flare = prog > 0.78 ? Math.pow((prog - 0.78) / 0.22, 2) * 8 : 0;
-            const width = Math.round(6 + prog * 5 + flare);
-            const left = Math.round(groveX - flare * 0.5);
-            sRect(left, y, width, 1, isLightMode ? '#5c2d16' : '#24161a');
-            if (y % 9 === 0) sRect(left + width - 2, y, 2, 1, barkHi);
+        // A. Distant Sunlit Tuscan/Anatolian Rolling Hills & Cypress/Orchard Silhouettes
+        const hillCol = isLightMode ? 'rgba(21, 128, 61, 0.22)' : 'rgba(13, 56, 44, 0.45)';
+        for (let x = 0; x < pw; x += 2) {
+            const nx = x / Math.max(1, pw);
+            const h = Math.round(14 + Math.sin(nx * Math.PI * 2.5) * 8 + Math.cos(x * 0.05) * 3);
+            const gy = getGroundY(x, 'meadow');
+            sRect(x, gy - h, 2, h, hillCol);
         }
-        [[groveX + 3, ph - 96, 22, 16], [groveX + 20, ph - 89, 18, 14], [groveX - 10, ph - 88, 16, 13]].forEach(([cx, cy, rx, ry], idx) => {
+
+        // B. Secondary Midground Orchard Tree on Left-Midground Hillside
+        const groveX = Math.round(pw * 0.24);
+        const groveBaseY = getGroundY(groveX, 'meadow') + 2;
+        const groveTopY = groveBaseY - 72;
+        for (let y = groveTopY; y < groveBaseY; y++) {
+            const prog = (y - groveTopY) / 72;
+            const flare = prog > 0.75 ? Math.pow((prog - 0.75) / 0.25, 2) * 8 : 0;
+            const w = Math.round(6 + prog * 4 + flare);
+            const left = Math.round(groveX - flare * 0.5);
+            sRect(left, y, w, 1, trunkDark);
+            sRect(left + w - 2, y, 2, 1, trunkMid);
+        }
+        [[groveX + 2, groveTopY - 8, 22, 15], [groveX + 18, groveTopY - 2, 18, 13], [groveX - 12, groveTopY - 3, 16, 12]].forEach(([cx, cy, rx, ry], idx) => {
             for (let dy = -ry; dy <= ry; dy++) {
                 const span = Math.round(rx * Math.sqrt(Math.max(0, 1 - (dy * dy) / (ry * ry))));
                 const col = dy < -ry * 0.25 ? leafHi : (dy > ry * 0.35 ? leafDark : leafMid);
@@ -640,40 +664,88 @@ function buildStaticEnvironmentLayer(hab) {
             }
         });
 
-        for (let y = ph - 134; y < ph; y++) {
-            const depth = y - (ph - 134);
-            const prog = depth / 134;
-            const rootFlare = prog > 0.75 ? Math.pow((prog - 0.75) / 0.25, 2) * 16 : 0;
-            const w = Math.round(16 + depth * 0.16 + rootFlare);
-            sRect(0, y, w, 1, trunkCol);
-            sRect(w - 5, y, 3, 1, barkHi);
-            if (y % 15 === 0) sRect(4, y, 4, 1, isLightMode ? '#92400e' : '#3f2830');
-        }
-        const branchY = ph - 119;
-        for (let bx = 12; bx <= 106; bx++) {
-            const by = branchY + Math.floor(Math.sin(bx * 0.055) * 3);
-            const bw = Math.max(2, Math.floor(9 - (bx - 12) * 0.065));
-            sRect(bx, by, 1, bw, trunkCol);
-            sRect(bx, by, 1, 1, barkHi);
+        // C. Grand Ancient Meadow Oak on Left (Reaches all the way from ground to top-left canopy without floating!)
+        const oakReach = Math.min(155, Math.round(pw * 0.30));
+        const oakBaseY = getGroundY(0, 'meadow') + 4;
+        for (let y = 0; y < oakBaseY; y++) {
+            const prog = y / oakBaseY;
+            const rootFlare = prog > 0.70 ? Math.pow((prog - 0.70) / 0.30, 2) * 20 : 0;
+            const w = Math.round(16 + prog * 7 + rootFlare);
+            sRect(0, y, w, 1, trunkDark);
+            sRect(w - 6, y, 4, 1, trunkMid);
+            sRect(w - 2, y, 2, 1, trunkHi);
+            if (y % 19 === 0 && y > 30 && y < oakBaseY - 20) {
+                sRect(5, y, 4, 2, trunkHi);
+            }
         }
 
-        const canopyBlobs = [
-            { cx: 24, cy: ph - 144, rx: 38, ry: 26 },
-            { cx: 66, cy: ph - 136, rx: 35, ry: 24 },
-            { cx: 102, cy: ph - 126, rx: 24, ry: 18 }
-        ];
-        canopyBlobs.forEach((b, bIdx) => {
-            for (let dy = -b.ry; dy <= b.ry; dy++) {
-                const span = Math.round(b.rx * Math.sqrt(Math.max(0, 1 - (dy * dy) / (b.ry * b.ry))));
-                const col = dy < -b.ry * 0.3 ? leafHi : (dy > b.ry * 0.35 ? leafDark : leafMid);
-                sRect(b.cx - span, b.cy + dy, span * 2, 1, col);
-                if (dy % 6 === 0 && span > 6) {
-                    const bx = b.cx + (((dy * 11) + bIdx * 13) % (span - 3));
-                    sRect(bx, b.cy + dy, 2, 2, '#fb7185');
-                }
+        // Top-Left Continuous Overlapping Oak Canopy (Hugs top screen edge seamlessly)
+        [0.06, 0.28, 0.50, 0.72, 0.90].forEach((tNode, idx) => {
+            const cx = Math.round(tNode * oakReach);
+            const branchY = Math.round(6 + Math.pow(tNode, 1.2) * 14);
+            const rx = Math.round(30 * (1 - tNode * 0.28));
+            const bottomY = branchY + Math.round(9 * (1 - tNode * 0.25));
+
+            for (let y = 0; y <= bottomY; y++) {
+                const normY = (y - branchY * 0.5) / Math.max(1, bottomY - branchY * 0.5);
+                const ellipse = Math.max(0, 1 - normY * normY);
+                const span = Math.round(rx * (y < branchY * 0.5 ? 1 : Math.sqrt(ellipse)));
+                let col = y < branchY * 0.35 ? leafHi : (y > branchY ? leafDark : leafMid);
+                if ((y + idx) % 6 === 0 && span > 6) col = leafGold;
+                sRect(cx - span, y, span * 2, 1, col);
+            }
+        });
+        for (let s = 0; s <= oakReach; s++) {
+            const t = s / Math.max(1, oakReach);
+            const by = Math.round(6 + Math.pow(t, 1.2) * 14 + Math.sin(s * 0.08) * 1.5);
+            const thick = Math.max(2, Math.round(9 * (1 - t * 0.75)));
+            sRect(s, by - Math.floor(thick * 0.5), 1, thick, trunkDark);
+            sRect(s, by + Math.ceil(thick * 0.5) - 1, 1, 1, trunkHi);
+        }
+
+        // Lower Sturdy Horizontal Oak Limb at ph * 0.42 (Holds the Golden Skep Beehive in the midground!)
+        const skepBranchY = Math.round(ph * 0.42);
+        for (let bx = 14; bx <= 92; bx++) {
+            const t = (bx - 14) / 78;
+            const by = skepBranchY + Math.round(Math.sin(t * Math.PI * 0.8) * 3);
+            const bw = Math.max(2, Math.round(8 * (1 - t * 0.7)));
+            sRect(bx, by, 1, bw, trunkDark);
+            sRect(bx, by, 1, 1, trunkHi);
+        }
+        // Leaf cluster shading the beehive limb
+        [[46, skepBranchY - 6, 20, 10], [78, skepBranchY - 4, 18, 9]].forEach(([cx, cy, rx, ry]) => {
+            for (let dy = -ry; dy <= ry; dy++) {
+                const span = Math.round(rx * Math.sqrt(Math.max(0, 1 - (dy * dy) / (ry * ry))));
+                sRect(cx - span, cy + dy, span * 2, 1, dy < 0 ? leafHi : leafDark);
             }
         });
 
+        // D. Top-Right Framing Blossoming Apple/Hawthorn Orchard Bough
+        const rightReach = Math.min(115, Math.round(pw * 0.22));
+        [0.10, 0.38, 0.68].forEach((tNode) => {
+            const cx = Math.round(pw - tNode * rightReach);
+            const branchY = Math.round(5 + Math.pow(tNode, 1.2) * 12);
+            const rx = Math.round(24 * (1 - tNode * 0.25));
+            const bottomY = branchY + 7;
+            for (let y = 0; y <= bottomY; y++) {
+                const normY = (y - branchY * 0.5) / Math.max(1, bottomY - branchY * 0.5);
+                const span = Math.round(rx * (y < branchY * 0.5 ? 1 : Math.sqrt(Math.max(0, 1 - normY * normY))));
+                sRect(cx - span, y, span * 2, 1, y < branchY * 0.4 ? leafHi : leafMid);
+                if (y % 4 === 0 && span > 5) {
+                    sRect(cx - Math.floor(span * 0.4), y, 2, 2, '#fda4af');
+                    sRect(cx + Math.floor(span * 0.3), y, 1, 1, '#ffffff');
+                }
+            }
+        });
+        for (let s = 0; s <= rightReach; s++) {
+            const t = s / Math.max(1, rightReach);
+            const bx = pw - 1 - s;
+            const by = Math.round(5 + Math.pow(t, 1.2) * 12 + Math.sin(s * 0.1) * 1.5);
+            const thick = Math.max(2, Math.round(7 * (1 - t * 0.75)));
+            sRect(bx, by, 1, thick, trunkDark);
+        }
+
+        // E. Rolling Velvet Meadow Ground Contour
         const turfTop = isLightMode ? '#16a34a' : '#0f392b';
         const turfDeep = isLightMode ? '#14532d' : '#071f18';
         for (let x = 0; x < pw; x++) {
@@ -682,20 +754,41 @@ function buildStaticEnvironmentLayer(hab) {
             sRect(x, gy, 1, 2, turfTop);
         }
 
-        const rx = Math.round(pw * 0.88);
-        const rgy = getGroundY(rx, 'meadow');
-        sRect(rx - 10, rgy - 5, 18, 7, isLightMode ? '#475569' : '#1e293b');
-        sRect(rx - 8, rgy - 6, 12, 2, isLightMode ? '#94a3b8' : '#334155');
-        [[rx - 14, rgy - 10, 12, 8], [rx + 2, rgy - 12, 14, 10], [rx - 5, rgy - 16, 12, 9]].forEach(([cx, cy, rxR, ryR], i) => {
+        // F. Right-Hillside Artisan Wooden Beehive Box (Cottagecore Apiary) & Wild Rose Bush
+        const hx = Math.round(pw * 0.86);
+        const hgy = getGroundY(hx, 'meadow') + 1;
+        // Wild rose & lavender bush behind the wooden hive
+        [[hx + 12, hgy - 10, 13, 9], [hx - 12, hgy - 8, 10, 7]].forEach(([cx, cy, rxR, ryR]) => {
             for (let dy = -ryR; dy <= ryR; dy++) {
                 const span = Math.round(rxR * Math.sqrt(Math.max(0, 1 - (dy * dy) / (ryR * ryR))));
                 sRect(cx - span, cy + dy, span * 2, 1, dy < 0 ? leafHi : leafDark);
             }
-            sRect(cx - 2 + i * 2, cy - 2, 2, 2, '#fb7185');
-            sRect(cx + 3 - i, cy + 1, 2, 2, '#fda4af');
+            sRect(cx - 2, cy - 2, 2, 2, '#fb7185');
+            sRect(cx + 3, cy + 1, 2, 2, '#fda4af');
         });
-    }
 
+        // Wooden hive stand legs & shadow
+        sRect(hx - 10, hgy, 20, 3, 'rgba(2, 10, 14, 0.45)');
+        sRect(hx - 8, hgy - 4, 3, 5, trunkDark);
+        sRect(hx + 5, hgy - 4, 3, 5, trunkDark);
+        sRect(hx - 10, hgy - 5, 20, 2, trunkMid); // Landing board
+
+        // Two-tier painted wooden Langstroth honey boxes (Warm cream & honey-gold)
+        const boxCol = isLightMode ? '#fef3c7' : '#d97706';
+        const boxShade = isLightMode ? '#fde68a' : '#b45309';
+        sRect(hx - 8, hgy - 19, 16, 14, boxCol);
+        sRect(hx - 8, hgy - 12, 16, 1, trunkMid); // Super box seam
+        sRect(hx + 5, hgy - 19, 3, 14, boxShade);
+        // Dark entrance slot & golden landing glow
+        sRect(hx - 5, hgy - 7, 6, 2, '#1e1b18');
+        sRect(hx - 4, hgy - 6, 4, 1, '#fef08a');
+
+        // Pitched gable wooden roof cap
+        for (let r = 0; r <= 5; r++) {
+            const rw = 11 - r * 2;
+            sRect(hx - rw, hgy - 20 - r, rw * 2, 1, r === 0 ? trunkDark : '#b45309');
+        }
+    }
     // 3. WETLAND STATIC SCENERY
     if (hab.sceneProfile === 'wetland') {
         const waterHorizonY = ph - 52;
