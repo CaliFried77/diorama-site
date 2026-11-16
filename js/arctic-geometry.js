@@ -1,3 +1,4 @@
+//#region KUTUP SAHNESİ GEOMETRİSİ — zemin, platform yüzeyleri, yem iniş hesabı ve tilki geçiş grafiği
 /**
  * Shared Arctic habitat geometry.
  * Both fox movement/rendering and cloudberry placement use these exact surfaces.
@@ -64,3 +65,4 @@ export function getArcticLandingY(x, pointerY, width, height) {
 
   return landingY;
 }
+//#endregion KUTUP SAHNESİ GEOMETRİSİ
