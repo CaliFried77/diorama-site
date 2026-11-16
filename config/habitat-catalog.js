@@ -3,13 +3,13 @@
  * Add a new profile contract only together with its implementation and tests.
  */
 export const HABITAT_SCENE_PROFILES = Object.freeze([
-  'meadow', 'betta-aquarium', 'wetland', 'botanical', 'reef', 'koi-pond', 'rainforest',
+  'meadow', 'betta-aquarium', 'wetland', 'botanical', 'reef', 'koi-pond', 'rainforest', 'arctic-tundra',
 ]);
 export const HABITAT_CREATURE_PROFILES = Object.freeze([
-  'bee', 'betta', 'dragonfly', 'butterfly', 'jellyfish', 'koi', 'parrot',
+  'bee', 'betta', 'dragonfly', 'butterfly', 'jellyfish', 'koi', 'parrot', 'arctic_fox',
 ]);
 export const HABITAT_INTERACTION_PROFILES = Object.freeze([
-  'nectar', 'bloodworm', 'midge', 'blossom', 'plankton', 'pellet', 'fruit',
+  'nectar', 'bloodworm', 'midge', 'blossom', 'plankton', 'pellet', 'fruit', 'cloudberry',
 ]);
 
 export const HABITATS = [
@@ -133,22 +133,22 @@ export const HABITATS = [
     rgb: [52, 211, 153],
   },
   {
-        id: 'arctic-aurora',
-        name: 'Kuzey Işıkları & Kutup Tilkisi',
-        hint: 'Tıkla: Kar teraslarına altın kutup böğürtleni bırak',
-        dotColor: '#38bdf8',
-        rgb: [56, 189, 248],
-        skyTop: '#040b16',
-        skyMid: '#0b2239',
-        skyBot: '#164e63',
-        lightTop: '#7dd3fc',
-        lightMid: '#bae6fd',
-        lightBot: '#f0f9ff',
-        sceneProfile: 'arctic-tundra',
-        creatureProfile: 'arctic_fox',
-        interactionProfile: 'cloudberry',
-        weatherSky: true
-    },
+    id: 'arctic-aurora',
+    name: 'Kuzey Işıkları & Kutup Tilkisi',
+    hint: 'Tıkla: Kar teraslarına altın kutup böğürtleni bırak',
+    dotColor: '#38bdf8',
+    rgb: [56, 189, 248],
+    skyTop: '#040b16',
+    skyMid: '#0b2239',
+    skyBot: '#164e63',
+    lightTop: '#7dd3fc',
+    lightMid: '#bae6fd',
+    lightBot: '#f0f9ff',
+    sceneProfile: 'arctic-tundra',
+    creatureProfile: 'arctic_fox',
+    interactionProfile: 'cloudberry',
+    weatherSky: true,
+  },
 ];
 
 export const HABITAT_IDS = new Set(HABITATS.map((habitat) => habitat.id));
