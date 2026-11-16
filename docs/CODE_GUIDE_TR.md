@@ -19,11 +19,11 @@ Bu belge, projeyi ileride düzenlerken doğru dosyayı bulmayı ve değişiklikl
 | `js/09-scenery.js` | Habitatın kurulması, arka plan/bitki/zemin katmanları ve sahne çizimi | Orman, çayır, akvaryum, kutup gibi çevreler değişirken |
 | `js/10-glass-renderer.js` | Animasyon döngüsü, canlıların sahneye çizilmesi, cam yansıma katmanı ve klavye kısayolları | Animasyon, çizim sırası veya cam efektleri değişirken |
 | `js/11-calendar.js` | Takvim, etkinlik doğrulama ve yerel kayıt | Takvim özellikleri değişirken |
-| `js/storage.js`, `js/news-utils.js`, `js/scene-math.js` | Birden fazla modülün kullandığı küçük, ortak yardımcılar | Aynı mantık birden fazla modülde gerçekten ortaksa |
+| `js/storage.js`, `js/news-utils.js`, `js/scene-math.js`, `js/scene-state.js`, `js/services.js`, `js/focus-timer-state.js` | Birden fazla modülün kullandığı küçük, ortak yardımcılar ve döngü engelleyici servis köprüleri | Aynı mantık birden fazla modülde gerçekten ortaksa |
 | `config/` | Habitat ve haber kaynağı katalogları | Yeni habitat profili veya haber sağlayıcısı eklerken |
 | `server/` | Platformdan bağımsız haber API'si, RSS ayrıştırma ve istek doğrulama | API kuralları veya RSS ayrıştırma değişirken |
 | `cloudflare/` | Cloudflare Worker yönlendirmesi, ağ taşıması, cache ve rate-limit bağlantıları | Yalnızca Cloudflare çalışma ortamına özgü davranış değişirken |
-| `css/base.css`, `news.css`, `widgets.css`, `responsive.css) | Elle yazılan ana stil dosyaları | Görünüm, bileşen veya mobil düzen değişirken |
+| `css/base.css`, `css/news.css`, `css/widgets.css`, `css/responsive.css` | Elle yazılan ana stil dosyaları | Görünüm, bileşen veya mobil düzen değişirken |
 | `scripts/` ve `tests/` | Derleme, kontrol, güvenlik denetimi ve otomatik testler | Bir davranış veya geliştirme kuralı değiştiğinde |
 
 ### Özellikle dikkat edilmesi gereken dosyalar
@@ -120,3 +120,15 @@ Tarayıcı davranışı etkilendiyse ayrıca `npm run test:browser` çalıştır
 - Son aşamada sorumluluğu yanlış yerde olan kodlar küçük parçalar halinde taşınır. Her taşıma sonrası test ve tarayıcı kontrolü yapılır.
 
 Amaç dosyaları sırf daha kısa görünsün diye bölmek veya satır sayısını azaltmak değil; yeni bir hayvan, habitat, yem ya da arayüz özelliği eklerken doğru yeri kolayca bulabilmektir.
+
+## 6. Bir sonraki aşama için yapısal temizlik adayları
+
+Bunlar hemen taşınacak veya silinecek kodlar değildir. Önce mevcut kullanım ilişkileri ve testleri doğrulanmalı; her biri ayrı bir küçük değişiklik olarak ele alınmalıdır.
+
+1. **Kutup platform geometrisi:** `getArcticLedges()` şu anda `js/08-creatures.js` içinde tanımlı, ancak `js/09-scenery.js` tarafından da kullanılıyor. Bu geometri hayvan sınıfının değil sahne/habitat katmanının sorumluluğu. İki tarafın da içe aktaracağı küçük bir `js/arctic-geometry.js` modülüne taşınması daha doğru olur.
+2. **Yem bırakma etkileşimi:** `js/08-creatures.js` canlı sınıflarının yanında canvas `pointerdown` olayını ve habitat profiline göre yem oluşturmayı da yönetiyor. Bu ortak etkileşim kodu ileride `js/habitat-interactions.js` gibi ayrı bir modüle taşınabilir; canlı sınıfları yalnızca canlı davranışını tanımlar.
+3. **Sahne çizim dosyasının boyutu:** `js/09-scenery.js` habitat kurulumunu, statik arka planı ve kare bazlı animasyonlu çizimi aynı dosyada tutuyor. Önce statik katman ile animasyonlu katmanı ayırmak; her biyomu ayrı dosyaya bölmekten daha düşük riskli ilk adım olur.
+4. **Haber ve hava modülleri:** `js/02-news.js` veri/önbellek, RSS istekleri ve arayüzü; `js/03-weather.js` servis verisi, panel ve sahne efektlerini birlikte yönetiyor. İleride veri katmanı ile çizim katmanı ayrılabilir. Önce mevcut fonksiyonların veri akışı belgelenmeli.
+5. **Ortak arayüz modülü:** `js/01-core-ui.js` tema, saat, arama, kısayollar ve popover davranışlarını içeriyor. Büyüyen bu modül özellik gruplarına ayrılabilir; ancak ortak popover ve cam kart durumu tek bir noktada kalmalı.
+
+Bu turda yalnızca dört kullanılmayan import kaldırıldı. Yukarıdaki büyük taşımalar henüz yapılmadı; bunları ayrı ayrı CI ve tarayıcı testleriyle doğrulamak gerekir.
