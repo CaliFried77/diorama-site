@@ -547,7 +547,7 @@ import { registerWeatherPreviewRenderer } from './services.js';
                 }
             }
         }
-        export function drawWxSky(time, skyOk) {
+        export function drawWxSky(time, skyOk, suppressClouds = false) {
             if (!wxFxOn()) return;
             ensureWx();
             const light = isLightMode, dim = clamp01(WX.cloud / 100);
@@ -572,7 +572,7 @@ import { registerWeatherPreviewRenderer } from './services.js';
             const wet = WX.rain > .4 || WX.thunder;
             const col = light ? (wet ? 'rgba(120,134,153,.88)' : 'rgba(255,255,255,.72)') : (wet ? 'rgba(71,85,105,.88)' : 'rgba(148,163,184,.42)');
             const shade = light ? (wet ? 'rgba(90,104,124,.9)' : 'rgba(203,213,225,.7)') : (wet ? 'rgba(51,65,85,.9)' : 'rgba(100,116,139,.4)');
-            WX.clouds.forEach(c => {
+            if (!suppressClouds) WX.clouds.forEach(c => {
                 c.x += c.v * (c.layer ? .6 : 1) * (1 + WX.wind / 20) * (WX.wx >= 0 ? 1 : -1) * frameScale;
                 if (c.x > pw + 60) c.x = -c.w - 20; if (c.x < -c.w - 60) c.x = pw + 20;
                 const y = c.y + c.layer * 10;
