@@ -23,7 +23,12 @@ import { NEWS_CATEGORY_IDS } from '../config/news-feeds.js';
         const DATA_ENGINE_IDS = new Set(['google', 'duckduckgo', 'youtube', 'perplexity', 'github']);
         const dataManagerStatus = document.getElementById('dataManagerStatus');
 
-        function setDataManagerStatus(message, tone = 'normal') {
+        // ============================================================================
+// BÖLÜM BAŞI: VERİ YÖNETİCİSİ DURUMU VE DEPOLAMA ÖZETİ
+// Kullanıcıya gösterilen durum, kayıt boyutu ve yerel veri istatistikleri.
+// ============================================================================
+
+function setDataManagerStatus(message, tone = 'normal') {
             dataManagerStatus.textContent = message;
             dataManagerStatus.className = `text-[11px] mt-3 min-h-8 ${tone === 'error' ? 'text-rose-200' : tone === 'success' ? 'text-emerald-200' : 'text-white/65'}`;
         }
@@ -61,7 +66,12 @@ import { NEWS_CATEGORY_IDS } from '../config/news-feeds.js';
                 : 'Okunamadı';
         }
 
-        function makeBackup(scope = 'all') {
+        // ============================================================================
+// BÖLÜM SONU: DEPOLAMA ÖZETİ
+// BÖLÜM BAŞI: YEDEK OLUŞTURMA VE DIŞA AKTARMA
+// ============================================================================
+
+function makeBackup(scope = 'all') {
             const data = {};
             if (scope === 'all' || scope === 'tasks') data.tasks = tasks;
             if (scope === 'all' || scope === 'notes') data.notes = notes;
@@ -104,7 +114,12 @@ import { NEWS_CATEGORY_IDS } from '../config/news-feeds.js';
             }
         }
 
-        function isPlainRecord(value) {
+        // ============================================================================
+// BÖLÜM SONU: YEDEK DIŞA AKTARMA
+// BÖLÜM BAŞI: İÇE AKTARILAN JSON'UN ŞEMA VE VERİ DOĞRULAMASI
+// ============================================================================
+
+function isPlainRecord(value) {
             return value !== null && typeof value === 'object' && !Array.isArray(value);
         }
 
@@ -257,7 +272,12 @@ import { NEWS_CATEGORY_IDS } from '../config/news-feeds.js';
             return { scope: raw.scope, data: clean };
         }
 
-        function persistImportedBackup(validated) {
+        // ============================================================================
+// BÖLÜM SONU: YEDEK VERİ DOĞRULAMA
+// BÖLÜM BAŞI: DOĞRULANMIŞ YEDEĞİ GÜVENLİ ŞEKİLDE UYGULAMA
+// ============================================================================
+
+function persistImportedBackup(validated) {
             const writes = {};
             if (validated.data.tasks) writes.diorama_tasks = JSON.stringify(validated.data.tasks);
             if (validated.data.notes) writes.diorama_notes = JSON.stringify(validated.data.notes);
@@ -361,3 +381,7 @@ import { NEWS_CATEGORY_IDS } from '../config/news-feeds.js';
 
         
 registerDataManagerStatsUpdater(updateDataManagerStats);
+
+// ============================================================================
+// BÖLÜM SONU: DOĞRULANMIŞ YEDEĞİ UYGULAMA
+// ============================================================================
