@@ -1897,7 +1897,9 @@ export class PixelParrot {
             px(-9, 11 + liftY, 3, 2, p.wingTip);
         }
     }
-   /* ============================================================================
+}
+
+ /* ============================================================================
    CREATURE 8: ARCTIC FOXES ON STEPPED FJORD LEDGES & SOARING SNOWY OWLS
    True platformer navigation: Foxes walk along multi-tiered snow ledges, curl
    their fluffy tails while sitting, perform parabolic physics jumps between
