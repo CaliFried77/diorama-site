@@ -1,4 +1,5 @@
 import { stimuli, canvas, PIXEL_SCALE, HABITATS, currentHabitatIdx, pw, ph, frameScale, frameChance, flora, pRect, frameSmoothing } from './07-habitat-state.js';
+import { getArcticLedges, ARCTIC_LEDGE_LINKS } from './arctic-geometry.js';
 
 /* CREATURES — Living Pixel Diorama
    Native ES module. Cross-file dependencies are declared with imports and exports. */
@@ -1939,56 +1940,18 @@ export class PixelParrot {
     }
 }
 
+// ============================================================================
+// BÖLÜM SONU: PAPAĞAN SINIFI
+// BÖLÜM BAŞI: KUTUP TİLKİSİ VE KAR BAYKUŞU SINIFI
+// ============================================================================
+
  /* ============================================================================
    CREATURE 8: ARCTIC FOXES ON STEPPED FJORD LEDGES & SOARING SNOWY OWLS
    True platformer navigation: Foxes walk along multi-tiered snow ledges, curl
    their fluffy tails while sitting, perform parabolic physics jumps between
    platforms, and pounce into the snow for Golden Cloudberries!
    ============================================================================ */
-// ============================================================================
-// BÖLÜM SONU: PAPAĞAN SINIFI
-// BÖLÜM BAŞI: KUTUP PLATFORMU VE TİLKİ SAHNESİ
-// ============================================================================
-
-export function getArcticLedges() {
-    return [
-        // 0: Main Valley Snow Floor (Center & Shores)
-        { id: 0, x1: Math.round(pw * 0.14), x2: Math.round(pw * 0.86), yFn: (x) => {
-            const nx = x / Math.max(1, pw);
-            return Math.round(ph - 5 - Math.pow(Math.abs(nx - 0.5) * 1.9, 1.45) * 18 - Math.sin(x * 0.04) * 1.5);
-        }},
-        // 1: Left Lower Glacial Ledge
-        { id: 1, x1: 6, x2: Math.round(pw * 0.25), yFn: (x) => Math.round(ph * 0.72 + Math.sin(x * 0.06) * 1.5) },
-        // 2: Left Mid Overlook Ledge
-        { id: 2, x1: Math.round(pw * 0.20), x2: Math.round(pw * 0.36), yFn: (x) => Math.round(ph * 0.62 + Math.cos(x * 0.06) * 1.5) },
-        // 3: Left High Pine Cliff Ledge
-        { id: 3, x1: 8, x2: Math.round(pw * 0.19), yFn: (x) => Math.round(ph * 0.52 + Math.sin(x * 0.07) * 1.5) },
-        // 4: Right Lower Glacial Ledge
-        { id: 4, x1: Math.round(pw * 0.75), x2: pw - 6, yFn: (x) => Math.round(ph * 0.72 + Math.cos(x * 0.06) * 1.5) },
-        // 5: Right Mid Overlook Ledge (Near Nordic Cabin)
-        { id: 5, x1: Math.round(pw * 0.64), x2: Math.round(pw * 0.80), yFn: (x) => Math.round(ph * 0.60 + Math.sin(x * 0.06) * 1.5) },
-        // 6: Right High Ridge Ledge
-        { id: 6, x1: Math.round(pw * 0.81), x2: pw - 8, yFn: (x) => Math.round(ph * 0.50 + Math.cos(x * 0.07) * 1.5) }
-    ];
-}
-
-// Graph of which platforms a fox can realistically leap between
-const LEDGE_LINKS = Object.freeze({
-    0: [1, 2, 4, 5],
-    1: [0, 2, 3],
-    2: [0, 1, 3],
-    3: [1, 2],
-    4: [0, 5, 6],
-    5: [0, 4, 6],
-    6: [4, 5]
-});
-
 let arcticSpawnCounter = 0;
-
-// ============================================================================
-// BÖLÜM SONU: KUTUP PLATFORMU VE TİLKİ SAHNESİ
-// BÖLÜM BAŞI: KUTUP TİLKİSİ VE KAR BAYKUŞU SINIFI
-// ============================================================================
 
 export class PixelArcticFox {
     constructor() {
@@ -2007,7 +1970,7 @@ export class PixelArcticFox {
             return;
         }
 
-        const ledges = getArcticLedges();
+        const ledges = getArcticLedges(pw, ph);
         this.ledgeId = idx % ledges.length;
         const l = ledges[this.ledgeId];
         this.x = l.x1 + 10 + Math.random() * Math.max(8, (l.x2 - l.x1 - 20));
@@ -2037,7 +2000,7 @@ export class PixelArcticFox {
     }
 
     startJump(toLedgeId, destX) {
-        const ledges = getArcticLedges();
+        const ledges = getArcticLedges(pw, ph);
         const destLedge = ledges[toLedgeId];
         const clampedX = Math.max(destLedge.x1 + 8, Math.min(destLedge.x2 - 8, destX));
         const destY = destLedge.yFn(clampedX);
@@ -2054,7 +2017,7 @@ export class PixelArcticFox {
     }
 
     findLedgeForPoint(px, py) {
-        const ledges = getArcticLedges();
+        const ledges = getArcticLedges(pw, ph);
         let bestId = 0;
         let bestD = 999;
         for (const l of ledges) {
@@ -2081,7 +2044,7 @@ export class PixelArcticFox {
             return;
         }
 
-        const ledges = getArcticLedges();
+        const ledges = getArcticLedges(pw, ph);
         const curLedge = ledges[this.ledgeId] || ledges[0];
         if (this.eatCooldown > 0) this.eatCooldown = Math.max(0, this.eatCooldown - frameScale);
 
@@ -2146,7 +2109,7 @@ export class PixelArcticFox {
                 }
             } else {
                 // Berry is on another platform! Hop along connected ledges to reach it!
-                const links = LEDGE_LINKS[this.ledgeId] || [0];
+                const links = ARCTIC_LEDGE_LINKS[this.ledgeId] || [0];
                 let nextLedge = links[0];
                 let bestDist = 9999;
                 for (const candidateId of links) {
@@ -2175,7 +2138,7 @@ export class PixelArcticFox {
             this.y = curLedge.yFn(this.x);
             if (this.stateTimer <= 0) {
                 // 42% chance to leap to an adjacent snow platform!
-                const links = LEDGE_LINKS[this.ledgeId] || [0];
+                const links = ARCTIC_LEDGE_LINKS[this.ledgeId] || [0];
                 if (Math.random() < 0.42 && links.length > 0) {
                     const nextId = links[Math.floor(Math.random() * links.length)];
                     const nl = ledges[nextId];
@@ -2209,7 +2172,7 @@ export class PixelArcticFox {
                 this.dir = (this.x < pw * 0.5) ? 1 : -1;
             } else {
                 // Or leap to another snow platform!
-                const links = LEDGE_LINKS[this.ledgeId] || [0];
+                const links = ARCTIC_LEDGE_LINKS[this.ledgeId] || [0];
                 const nextId = links[Math.floor(Math.random() * links.length)];
                 const nl = ledges[nextId];
                 const tx = nl.x1 + 10 + Math.random() * Math.max(8, nl.x2 - nl.x1 - 20);
