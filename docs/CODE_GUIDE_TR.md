@@ -126,7 +126,7 @@ Amaç dosyaları sırf daha kısa görünsün diye bölmek veya satır sayısın
 
 Bunlar hemen taşınacak veya silinecek kodlar değildir. Önce mevcut kullanım ilişkileri ve testleri doğrulanmalı; her biri ayrı bir küçük değişiklik olarak ele alınmalıdır.
 
-1. <badge-placeholder>**Tamamlandı — Kutup platform geometrisi:** `getArcticLedges(width, height)` ve platform bağlantı grafiği, canlı sınıflarından ayrılarak saf `js/arctic-geometry.js` modülüne taşındı. Modül DOM/canvas durumuna erişmez; iki boyut parametresiyle çalışır ve ayrı birim testleri vardır.</badge-placeholder>
+1. **Tamamlandı — Kutup platform geometrisi:** `getArcticLedges(width, height)` ve platform bağlantı grafiği, canlı sınıflarından ayrılarak saf `js/arctic-geometry.js` modülüne taşındı. Modül DOM/canvas durumuna erişmez; iki boyut parametresiyle çalışır ve ayrı birim testleri vardır.
 2. **Yem bırakma etkileşimi:** `js/08-creatures.js` canlı sınıflarının yanında canvas `pointerdown` olayını ve habitat profiline göre yem oluşturmayı da yönetiyor. Bu ortak etkileşim kodu ileride `js/habitat-interactions.js` gibi ayrı bir modüle taşınabilir; canlı sınıfları yalnızca canlı davranışını tanımlar.
 3. **Sahne çizim dosyasının boyutu:** `js/09-scenery.js` habitat kurulumunu, statik arka planı ve kare bazlı animasyonlu çizimi aynı dosyada tutuyor. Önce statik katman ile animasyonlu katmanı ayırmak; her biyomu ayrı dosyaya bölmekten daha düşük riskli ilk adım olur.
 4. **Haber ve hava modülleri:** `js/02-news.js` veri/önbellek, RSS istekleri ve arayüzü; `js/03-weather.js` servis verisi, panel ve sahne efektlerini birlikte yönetiyor. İleride veri katmanı ile çizim katmanı ayrılabilir. Önce mevcut fonksiyonların veri akışı belgelenmeli.
