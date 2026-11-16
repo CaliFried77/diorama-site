@@ -21,6 +21,7 @@ function findAvailableStimulus(creature, type, maxDist = 145) {
     return best;
 }
 
+//#region CANLI: PixelBee — arı davranışı, beslenme ve piksel çizimi
 /* ============================================================================
    CREATURE 1: ARTISAN HONEYBEE, ROYAL BUMBLEBEE & VIOLET CARPENTER BEE
    Multi-state foraging AI: Visits all meadow wildflowers, fills hind-leg pollen
@@ -245,6 +246,8 @@ export class PixelBee {
     }
 }
 
+//#endregion CANLI: PixelBee
+//#region CANLI: PixelKoi — koi balığı hareketi ve çizimi
 /* ============================================================================
    CREATURE 6: MAJESTIC ARTICULATED NISHIKIGOI (Japon Zen Koi Balığı)
    ============================================================================ */
@@ -465,6 +468,8 @@ export class PixelKoi {
     }
 }
 
+//#endregion CANLI: PixelKoi
+//#region CANLI: PixelBetta — betta davranışı ve yüzgeç çizimi
 /* ============================================================================
    CREATURE 2: SHOW-QUALITY HALFMOON & DUMBO BETTA SPLENDENS
    ============================================================================ */
@@ -758,6 +763,8 @@ export class PixelBetta {
     }
 }
 
+//#endregion CANLI: PixelBetta
+//#region CANLI: PixelDragonfly — paletler, uçuş davranışı ve çizim
 /* ============================================================================
    CREATURE 3: ARTISTIC EMPEROR DRAGONFLY & DAMSELFLY FLOCK
    ============================================================================ */
@@ -963,6 +970,8 @@ export class PixelDragonfly {
     }
 }
 
+//#endregion CANLI: PixelDragonfly
+//#region CANLI: PixelButterfly — kelebek davranışı ve kanat çizimi
 /* ============================================================================
    CREATURE 4: TRUE 4-LOBED ORNATE SWALLOWTAIL & MORPHO BUTTERFLIES
    ============================================================================ */
@@ -1133,6 +1142,8 @@ export class PixelButterfly {
     }
 }
 
+//#endregion CANLI: PixelButterfly
+//#region CANLI: PixelJellyfish — davranış ve biyolüminesans çizimi
 /* ============================================================================
    CREATURE 5: ARTISTIC 360° BIOLUMINESCENT JELLYFISH
    ============================================================================ */
@@ -1369,6 +1380,8 @@ export class PixelJellyfish {
     }
 }
 
+//#endregion CANLI: PixelJellyfish
+//#region CANLI: PixelParrot — papağan sürüsü, uçuş ve tüy çizimi
 /* ============================================================================
    CREATURE 7: ARTISTIC & REALISTIC MACAW PARROT FLOCK
    ============================================================================ */
@@ -1763,6 +1776,8 @@ export class PixelParrot {
     }
 }
 
+//#endregion CANLI: PixelParrot
+//#region CANLI: PixelArcticFox — kutup tilkisi ve baykuş davranışı/çizimi
  /* ============================================================================
    CREATURE 8: ARCTIC FOXES ON STEPPED FJORD LEDGES & SOARING SNOWY OWLS
    True platformer navigation: Foxes walk along multi-tiered snow ledges, curl
@@ -2126,3 +2141,4 @@ export class PixelArcticFox {
         px(9, hy + 1, 1, 1, p.nose);    // Black button nose
     }
 }
+//#endregion CANLI: PixelArcticFox
