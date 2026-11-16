@@ -377,6 +377,18 @@ const CREATURE_PROFILES = Object.freeze({
                         shade: ['#123a32', '#1a4a3b', '#245847', '#315d46'][i % 4]
                     });
                 }
+                // Low, overlapping leaf mounds make the forest floor read as a continuous understory.
+                for (let i = 0; i < 22; i++) {
+                    flora.push({
+                        type: 'understory_bush',
+                        x: Math.random() * pw,
+                        y: ph - 5 - Math.random() * 31,
+                        w: 9 + Math.random() * 17,
+                        h: 5 + Math.random() * 10,
+                        phase: Math.random() * Math.PI * 2,
+                        tone: i % 3
+                    });
+                }
             }
 
             const creatureProfile = CREATURE_PROFILES[hab.creatureProfile];
@@ -991,6 +1003,30 @@ const CREATURE_PROFILES = Object.freeze({
             flora.forEach(f => {
                 if (f.type === 'pebble') {
                     pRect(f.x, f.y, f.w, f.h, isLightMode ? 'rgba(15, 55, 65, 0.35)' : f.shade);
+
+                } else if (f.type === 'understory_bush') {
+                    // Uneven low foliage mounds overlap at the base of trunks and larger plants.
+                    const sway = Math.sin(time * 0.001 + f.phase) * 1.2;
+                    const palette = f.tone === 0
+                        ? (isLightMode ? ['#166534', '#15803d', '#22a65a'] : ['#073b2e', '#0b563d', '#14734b'])
+                        : f.tone === 1
+                            ? (isLightMode ? ['#1d5b36', '#25834b', '#43a65b'] : ['#0a332d', '#104b38', '#1b6845'])
+                            : (isLightMode ? ['#155e4b', '#0f766e', '#2ca58a'] : ['#073b38', '#0b574d', '#167568']);
+                    for (let lobe = 0; lobe < 4; lobe++) {
+                        const cx = f.x + (lobe - 1.5) * f.w * 0.22 + sway;
+                        const cy = f.y - Math.abs(lobe - 1.5) * 1.2;
+                        const rx = f.w * (0.22 + (lobe % 2) * 0.04);
+                        const ry = f.h * (0.72 + (lobe % 3) * 0.08);
+                        for (let dy = -ry; dy <= ry; dy += 2) {
+                            const span = Math.max(1, Math.floor(rx * Math.sqrt(Math.max(0, 1 - (dy * dy) / (ry * ry)))));
+                            for (let dx = -span; dx <= span; dx += 3) {
+                                const color = dy < -ry * 0.18 ? palette[2] : dy > ry * 0.42 ? palette[0] : palette[1];
+                                pRect(cx + dx, cy + dy, 2 + ((Math.floor(dx + 50) + lobe) % 2), 2, color);
+                                if ((dx + dy + lobe) % 9 === 0) pRect(cx + dx, cy + dy - 1, 1, 1, '#65c77b');
+                            }
+                        }
+                    }
+                    pRect(f.x - 1, f.y + f.h * 0.65, 2, 4, isLightMode ? '#14532d' : '#0b3a2d');
 
                 } else if (f.type === 'canopy_vine') {
                     // Thick, winding lianas with paired leaves and occasional side tendrils.
