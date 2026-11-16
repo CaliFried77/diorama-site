@@ -287,22 +287,33 @@ export class PixelBee {
 }
 
 /* ============================================================================
-   CREATURE 6: MAJESTIC ARTICULATED NISHIKIGOI
+   CREATURE 6: MAJESTIC ARTICULATED NISHIKIGOI (Japon Zen Koi Balığı)
+   18-node fluid S-curve spine, 5 authentic Japanese Nishikigoi varieties
+   (including Tancho & Asagi), feathered teardrop pectoral fins, spine-aligned
+   dorsal veil, barbels, and surface feeding ripples!
    ============================================================================ */
 export class PixelKoi {
     constructor() {
-        this.x = Math.random() * pw;
-        this.y = 34 + Math.random() * (ph - 56);
+        this.x = 28 + Math.random() * (pw - 56);
+        this.y = 34 + Math.random() * (ph - 58);
         this.angle = Math.random() * Math.PI * 2;
         this.targetAngle = this.angle;
-        this.speed = 0.27 + Math.random() * 0.12;
+        this.speed = 0.25 + Math.random() * 0.12;
         this.phase = Math.random() * Math.PI * 2;
         this.eatCooldown = 0;
+        this.biteRipple = 0;
 
         const varieties = [
-            { base: '#f8fafc', shade: '#e2e8f0', patch1: '#ef4444', patch2: '#dc2626', fin: 'rgba(254, 226, 226, 0.85)', rgb: [248, 113, 113] },
-            { base: '#f1f5f9', shade: '#cbd5e1', patch1: '#e11d48', patch2: '#1e293b', fin: 'rgba(241, 245, 249, 0.85)', rgb: [251, 113, 133] },
-            { base: '#fef08a', shade: '#facc15', patch1: '#f59e0b', patch2: '#d97706', fin: 'rgba(254, 249, 195, 0.85)', rgb: [250, 204, 21] }
+            // 1. Kohaku (Saf Beyaz Gövde & Parlak Vermilyon Sırt Desenleri)
+            { kind: 'kohaku', base: '#f8fafc', shade: '#cbd5e1', patch1: '#ef4444', patch2: '#dc2626', fin: 'rgba(254, 226, 226, 0.85)', rgb: [248, 113, 113] },
+            // 2. Tancho (Saf Kar Beyazı Gövde & Başta Tek Kızıl Güneş Beneği)
+            { kind: 'tancho', base: '#ffffff', shade: '#e2e8f0', patch1: '#dc2626', patch2: '#f8fafc', fin: 'rgba(248, 250, 252, 0.88)', rgb: [239, 68, 68] },
+            // 3. Showa Sanshoku (Beyaz, Kızıl Kırmızı & Sumi Mürekkep Siyahı)
+            { kind: 'showa', base: '#f1f5f9', shade: '#cbd5e1', patch1: '#e11d48', patch2: '#0f172a', fin: 'rgba(241, 245, 249, 0.85)', rgb: [251, 113, 133] },
+            // 4. Yamabuki Ogon (Parlak Metalik Altın & Kehribar Pullar)
+            { kind: 'ogon', base: '#fef08a', shade: '#eab308', patch1: '#f59e0b', patch2: '#ca8a04', fin: 'rgba(254, 249, 195, 0.85)', rgb: [250, 204, 21] },
+            // 5. Asagi (İndigo Mavisi Sırt Pulları & Kızıl Yanak/Yüzgeçler)
+            { kind: 'asagi', base: '#93c5fd', shade: '#3b82f6', patch1: '#1d4ed8', patch2: '#ef4444', fin: 'rgba(254, 202, 202, 0.85)', rgb: [96, 165, 250] }
         ];
         this.pal = varieties[Math.floor(Math.random() * varieties.length)];
         this.rgb = this.pal.rgb;
@@ -312,8 +323,8 @@ export class PixelKoi {
         this.spine = [];
         for (let i = 0; i < this.spineLen; i++) {
             this.spine.push({
-                x: this.x - Math.cos(this.angle) * i * 1.15,
-                y: this.y - Math.sin(this.angle) * i * 1.15
+                x: this.x - Math.cos(this.angle) * i * 1.18,
+                y: this.y - Math.sin(this.angle) * i * 1.18
             });
         }
     }
@@ -326,10 +337,12 @@ export class PixelKoi {
     }
 
     update(t) {
-        this.phase += 0.085 * frameScale;
+        this.phase += 0.088 * frameScale;
         if (this.eatCooldown > 0) this.eatCooldown = Math.max(0, this.eatCooldown - frameScale);
+        if (this.biteRipple > 0) this.biteRipple = Math.max(0, this.biteRipple - 0.35 * frameScale);
 
-        const pellet = findAvailableStimulus(this, 'koi_pellet', 155);
+        // Seek user-dropped pond pellets across the entire pond
+        const pellet = findAvailableStimulus(this, 'koi_pellet', Math.max(360, pw * 0.85));
         if (pellet) {
             const dx = pellet.x - this.x;
             const dy = pellet.y - this.y;
@@ -337,31 +350,36 @@ export class PixelKoi {
             this.targetAngle = Math.atan2(dy, dx);
             if (dist < 8) {
                 pellet.life = 0;
-                this.eatCooldown = 95;
-                this.targetAngle += (Math.random() - 0.5) * 1.5;
+                this.eatCooldown = 85;
+                this.biteRipple = 9; // Trigger surface gulp ring!
+                this.targetAngle += (Math.random() - 0.5) * 1.4;
             }
-        } else if (frameChance(0.016)) {
+        } else if (frameChance(0.018)) {
             this.targetAngle += (Math.random() - 0.5) * 0.95;
         }
 
-        if (this.y < 30) this.targetAngle = Math.cos(this.angle) >= 0 ? 0.42 : Math.PI - 0.42;
-        if (this.y > ph - 24) this.targetAngle = Math.cos(this.angle) >= 0 ? -0.42 : Math.PI + 0.42;
+        // Respect Zen pond shoreline banks (top, bottom, and right lantern island)
+        if (this.y < 32) this.targetAngle = Math.cos(this.angle) >= 0 ? 0.45 : Math.PI - 0.45;
+        if (this.y > ph - 24) this.targetAngle = Math.cos(this.angle) >= 0 ? -0.45 : Math.PI + 0.45;
+        if (this.x > pw - 68 && this.y > ph - 42) {
+            this.targetAngle = Math.PI + (Math.random() - 0.5) * 0.5;
+        }
 
         let diff = this.targetAngle - this.angle;
         while (diff > Math.PI) diff -= Math.PI * 2;
         while (diff < -Math.PI) diff += Math.PI * 2;
-        this.angle += diff * frameSmoothing(0.036);
+        this.angle += diff * frameSmoothing(pellet ? 0.065 : 0.038);
 
-        const spd = this.speed * (pellet ? 1.35 : 1.0);
+        const spd = this.speed * (pellet ? 1.55 : 1.0);
         this.x += Math.cos(this.angle) * spd * frameScale;
         this.y += Math.sin(this.angle) * spd * frameScale;
 
-        if (this.x < -36) {
-            const d = pw + 72;
+        if (this.x < -38) {
+            const d = pw + 76;
             this.x += d;
             this.shiftSpine(d, 0);
-        } else if (this.x > pw + 36) {
-            const d = -(pw + 72);
+        } else if (this.x > pw + 38) {
+            const d = -(pw + 76);
             this.x += d;
             this.shiftSpine(d, 0);
         }
@@ -374,10 +392,10 @@ export class PixelKoi {
             const dx = cur.x - prev.x;
             const dy = cur.y - prev.y;
             const segAngle = Math.atan2(dy, dx);
-            const wag = Math.sin(this.phase - i * 0.36) * (i > 4 ? 0.16 : 0.04);
-            const finalAng = segAngle + wag * 0.18;
-            cur.x = prev.x + Math.cos(finalAng) * 1.12;
-            cur.y = prev.y + Math.sin(finalAng) * 1.12;
+            const wag = Math.sin(this.phase - i * 0.35) * (i > 3 ? 0.17 : 0.04);
+            const finalAng = segAngle + wag * 0.19;
+            cur.x = prev.x + Math.cos(finalAng) * 1.15;
+            cur.y = prev.y + Math.sin(finalAng) * 1.15;
         }
     }
 
@@ -387,38 +405,56 @@ export class PixelKoi {
         const perpX = -sin;
         const perpY = cos;
 
+        // 1. Deep Underwater Shadow beneath the Koi (adds 3D suspension over pond pebbles)
         for (let i = 1; i < 14; i++) {
             const pt = this.spine[i];
             if (Math.abs(pt.x - this.x) > 45) continue;
-            pRect(pt.x + 2, pt.y + 4, 3, 3, 'rgba(2, 8, 18, 0.26)');
+            pRect(pt.x + 2, pt.y + 5, 4, 3, 'rgba(2, 10, 18, 0.30)');
         }
 
+        // 2. Sculpted Teardrop Pectoral Fan Fins (node 3) & Ventral Fins (node 7)
         const pecNode = this.spine[3];
         if (Math.abs(pecNode.x - this.x) < 40) {
-            const finStroke = Math.sin(this.phase * 0.85) * 0.25;
+            const finStroke = Math.sin(this.phase * 0.85) * 0.24;
             [-1, 1].forEach(side => {
-                const fAng = this.angle + side * (Math.PI * 0.58 + finStroke);
+                const fAng = this.angle + side * (Math.PI * 0.56 + finStroke);
                 const fCos = Math.cos(fAng);
                 const fSin = Math.sin(fAng);
                 for (let r = 2; r <= 7; r++) {
-                    for (let w = -2; w <= 1; w++) {
+                    const halfW = r <= 5 ? 2 : 1;
+                    for (let w = -halfW; w <= 1; w++) {
                         pRect(pecNode.x + fCos * r - fSin * w, pecNode.y + fSin * r + fCos * w, 1, 1, this.pal.fin);
                     }
                 }
             });
         }
+        const venNode = this.spine[7];
+        if (Math.abs(venNode.x - this.x) < 40) {
+            [-1, 1].forEach(side => {
+                const vAng = this.angle + side * (Math.PI * 0.65);
+                for (let r = 2; r <= 4; r++) {
+                    pRect(venNode.x + Math.cos(vAng) * r, venNode.y + Math.sin(vAng) * r, 1, 1, this.pal.fin);
+                }
+            });
+        }
 
+        // 3. Flowing Bifurcated Tail Veil (nodes 13..17)
         for (let i = 13; i < this.spineLen; i++) {
             const pt = this.spine[i];
+            const prev = this.spine[i - 1];
             if (Math.abs(pt.x - this.x) > 45) continue;
-            const spread = (i - 12) * 1.35;
+            const segAng = Math.atan2(prev.y - pt.y, prev.x - pt.x);
+            const tPerpX = -Math.sin(segAng);
+            const tPerpY = Math.cos(segAng);
+            const spread = (i - 12) * 1.45;
             for (let w = -Math.ceil(spread); w <= Math.ceil(spread); w++) {
-                if (i >= 16 && Math.abs(w) <= 1) continue;
-                pRect(pt.x + perpX * w, pt.y + perpY * w, 1, 1, this.pal.fin);
+                if (i >= 16 && Math.abs(w) <= 1) continue; // Forked notch
+                pRect(pt.x + tPerpX * w, pt.y + tPerpY * w, 1, 1, this.pal.fin);
             }
         }
 
-        const bodyRadii = [2.8, 3.8, 4.5, 4.8, 4.7, 4.4, 4.0, 3.6, 3.1, 2.6, 2.2, 1.8, 1.4, 1.1];
+        // 4. Plump Sculpted Koi Body Segments (drawn from tail to head)
+        const bodyRadii = [2.9, 3.9, 4.6, 4.9, 4.8, 4.5, 4.1, 3.6, 3.1, 2.6, 2.2, 1.8, 1.4, 1.1];
         for (let i = 13; i >= 0; i--) {
             const pt = this.spine[i];
             if (Math.abs(pt.x - this.x) > 45) continue;
@@ -427,38 +463,69 @@ export class PixelKoi {
 
             for (let dy = -rInt; dy <= rInt; dy++) {
                 for (let dx = -rInt; dx <= rInt; dx++) {
-                    if (dx * dx + dy * dy <= rad * rad) {
-                        let col = (dx + dy) % 3 === 0 ? this.pal.shade : this.pal.base;
-                        if ((i >= 1 && i <= 4 && dx >= -2) || (i >= 7 && i <= 10 && dy <= 1)) {
-                            col = this.pal.patch1;
-                        } else if ((i + this.seed) % 6 === 0 && Math.abs(dx) <= 1) {
-                            col = this.pal.patch2;
+                    const d2 = dx * dx + dy * dy;
+                    if (d2 <= rad * rad) {
+                        const isEdge = d2 > (rad - 0.9) * (rad - 0.9);
+                        let col = isEdge ? this.pal.shade : this.pal.base;
+
+                        if (this.pal.kind === 'tancho') {
+                            // Pure white body; iconic crimson circle only on the crown (segments 0..1)
+                            if (i <= 1 && d2 <= 3.2) col = this.pal.patch1;
+                        } else if (this.pal.kind === 'asagi') {
+                            // Reticulated blue net pattern on back, red flanks
+                            if (isEdge && i >= 2 && i <= 9) col = this.pal.patch2;
+                            else if ((dx + dy + i) % 2 === 0 && d2 < rad * rad * 0.6) col = this.pal.patch1;
+                        } else {
+                            // Kohaku / Showa / Ogon saddle markings
+                            if ((i >= 1 && i <= 4 && dx >= -2) || (i >= 7 && i <= 10 && dy <= 1)) {
+                                col = this.pal.patch1;
+                            } else if ((i + this.seed) % 5 === 0 && Math.abs(dx) <= 1) {
+                                col = this.pal.patch2;
+                            }
                         }
                         pRect(pt.x + dx, pt.y + dy, 1, 1, col);
                     }
                 }
             }
-
-            if (i >= 4 && i <= 10) {
-                pRect(pt.x, pt.y - 1, 1, 1, '#ffffff');
-            }
         }
 
+        // 5. Spine-Aligned Dorsal Ridge Fin along segments 4..10
+        for (let i = 4; i <= 10; i++) {
+            const pt = this.spine[i];
+            const prev = this.spine[i - 1];
+            if (Math.abs(pt.x - this.x) > 45) continue;
+            const segAng = Math.atan2(prev.y - pt.y, prev.x - pt.x);
+            const dPerpX = -Math.sin(segAng);
+            const dPerpY = Math.cos(segAng);
+            const sway = Math.sin(this.phase - i * 0.3) * 0.8;
+            pRect(pt.x + dPerpX * sway, pt.y + dPerpY * sway, 2, 1, 'rgba(255, 255, 255, 0.88)');
+        }
+
+        // 6. Rounded Snout, Eyes & Delicate Sensory Barbels (Whiskers)
         const head = this.spine[0];
-        const snoutX = head.x + cos * 3.2;
-        const snoutY = head.y + sin * 3.2;
-        pRect(snoutX, snoutY, 2, 2, this.pal.base);
+        const snoutX = head.x + cos * 3.3;
+        const snoutY = head.y + sin * 3.3;
+        pRect(snoutX - 1, snoutY - 1, 2, 2, this.pal.base);
 
         const eyeX = head.x + cos * 1.5;
         const eyeY = head.y + sin * 1.5;
         pRect(eyeX + perpX * 2.8, eyeY + perpY * 2.8, 1, 1, '#0f172a');
         pRect(eyeX - perpX * 2.8, eyeY - perpY * 2.8, 1, 1, '#0f172a');
 
-        pRect(snoutX + cos * 1.2 + perpX * 2.2, snoutY + sin * 1.2 + perpY * 2.2, 1, 1, this.pal.patch1);
-        pRect(snoutX + cos * 1.2 - perpX * 2.2, snoutY + sin * 1.2 - perpY * 2.2, 1, 1, this.pal.patch1);
+        // Two sensory Koi barbels curving forward from the upper lip
+        const barbCol = this.pal.kind === 'tancho' ? '#fda4af' : this.pal.patch1;
+        pRect(snoutX + cos * 1.3 + perpX * 2.1, snoutY + sin * 1.3 + perpY * 2.1, 1, 1, barbCol);
+        pRect(snoutX + cos * 1.3 - perpX * 2.1, snoutY + sin * 1.3 - perpY * 2.1, 1, 1, barbCol);
+
+        // 7. Expanding Surface Ring when the Koi gulps a pellet
+        if (this.biteRipple > 0) {
+            const r = (10 - this.biteRipple) * 1.4;
+            for (let a = 0; a < Math.PI * 2; a += 0.6) {
+                pRect(snoutX + Math.cos(a) * r, snoutY + Math.sin(a) * r, 1, 1, 'rgba(255, 255, 255, 0.45)');
+            }
+        }
     }
 }
-
 /* ============================================================================
    CREATURE 2: CONTINUOUS SILK-VEIL HALFMOON BETTA FISH
    ============================================================================ */
