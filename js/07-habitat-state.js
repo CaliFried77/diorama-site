@@ -8,7 +8,7 @@ import { calculateFrameChance, calculateFrameSmoothing, scaleSceneCollections } 
    Canvas dimensions, frame timing and shared scene collections for all habitats. */
 // Shared scene state used by habitat, creature, scenery and renderer modules.
 // ============================================================================
-// BÖLÜM BAŞI: CANVAS, KARE ZAMANLAMASI VE ÇİZİM YARDIMCILARI
+        // BÖLÜM BAŞI: CANVAS, KARE ZAMANLAMASI VE ÇİZİM YARDIMCILARI
 // ============================================================================
 
         export const canvas = document.getElementById('habitatCanvas');
@@ -75,8 +75,8 @@ import { calculateFrameChance, calculateFrameSmoothing, scaleSceneCollections } 
         }
 
         // ============================================================================
-// BÖLÜM SONU: CANVAS VE ÇİZİM YARDIMCILARI
-// BÖLÜM BAŞI: AKTİF HABİTAT VE PAYLAŞILAN SAHNE DİZİLERİ
+        // BÖLÜM SONU: CANVAS VE ÇİZİM YARDIMCILARI
+        // BÖLÜM BAŞI: AKTİF HABİTAT VE PAYLAŞILAN SAHNE DİZİLERİ
 // ============================================================================
 
         export let pinnedHabitatId = lsRaw('diorama_pinned_habitat');
@@ -112,5 +112,5 @@ export function setFrameScale(value) { frameScale = value; }
 export function setPrefersReducedMotion(value) { prefersReducedMotion = Boolean(value); }
 
 // ============================================================================
-// BÖLÜM SONU: AKTİF HABİTAT VE PAYLAŞILAN SAHNE DURUMU
+        // BÖLÜM SONU: AKTİF HABİTAT VE PAYLAŞILAN SAHNE DURUMU
 // ============================================================================
