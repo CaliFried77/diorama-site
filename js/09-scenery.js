@@ -1,5 +1,5 @@
 import { currentHabitatIdx, HABITATS, creatures, stimuli, ambientParticles, flora, bgSilhouettes, shootingStars, pw, ph, lerpHex, ctx, pRect, frameChance, frameScale, setCurrentHabitatIndex } from './07-habitat-state.js';
-import { PixelBee, PixelBetta, PixelDragonfly, PixelButterfly, PixelJellyfish, PixelKoi, PixelParrot } from './08-creatures.js';
+import { PixelBee, PixelBetta, PixelDragonfly, PixelButterfly, PixelJellyfish, PixelKoi, PixelParrot, PixelArcticFox, getArcticLedges } from './08-creatures.js';
 import { isLightMode } from './01-core-ui.js';
 import { wxFxOn, drawWxSky } from './03-weather.js';
 import { sceneCache } from './scene-state.js';
@@ -12,6 +12,7 @@ const CREATURE_PROFILES = Object.freeze({
     jellyfish: { count: 8, create: () => new PixelJellyfish() },
     koi: { count: 7, create: () => new PixelKoi() },
     parrot: { count: 5, create: () => new PixelParrot() },
+    arctic_fox: { count: 7, create: () => new PixelArcticFox() },
 });
 
 function getGroundY(x, profile) {
@@ -40,6 +41,10 @@ function getGroundY(x, profile) {
     if (profile === 'koi-pond') {
         const cornerBank = Math.max(0, Math.abs(nx - 0.48) - 0.24) / 0.28;
         return Math.round(ph - 4 - Math.pow(cornerBank, 1.4) * 18 - Math.sin(x * 0.04) * 2);
+    }
+    if (profile === 'arctic-tundra') {
+        const valley = Math.pow(Math.abs(nx - 0.5) * 1.9, 1.45) * 18;
+        return Math.round(ph - 5 - valley - Math.sin(x * 0.04) * 1.5);
     }
     return ph;
 }
@@ -84,10 +89,8 @@ export function initHabitat(idx) {
     }
 
     if (hab.sceneProfile === 'meadow') {
-        // Rich Wildflower Meadow: Sunflowers, Foxgloves, Lavender, Poppies, Daisies & Buttercups
         for (let x = 12; x < pw - 12; x += 6 + Math.floor(Math.random() * 4)) {
             const nx = x / Math.max(1, pw);
-            // Keep a clear garden terrace around the Grand Right-Side Apiary Sanctuary
             if (nx > 0.78 && nx < 0.90) continue;
 
             const baseY = getGroundY(x, 'meadow') + Math.round((Math.random() - 0.5) * 2);
@@ -125,7 +128,6 @@ export function initHabitat(idx) {
         }
 
     } else if (hab.sceneProfile === 'betta-aquarium') {
-        // 1. Takashi Amano U-Shaped Concave Stem-Plant Layout (Tall lush sides, open central river-sand canyon)
         for (let x = 10; x < pw - 10; x += 8 + Math.floor(Math.random() * 5)) {
             const nx = x / Math.max(1, pw);
             const inCenterPath = nx > 0.42 && nx < 0.58;
@@ -159,8 +161,6 @@ export function initHabitat(idx) {
                 });
             }
         }
-
-        // 2. Floating Water Lettuce (Pistia) & Amazon Frogbit along the top water surface
         for (let fx = 14; fx < pw - 14; fx += 18 + Math.floor(Math.random() * 14)) {
             flora.push({
                 type: 'pistia',
@@ -169,8 +169,6 @@ export function initHabitat(idx) {
                 phase: Math.random() * Math.PI * 2
             });
         }
-
-        // 3. Natural River Pebbles & Volcanic Aquasoil Granules anchoring the foreground floor
         for (let i = 0; i < 48; i++) {
             const px = Math.random() * pw;
             const nx = px / Math.max(1, pw);
@@ -365,7 +363,6 @@ export function initHabitat(idx) {
         }
 
     } else if (hab.sceneProfile === 'reef') {
-        // Diverse Bioluminescent Reef Biodiversity anchored naturally along the sloped coral mounds
         for (let x = 10; x < pw - 10; x += 9 + Math.floor(Math.random() * 6)) {
             const nx = x / Math.max(1, pw);
             const sideMound = nx < 0.26 ? Math.pow((0.26 - nx) / 0.26, 1.5) * 34
@@ -558,7 +555,6 @@ export function initHabitat(idx) {
             }
         }
 
-        // Epiphytes locked onto the exact trunk curves & branch crotches (zero floating flowers!)
         const treeSpecs = [
             { baseX: Math.floor(pw * 0.14), top: Math.floor(ph * 0.24), idx: 0, prog: 0.42 },
             { baseX: Math.floor(pw * 0.27), top: Math.floor(ph * 0.36), idx: 1, prog: 0.46 },
@@ -597,6 +593,23 @@ export function initHabitat(idx) {
                 hue: i % 2 === 0 ? '#15803d' : '#0f766e'
             });
         });
+
+    } else if (hab.sceneProfile === 'arctic-tundra') {
+        const ledges = getArcticLedges();
+        ledges.forEach(l => {
+            for (let x = l.x1 + 8; x < l.x2 - 8; x += 12 + Math.floor(Math.random() * 10)) {
+                if (l.id === 5 && x > pw * 0.68 && x < pw * 0.78) continue;
+                const by = l.yFn(x);
+                const r = Math.random();
+                if (r < 0.48) {
+                    flora.push({ type: 'cotton_grass', x, baseY: by, h: 10 + Math.random() * 10, phase: Math.random() * Math.PI * 2 });
+                } else if (r < 0.78) {
+                    flora.push({ type: 'arctic_crystal', x, baseY: by, h: 8 + Math.random() * 8, col: Math.random() < 0.5 ? '#38bdf8' : '#c084fc' });
+                } else {
+                    flora.push({ type: 'arctic_berry_bush', x, baseY: by, r: 5 + Math.floor(Math.random() * 3), phase: Math.random() * Math.PI * 2 });
+                }
+            }
+        });
     }
 
     const creatureProfile = CREATURE_PROFILES[hab.creatureProfile];
@@ -618,7 +631,6 @@ function buildStaticEnvironmentLayer(hab) {
         sCtx.fillRect(Math.round(x), Math.round(y), Math.round(w), Math.round(h));
     };
 
-    // 1. Distant Mountain / Reef Horizon Silhouette (4px width fixes vertical comb gaps!)
     const silCol = isLightMode ? 'rgba(15, 42, 62, 0.18)' : 'rgba(3, 8, 18, 0.42)';
     bgSilhouettes.forEach(sil => {
         sRect(sil.x, ph - sil.h, 4, sil.h, silCol);
@@ -627,7 +639,6 @@ function buildStaticEnvironmentLayer(hab) {
     const mistCol = isLightMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(148, 163, 184, 0.035)';
     sRect(0, ph - 28, pw, 10, mistCol);
 
-    // 2. MEADOW STATIC SCENERY (Harmonious Left Orchard Grove, Right Blossoming Tree & Grand 3-Tier Artisan Apiary)
     if (hab.sceneProfile === 'meadow') {
         const trunkDark = isLightMode ? '#451a03' : '#181014';
         const trunkMid = isLightMode ? '#78350f' : '#291b22';
@@ -687,7 +698,6 @@ function buildStaticEnvironmentLayer(hab) {
             drawLeafCluster(baseX + leanDir * 8, topY - 10, Math.round(rx * 0.75), Math.round(ry * 0.72), blossoms, blossomCol);
         };
 
-        // A. Smooth Distant Rolling Hills
         const hillCol = isLightMode ? 'rgba(22, 101, 52, 0.18)' : 'rgba(13, 56, 44, 0.42)';
         for (let x = 0; x < pw; x++) {
             const nx = x / Math.max(1, pw);
@@ -696,17 +706,14 @@ function buildStaticEnvironmentLayer(hab) {
             sRect(x, gy - h, 1, h, hillCol);
         }
 
-        // B. Harmonious Left Orchard Grove
         const leftTree1X = 24;
         const leftTree2X = Math.round(pw * 0.19);
         drawOrchardTree(leftTree2X, getGroundY(leftTree2X, 'meadow') + 2, 90, 9, 1, true, '#fbbf24');
         drawOrchardTree(leftTree1X, getGroundY(leftTree1X, 'meadow') + 3, 116, 13, 1, true, '#fda4af');
 
-        // C. Right-Edge Blossoming Hawthorn/Apple Tree sheltering the Grand Apiary
         const rightTreeX = pw - 20;
         drawOrchardTree(rightTreeX, getGroundY(rightTreeX, 'meadow') + 3, 102, 11, -1, true, '#fda4af');
 
-        // D. Rolling Velvet Meadow Ground Contour
         const turfTop = isLightMode ? '#16a34a' : '#0f392b';
         const turfDeep = isLightMode ? '#14532d' : '#071f18';
         for (let x = 0; x < pw; x++) {
@@ -715,7 +722,6 @@ function buildStaticEnvironmentLayer(hab) {
             sRect(x, gy, 1, 2, turfTop);
         }
 
-        // E. GRAND ARTISAN APIARY SANCTUARY on the Right Hillside
         const hx = Math.round(pw * 0.84);
         const hgy = getGroundY(hx, 'meadow') + 1;
 
@@ -770,10 +776,8 @@ function buildStaticEnvironmentLayer(hab) {
         sRect(hx - 19, bodyTop + 2, 6, 1, trunkHi);
     }
 
-    // 3. WETLAND STATIC SCENERY
-    if (hab.sceneProfile === 'wetland') {
+    else if (hab.sceneProfile === 'wetland') {
         const waterHorizonY = ph - 52;
-
         const farReedCol = isLightMode ? 'rgba(20, 83, 45, 0.28)' : 'rgba(6, 46, 38, 0.52)';
         const farTreeCol = isLightMode ? 'rgba(15, 62, 52, 0.22)' : 'rgba(4, 32, 30, 0.45)';
         for (let x = 0; x < pw; x += 2) {
@@ -891,8 +895,7 @@ function buildStaticEnvironmentLayer(hab) {
         }
     }
 
-    // 4. BETTA AQUARIUM STATIC SCENERY
-    if (hab.sceneProfile === 'betta-aquarium') {
+    else if (hab.sceneProfile === 'betta-aquarium') {
         const soilY = (x) => {
             const nx = x / Math.max(1, pw);
             const mound = Math.pow(Math.abs(nx - 0.50) * 1.95, 1.45) * 18;
@@ -1031,8 +1034,7 @@ function buildStaticEnvironmentLayer(hab) {
         });
     }
 
-    // 5. BOTANICAL BUTTERFLY GARDEN STATIC SCENERY
-    if (hab.sceneProfile === 'botanical') {
+    else if (hab.sceneProfile === 'botanical') {
         const reach = Math.min(155, Math.round(pw * 0.30));
 
         const glassFrameCol = isLightMode ? 'rgba(30, 58, 95, 0.22)' : 'rgba(30, 27, 75, 0.52)';
@@ -1178,8 +1180,7 @@ function buildStaticEnvironmentLayer(hab) {
         }
     }
 
-    // 6. REEF STATIC SCENERY
-    if (hab.sceneProfile === 'reef') {
+    else if (hab.sceneProfile === 'reef') {
         const rockDark = isLightMode ? '#0f2942' : '#090d24';
         const rockMid = isLightMode ? '#163e5c' : '#13193b';
         const rockHi = isLightMode ? '#1e5678' : '#232d5e';
@@ -1248,8 +1249,7 @@ function buildStaticEnvironmentLayer(hab) {
         }
     }
 
-    // 7. KOI POND STATIC SCENERY
-    if (hab.sceneProfile === 'koi-pond') {
+    else if (hab.sceneProfile === 'koi-pond') {
         const stoneDark = isLightMode ? '#334155' : '#0f172a';
         const stoneMid = isLightMode ? '#475569' : '#1e293b';
         const stoneHi = isLightMode ? '#64748b' : '#334155';
@@ -1375,8 +1375,93 @@ function buildStaticEnvironmentLayer(hab) {
         sRect(bx - 14, by - 8, 2, 12, '#4d7c0f');
     }
 
-    // 8. RAINFOREST STATIC SCENERY
-    if (hab.sceneProfile === 'rainforest') {
+    else if (hab.sceneProfile === 'arctic-tundra') {
+        const rockDark = isLightMode ? '#334155' : '#0f172a';
+        const rockMid = isLightMode ? '#475569' : '#1e293b';
+        const rockHi = isLightMode ? '#64748b' : '#334155';
+        const snowTop = isLightMode ? '#ffffff' : '#e0f2fe';
+        const snowMid = isLightMode ? '#e2e8f0' : '#bae6fd';
+        const snowShadow = isLightMode ? '#cbd5e1' : '#7dd3fc';
+
+        const drawSnowPine = (cx, baseY, h) => {
+            sRect(cx - 2, baseY - 8, 4, 9, '#271712');
+            const tiers = 5;
+            for (let t = 0; t < tiers; t++) {
+                const prog = t / tiers;
+                const ty = baseY - 6 - Math.round(prog * (h - 8));
+                const th = Math.round((h / tiers) * 1.45);
+                const maxW = Math.round((4 + (1 - prog) * (h * 0.28)));
+                for (let dy = 0; dy < th; dy++) {
+                    const w = Math.max(1, Math.round((dy / th) * maxW));
+                    const isSnowCap = dy < 3 || dy === th - 1;
+                    const col = isSnowCap ? snowTop : (dy < th * 0.5 ? (isLightMode ? '#0f766e' : '#115e59') : (isLightMode ? '#134e4a' : '#062e2b'));
+                    sRect(cx - w, ty - th + dy, w * 2, 1, col);
+                }
+            }
+        };
+
+        for (let x = 0; x < pw; x++) {
+            const nx = x / Math.max(1, pw);
+            const valleyMask = 0.42 + Math.pow(Math.abs(nx - 0.5) * 1.9, 1.3) * 0.85;
+            const peakH = Math.round((28 + Math.abs(Math.sin(x * 0.022)) * 26 + Math.cos(x * 0.055) * 8) * valleyMask);
+            const gy = getGroundY(x, 'arctic-tundra');
+            sRect(x, gy - peakH, 1, peakH, isLightMode ? 'rgba(148, 163, 184, 0.35)' : 'rgba(15, 35, 62, 0.65)');
+            if (peakH > 26) {
+                sRect(x, gy - peakH, 1, 6, isLightMode ? 'rgba(255, 255, 255, 0.65)' : 'rgba(186, 230, 253, 0.25)');
+            }
+        }
+
+        const ledges = getArcticLedges();
+        drawSnowPine(22, ledges[3].yFn(22) + 1, 46);
+        drawSnowPine(Math.round(pw * 0.14), ledges[1].yFn(pw * 0.14) + 1, 52);
+        drawSnowPine(Math.round(pw * 0.29), ledges[2].yFn(pw * 0.29) + 1, 38);
+        drawSnowPine(pw - 24, ledges[6].yFn(pw - 24) + 1, 48);
+        drawSnowPine(Math.round(pw * 0.88), ledges[4].yFn(pw * 0.88) + 1, 54);
+
+        const cabX = Math.round(pw * 0.73);
+        const cabY = ledges[5].yFn(cabX) + 1;
+        sRect(cabX - 11, cabY - 12, 22, 12, '#451a03');
+        sRect(cabX - 10, cabY - 11, 20, 10, '#78350f');
+        sRect(cabX + 5, cabY - 21, 4, 10, rockMid);
+        for (let r = 0; r <= 9; r++) {
+            const rw = 14 - Math.floor(r * 1.4);
+            sRect(cabX - rw, cabY - 12 - r, rw * 2, 1, r >= 7 ? snowTop : '#271712');
+            sRect(cabX - rw, cabY - 13 - r, 3, 1, snowTop);
+            sRect(cabX + rw - 3, cabY - 13 - r, 3, 1, snowTop);
+        }
+        sRect(cabX - 4, cabY - 8, 8, 5, '#fef08a');
+        sRect(cabX - 3, cabY - 7, 6, 3, '#ffffff');
+        sRect(cabX, cabY - 8, 1, 5, '#451a03');
+
+        for (let i = 1; i < ledges.length; i++) {
+            const l = ledges[i];
+            const rockThickness = 18 + (i % 2) * 6;
+            for (let x = l.x1; x <= l.x2; x++) {
+                const edgeDist = Math.min(x - l.x1, l.x2 - x);
+                const taper = edgeDist < 8 ? Math.round((8 - edgeDist) * 1.4) : 0;
+                const ly = l.yFn(x);
+                const h = Math.max(4, rockThickness - taper);
+
+                sRect(x, ly, 1, h, rockDark);
+                sRect(x, ly + 3, 1, Math.max(1, h - 5), (x % 9 < 5) ? rockMid : rockHi);
+                sRect(x, ly - 1, 1, 3, snowShadow);
+                sRect(x, ly - 2, 1, 2, snowTop);
+                if (x % 11 === 0 && edgeDist > 4) {
+                    const icicleLen = 3 + (x % 4);
+                    sRect(x, ly + h, 1, icicleLen, '#bae6fd');
+                }
+            }
+        }
+
+        for (let x = 0; x < pw; x++) {
+            const gy = getGroundY(x, 'arctic-tundra');
+            sRect(x, gy, 1, ph - gy, snowMid);
+            sRect(x, gy, 1, 3, snowTop);
+            sRect(x, gy + 3, 1, 2, snowShadow);
+        }
+    }
+
+    else if (hab.sceneProfile === 'rainforest') {
         const canopyShades = isLightMode
             ? ['#0b3d2e', '#115e40', '#16784d', '#22995e']
             : ['#041f1a', '#073026', '#0c4432', '#135e42'];
@@ -1505,7 +1590,6 @@ export function drawHabitatEnvironment(time) {
     }
     ctx.drawImage(sceneCache.bgCache.img, 0, 0);
 
-    // Sky Celestial Bodies
     if (!wxFxOn() && (hab.sceneProfile === 'botanical' || hab.sceneProfile === 'meadow' || hab.sceneProfile === 'wetland')) {
         const mx = Math.round(pw * 0.80);
         const my = 32;
@@ -1547,7 +1631,6 @@ export function drawHabitatEnvironment(time) {
 
     drawWxSky(time, hab.weatherSky === true, hab.sceneProfile === 'rainforest');
 
-    // Blit Cached Static Scenery Layer
     if (!sceneCache.staticEnvCache || sceneCache.staticEnvCache.hab !== hab.id || sceneCache.staticEnvCache.light !== isLightMode || sceneCache.staticEnvCache.w !== pw || sceneCache.staticEnvCache.h !== ph) {
         sceneCache.staticEnvCache = {
             img: buildStaticEnvironmentLayer(hab),
@@ -1559,7 +1642,6 @@ export function drawHabitatEnvironment(time) {
     }
     ctx.drawImage(sceneCache.staticEnvCache.img, 0, 0);
 
-    // Diagonal Sunbeam / Moonlight Caustic Shafts
     if (hab.sceneProfile === 'betta-aquarium' || hab.sceneProfile === 'reef' || isLightMode) {
         ctx.fillStyle = isLightMode ? 'rgba(255, 255, 255, 0.045)' : 'rgba(125, 211, 252, 0.024)';
         for (let r = 0; r < 5; r++) {
@@ -1570,11 +1652,6 @@ export function drawHabitatEnvironment(time) {
         }
     }
 
-    /* =========================================================================
-       DYNAMIC / ANIMATED HABITAT DETAILS (Scoped Per Biome)
-       ========================================================================= */
-
-    // 1. MEADOW: Warm Hanging Apiary Lantern on the Grand Beehive & Drifting Dandelion Seeds
     if (hab.sceneProfile === 'meadow') {
         const hx = Math.round(pw * 0.84);
         const hgy = getGroundY(hx, 'meadow') + 1;
@@ -1602,7 +1679,6 @@ export function drawHabitatEnvironment(time) {
         }
     }
 
-    // 2. BETTA AQUARIUM: Surface Bubble Nest, Flowering Bucephalandra & Anubias, Red Cryptocoryne & CO2 Pearling Stream
     if (hab.sceneProfile === 'betta-aquarium') {
         for (let s = 0; s < 10; s++) {
             const sx = Math.round(((s * 79 + Math.sin(time * 0.001 + s) * 14) % (pw - 40)) + 20);
@@ -1684,10 +1760,8 @@ export function drawHabitatEnvironment(time) {
         }
     }
 
-    // 3. WETLAND: Shimmering Pond Ripples, Morning Mist, Pier Lantern Glow & Singing Tree Frog
     if (hab.sceneProfile === 'wetland') {
         const waterHorizonY = ph - 52;
-
         for (let s = 0; s < 14; s++) {
             const wy = waterHorizonY + 4 + (s * 3.3);
             const sx = Math.round(((s * 67 + Math.sin(time * 0.0012 + s) * 14) % (pw * 0.56)) + pw * 0.22);
@@ -1753,7 +1827,6 @@ export function drawHabitatEnvironment(time) {
         });
     }
 
-    // 4. BOTANICAL: Hanging Glass Conservatory Lanterns, Trickling Fountain Jets & Drifting Fireflies
     if (hab.sceneProfile === 'botanical') {
         const reach = Math.min(155, Math.round(pw * 0.30));
         [Math.round(reach * 0.48), Math.round(pw - reach * 0.48)].forEach((lx, idx) => {
@@ -1786,7 +1859,6 @@ export function drawHabitatEnvironment(time) {
         }
     }
 
-    // 5. REEF: Shimmering Surface Caustics, Pulsing Giant Tridacna Clam & Rising Bioluminescent Bubble Streams
     if (hab.sceneProfile === 'reef') {
         for (let c = 0; c < 12; c++) {
             const cx = Math.round(((c * 61 + Math.sin(time * 0.001 + c) * 18) % (pw * 0.56)) + pw * 0.22);
@@ -1814,7 +1886,6 @@ export function drawHabitatEnvironment(time) {
         }
     }
 
-    // 6. KOI POND: Shimmering Water Caustics, Trickling Shishi-odoshi Bamboo Spout & Warm Yukimi Lantern Glow
     if (hab.sceneProfile === 'koi-pond') {
         for (let s = 0; s < 12; s++) {
             const wy = 34 + s * Math.floor((ph - 46) / 12);
@@ -1841,7 +1912,37 @@ export function drawHabitatEnvironment(time) {
         }
     }
 
-    // 7. RAINFOREST: Soft Drifting Jungle Mist Wisps & Dappled Sunbeams
+    if (hab.sceneProfile === 'arctic-tundra') {
+        const auroraAlpha = isLightMode ? 0.08 : 0.16;
+        for (let band = 0; band < 2; band++) {
+            const col = band === 0
+                ? `rgba(52, 211, 153, ${auroraAlpha})`
+                : `rgba(168, 85, 247, ${(auroraAlpha * 0.85).toFixed(2)})`;
+            const topRim = band === 0
+                ? `rgba(167, 243, 208, ${(auroraAlpha * 1.4).toFixed(2)})`
+                : `rgba(192, 132, 252, ${auroraAlpha})`;
+
+            for (let x = 0; x < pw; x += 4) {
+                const wave = Math.sin(x * 0.018 + time * 0.0008 + band * 2.2) * 10
+                           + Math.cos(x * 0.042 - time * 0.0011) * 5;
+                const ay = Math.round(14 + band * 14 + wave);
+                const ah = Math.round(16 + Math.sin(x * 0.05 + time * 0.0015) * 6);
+                pRect(x, ay, 3, ah, col);
+                pRect(x, ay + ah - 2, 3, 2, topRim);
+            }
+        }
+
+        const cabX = Math.round(pw * 0.73) + 6;
+        const cabY = Math.round(ph * 0.60) - 22;
+        for (let s = 0; s < 5; s++) {
+            const rise = ((time * 0.012 + s * 6) % 26);
+            const sx = cabX + Math.sin(time * 0.002 + s) * (1 + rise * 0.15);
+            const sy = cabY - rise;
+            const alpha = ((1 - rise / 26) * 0.45).toFixed(2);
+            pRect(sx, sy, 2 + Math.floor(rise / 9), 2, `rgba(226, 232, 240, ${alpha})`);
+        }
+    }
+
     if (hab.sceneProfile === 'rainforest') {
         for (let ray = 0; ray < 5; ray++) {
             const baseX = (ray * 112 + 34) % pw;
@@ -1860,12 +1961,33 @@ export function drawHabitatEnvironment(time) {
         }
     }
 
-    // Render Diverse Habitat Botanicals & Flora
     flora.forEach(f => {
         const baseGroundY = f.baseY !== undefined ? f.baseY : getGroundY(f.x, hab.sceneProfile);
 
         if (f.type === 'pebble') {
             pRect(f.x, f.y, f.w, f.h, isLightMode ? 'rgba(15, 55, 65, 0.35)' : f.shade);
+
+        } else if (f.type === 'cotton_grass') {
+            const sway = Math.sin(time * 0.0016 + f.phase) * 1.8;
+            for (let y = 0; y < f.h; y += 2) {
+                pRect(f.x + sway * (y / f.h), baseGroundY - y, 1, 2, '#0f766e');
+            }
+            const tx = f.x + sway;
+            const ty = baseGroundY - f.h;
+            pRect(tx - 2, ty - 1, 5, 3, '#ffffff');
+            pRect(tx - 1, ty - 2, 3, 4, '#f8fafc');
+
+        } else if (f.type === 'arctic_crystal') {
+            pRect(f.x - 2, baseGroundY - Math.floor(f.h * 0.7), 2, Math.floor(f.h * 0.7), '#0284c7');
+            pRect(f.x, baseGroundY - f.h, 2, f.h, f.col);
+            pRect(f.x + 2, baseGroundY - Math.floor(f.h * 0.6), 2, Math.floor(f.h * 0.6), '#38bdf8');
+            pRect(f.x, baseGroundY - f.h, 1, 2, '#ffffff');
+
+        } else if (f.type === 'arctic_berry_bush') {
+            pRect(f.x - f.r, baseGroundY - 4, f.r * 2, 4, '#115e59');
+            pRect(f.x - f.r + 1, baseGroundY - 5, f.r * 2 - 2, 2, '#e0f2fe');
+            pRect(f.x - 2, baseGroundY - 3, 2, 2, '#ef4444');
+            pRect(f.x + 2, baseGroundY - 2, 2, 2, '#f97316');
 
         } else if (f.type === 'maple_bough') {
             for (let y = 0; y < f.len; y += 2) {
@@ -2006,11 +2128,9 @@ export function drawHabitatEnvironment(time) {
             const x = f.x;
             const y = f.y;
             const petalSway = Math.round(Math.sin(time * 0.0015 + f.phase) * 0.6);
-            // Bark-clasping moss & bromeliad rosette fixed tightly to the tree trunk
             pRect(x - 3, y + 1, 7, 2, '#2c221e');
             pRect(x - 4, y, 9, 2, isLightMode ? '#166534' : '#0d5138');
             pRect(x - 2, y - 1, 5, 2, isLightMode ? '#22c55e' : '#10b981');
-            // Blooming tropical orchid/bromeliad crown
             pRect(x - 3 + petalSway, y - 3, 7, 2, f.hue);
             pRect(x - 1 + petalSway, y - 4, 3, 2, '#fef08a');
 
@@ -2373,7 +2493,6 @@ export function drawHabitatEnvironment(time) {
         }
     });
 
-    // Ambient Floating Particles
     ambientParticles.forEach((pt, idx) => {
         if (hab.sceneProfile === 'koi-pond') {
             pt.y += pt.speed * 0.65 * frameScale;
@@ -2390,7 +2509,6 @@ export function drawHabitatEnvironment(time) {
         }
     });
 
-    // Render Organic Species-Specific Stimuli
     for (let i = stimuli.length - 1; i >= 0; i--) {
         const s = stimuli[i];
         s.life -= frameScale;
@@ -2401,13 +2519,11 @@ export function drawHabitatEnvironment(time) {
             const fy = Math.round(s.baseY + Math.sin(s.phase) * 1.6);
             s.y = fy;
 
-            // Soft golden tropical aroma sparkle orbiting the fruit
             const sparkX = fx + Math.round(Math.cos(s.phase * 1.4) * 6);
             const sparkY = fy + Math.round(Math.sin(s.phase * 1.4) * 4);
             pRect(sparkX, sparkY, 1, 1, 'rgba(254, 240, 138, 0.75)');
 
             if (s.kind === 'mango' || (!s.kind && i % 3 === 0)) {
-                // 1. Sun-Ripened Blush Mango with Twin Emerald Leaves
                 pRect(fx - 3, fy - 1, 7, 5, '#f97316');
                 pRect(fx - 2, fy - 2, 5, 2, '#ef4444');
                 pRect(fx - 2, fy + 2, 6, 2, '#facc15');
@@ -2417,9 +2533,7 @@ export function drawHabitatEnvironment(time) {
                 pRect(fx - 4, fy - 4, 3, 2, '#16a34a');
                 pRect(fx, fy - 4, 3, 2, '#22c55e');
                 pRect(fx + 1, fy - 5, 2, 1, '#86efac');
-
             } else if (s.kind === 'guava' || (!s.kind && i % 3 === 1)) {
-                // 2. Sliced Tropical Pink Guava / Dragonfruit Wedge with Seeds & Green Rind
                 pRect(fx - 4, fy + 1, 9, 2, '#16a34a');
                 pRect(fx - 3, fy + 2, 7, 1, '#15803d');
                 pRect(fx - 3, fy - 2, 7, 3, '#f43f5e');
@@ -2429,9 +2543,7 @@ export function drawHabitatEnvironment(time) {
                 pRect(fx + 2, fy - 1, 1, 1, '#fef08a');
                 pRect(fx - 1, fy, 1, 1, '#1e293b');
                 pRect(fx - 2, fy - 3, 2, 1, '#ffe4e6');
-
             } else {
-                // 3. Golden Rainforest Banana Cluster
                 pRect(fx - 3, fy - 3, 3, 2, '#65a30d');
                 pRect(fx - 4, fy - 1, 3, 5, '#eab308');
                 pRect(fx - 1, fy - 1, 3, 6, '#facc15');
@@ -2441,6 +2553,23 @@ export function drawHabitatEnvironment(time) {
                 pRect(fx, fy + 5, 2, 1, '#78350f');
                 pRect(fx + 3, fy + 4, 2, 1, '#78350f');
             }
+
+        } else if (s.type === 'cloudberry') {
+            if (!s.landed) {
+                s.vy = Math.min(2.2, s.vy + 0.08 * frameScale);
+                s.y += s.vy * frameScale;
+                if (s.y >= s.targetY) {
+                    s.y = s.targetY;
+                    s.landed = true;
+                }
+            }
+            s.phase += 0.09 * frameScale;
+            const bx = Math.round(s.x);
+            const by = Math.round(s.y);
+            pRect(bx - 2, by, 5, 1, '#15803d');
+            pRect(bx - 2, by - 3, 5, 3, '#f97316');
+            pRect(bx - 1, by - 4, 3, 3, '#facc15');
+            pRect(bx, by - 4, 1, 1, '#fef9c3');
 
         } else if (s.type === 'honey_nectar') {
             s.phase += 0.12 * frameScale;
