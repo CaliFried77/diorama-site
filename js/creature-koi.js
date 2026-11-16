@@ -47,8 +47,8 @@ function buildKoiSprites(palette) {
     const bodyCtx = body.getContext('2d');
     const halfWidths = [
         1.1, 1.9, 2.8, 3.7, 4.5, 5.2, 5.8, 6.2, 6.4, 6.4,
-        6.3, 6.1, 5.8, 5.4, 4.9, 4.4, 3.8, 3.2, 2.6, 2.0,
-        1.5, 1.0
+        6.3, 6.1, 5.8, 5.4, 5.0, 4.7, 4.4, 4.1, 3.8, 3.5,
+        3.2, 2.9, 2.6, 2.3, 2.0, 1.8, 1.6, 1.3, 1.0, 0.6
     ];
 
     halfWidths.forEach((radius, index) => {
@@ -260,6 +260,7 @@ export class PixelKoi {
         ctx.save();
         ctx.translate(Math.round(this.x), Math.round(this.y));
         ctx.rotate(this.angle);
+        ctx.scale(0.68, 0.68);
         ctx.globalAlpha = 0.90 - depth * 0.08;
         ctx.imageSmoothingEnabled = false;
 
@@ -269,7 +270,7 @@ export class PixelKoi {
         // The caudal fin has its own small hinge so propulsion reads as a tail beat,
         // not a whole-body wobble or an exaggerated serpentine motion.
         ctx.save();
-        ctx.translate(-14, 0);
+        ctx.translate(-13, 0);
         ctx.rotate(tailWag);
         ctx.drawImage(this.sprites.tail, -11, -9);
         ctx.restore();
