@@ -207,6 +207,12 @@ async def assert_app_smoke(browser_type, name: str, base_url: str):
     await page.locator("#habitatListContainer button").nth(6).click()
     selected_habitat = await page.locator("#habitatNameLabel").inner_text()
     assert "Yağmur Ormanı" in selected_habitat, f"{name}: rainforest habitat selection failed: {selected_habitat!r}"
+    # Capture the actual rainforest composition before cycling to the next habitat.
+    await page.locator("#habitatMenuBtn").click()
+    await page.set_viewport_size({"width": 1440, "height": 900})
+    await page.wait_for_timeout(450)
+    ARTIFACTS.mkdir(exist_ok=True)
+    await page.screenshot(path=str(ARTIFACTS / f"{name}-rainforest-1440x900.png"), full_page=True)
     await page.locator("#habitatCycleBtn").click()
 
     # Theme toggle.
