@@ -20,6 +20,10 @@ const eventForm = document.getElementById('calendarEventForm');
 const eventTitleInput = document.getElementById('calendarEventTitle');
 const eventTimeInput = document.getElementById('calendarEventTime');
 
+// ============================================================================
+// BÖLÜM BAŞI: TAKVİM VERİSİ, TARİH DOĞRULAMA VE YEREL KAYIT
+// ============================================================================
+
 function dateKey(date) {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -62,6 +66,11 @@ function eventsFor(date) {
   return events.filter((event) => event.date === dateKey(date))
     .sort((a, b) => (a.time || '99:99').localeCompare(b.time || '99:99') || a.title.localeCompare(b.title, 'tr'));
 }
+
+// ============================================================================
+// BÖLÜM SONU: TAKVİM VERİSİ VE KAYIT
+// BÖLÜM BAŞI: AY GÖRÜNÜMÜ VE SEÇİLİ GÜNÜN ETKİNLİKLERİ
+// ============================================================================
 
 function renderCalendar() {
   monthLabel.textContent = formatDate(visibleMonth, { month: 'long', year: 'numeric' });
@@ -160,6 +169,11 @@ function renderSelectedDay() {
   });
 }
 
+// ============================================================================
+// BÖLÜM SONU: TAKVİM GÖRÜNÜMÜ
+// BÖLÜM BAŞI: AY GEZİNTİSİ VE ETKİNLİK FORMU
+// ============================================================================
+
 function shiftMonth(amount) {
   const desiredDay = selectedDate.getDate();
   visibleMonth = new Date(visibleMonth.getFullYear(), visibleMonth.getMonth() + amount, 1);
@@ -200,3 +214,7 @@ eventForm.addEventListener('submit', (event) => {
 
 renderCalendar();
 renderSelectedDay();
+
+// ============================================================================
+// BÖLÜM SONU: AY GEZİNTİSİ VE ETKİNLİK FORMU
+// ============================================================================
