@@ -37,28 +37,28 @@ export function drawKoiWaterOptics(time) {
     // Water absorbs contrast with depth and shifts white scales toward teal.
     const depthVeil = ctx.createLinearGradient(0, ph * 0.23, 0, ph);
     if (isLightMode) {
-        depthVeil.addColorStop(0, 'rgba(105, 190, 178, 0.045)');
-        depthVeil.addColorStop(0.45, 'rgba(31, 119, 128, 0.085)');
-        depthVeil.addColorStop(1, 'rgba(5, 43, 58, 0.16)');
+        depthVeil.addColorStop(0, 'rgba(105, 190, 178, 0.075)');
+        depthVeil.addColorStop(0.45, 'rgba(31, 119, 128, 0.14)');
+        depthVeil.addColorStop(1, 'rgba(5, 43, 58, 0.22)');
     } else {
-        depthVeil.addColorStop(0, 'rgba(76, 169, 164, 0.055)');
-        depthVeil.addColorStop(0.48, 'rgba(20, 105, 119, 0.11)');
-        depthVeil.addColorStop(1, 'rgba(2, 35, 51, 0.19)');
+        depthVeil.addColorStop(0, 'rgba(76, 169, 164, 0.09)');
+        depthVeil.addColorStop(0.48, 'rgba(20, 105, 119, 0.18)');
+        depthVeil.addColorStop(1, 'rgba(2, 35, 51, 0.27)');
     }
     ctx.fillStyle = depthVeil;
     ctx.fillRect(0, 0, pw, ph);
 
     // Broken caustic lines drift across the koi and the pond floor.
     ctx.globalCompositeOperation = 'screen';
-    for (let lane = 0; lane < 15; lane++) {
+    for (let lane = 0; lane < 19; lane++) {
         const baseY = Math.round(ph * (0.34 + (lane % 7) * 0.083));
         const speed = 0.003 + (lane % 4) * 0.0011;
         const drift = (time * speed + lane * 43) % (pw + 70) - 35;
         const phase = time * 0.0012 + lane * 1.7;
-        for (let segment = 0; segment < 5; segment++) {
+        for (let segment = 0; segment < 6; segment++) {
             const x = drift + segment * (5 + lane % 3);
             const y = baseY + Math.sin(phase + segment * 0.72) * 2.4;
-            const alpha = isLightMode ? 0.16 : 0.11;
+            const alpha = isLightMode ? 0.21 : 0.17;
             pRect(x, y, 3 + (segment % 3), 1, 'rgba(193, 245, 222, ' + alpha + ')');
             if (segment % 2 === 0) {
                 pRect(x + 2, y + 2, 2, 1, 'rgba(115, 207, 190, 0.09)');
@@ -72,8 +72,9 @@ export function drawKoiWaterOptics(time) {
         for (let step = 0; step < 7; step++) {
             const y = ph * 0.27 + step * (ph * 0.075);
             const x = topX + Math.sin(time * 0.0006 + step * 0.45 + ray) * (2 + step);
-            const alpha = Math.max(0.018, 0.055 - step * 0.005);
-            pRect(x, y, 1, 4 + (step % 3), 'rgba(186, 239, 217, ' + alpha + ')');
+            const alpha = Math.max(0.025, 0.075 - step * 0.007);
+            pRect(x, y, 1, 5 + (step % 4), 'rgba(186, 239, 217, ' + alpha + ')');
+            if (step < 4) pRect(x + 1, y + 2, 1, 3, 'rgba(111, 204, 188, 0.045)');
         }
     }
 
