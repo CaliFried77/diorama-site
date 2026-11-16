@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { ARCTIC_LEDGE_LINKS, getArcticLedges } from '../js/arctic-geometry.js';
+import { ARCTIC_LEDGE_LINKS, getArcticLandingY, getArcticLedges } from '../js/arctic-geometry.js';
 
 test('Arctic geometry returns seven responsive ledges with stable ids', () => {
   for (const [width, height] of [[420, 240], [960, 540]]) {
@@ -32,4 +32,17 @@ test('Arctic fox navigation links reference existing ledges and are bidirectiona
       );
     }
   }
+});
+
+
+test('cloudberries use the same ledge geometry as the Arctic foxes', () => {
+  const width = 420;
+  const height = 240;
+  const leftMid = getArcticLedges(width, height)[2];
+  const x = (leftMid.x1 + leftMid.x2) / 2;
+  const platformLanding = getArcticLandingY(x, 40, width, height);
+  const valleyLanding = getArcticLandingY(width / 2, 40, width, height);
+
+  assert.equal(platformLanding, leftMid.yFn(x));
+  assert.ok(valleyLanding > platformLanding);
 });
