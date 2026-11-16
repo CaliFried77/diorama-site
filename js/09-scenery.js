@@ -25,10 +25,13 @@ function getGroundY(x, profile) {
         return Math.round(ph - 4 - valley - Math.sin(x * 0.035) * 2);
     }
     if (profile === 'wetland') {
-        // Raised marsh banks on left/right shores, dipping into a tranquil pond basin in the center
         const bankFactor = Math.max(0, Math.abs(nx - 0.5) - 0.14) / 0.36;
         const bankLift = Math.pow(bankFactor, 1.35) * 26;
         return Math.round(ph - 6 - bankLift - Math.sin(x * 0.04) * 2);
+    }
+    if (profile === 'botanical') {
+        const terrace = Math.pow(Math.abs(nx - 0.5) * 1.85, 1.45) * 15;
+        return Math.round(ph - 5 - terrace - Math.sin(x * 0.032) * 2.5);
     }
     return ph;
 }
@@ -150,8 +153,7 @@ export function initHabitat(idx) {
             });
         }
 
-   } else if (hab.sceneProfile === 'wetland') {
-        // 1. Cascading Weeping Willow Fronds (anchored strictly to the branch curve & reach)
+    } else if (hab.sceneProfile === 'wetland') {
         const reach = Math.min(145, Math.round(pw * 0.26));
         const willowZones = [
             { startX: 6, endX: reach - 4, isLeft: true },
@@ -172,7 +174,6 @@ export function initHabitat(idx) {
             }
         });
 
-        // 2. Layered Shoreline & Mid-Pond Island Reeds, Cattails, Irises, Loosestrife & Papyrus
         for (let x = 6; x < pw - 6; x += 6 + Math.floor(Math.random() * 5)) {
             const nx = x / Math.max(1, pw);
             const inLeftBank = nx < 0.34;
@@ -189,7 +190,6 @@ export function initHabitat(idx) {
             const r = Math.random();
 
             if (r < 0.40) {
-                // Tall Cattail (Su Kamışı / Typha) with basal sedge blades
                 const h = Math.round((46 + Math.random() * 58) * edgeScale);
                 flora.push({
                     type: 'reed',
@@ -201,7 +201,6 @@ export function initHabitat(idx) {
                     phase: Math.random() * Math.PI * 2
                 });
             } else if (r < 0.64) {
-                // Blooming Water Iris (Sarı & Mor Su Süseni)
                 flora.push({
                     type: 'iris',
                     x,
@@ -211,7 +210,6 @@ export function initHabitat(idx) {
                     phase: Math.random() * Math.PI * 2
                 });
             } else if (r < 0.82) {
-                // Purple Loosestrife (Hevhulma - Uzun Eflatun Bataklık Başağı)
                 flora.push({
                     type: 'loosestrife',
                     x,
@@ -221,7 +219,6 @@ export function initHabitat(idx) {
                     phase: Math.random() * Math.PI * 2
                 });
             } else {
-                // Umbrella Papyrus & Arrowhead Sedge
                 flora.push({
                     type: 'papyrus',
                     x,
@@ -232,7 +229,6 @@ export function initHabitat(idx) {
             }
         }
 
-        // 3. Floating Water Lilies & Lotus Blossoms across the pond surface
         for (let i = 0; i < 18; i++) {
             const lx = 24 + Math.random() * (pw - 48);
             const ly = ph - 8 - Math.random() * 36;
@@ -248,48 +244,80 @@ export function initHabitat(idx) {
         }
 
     } else if (hab.sceneProfile === 'botanical') {
+        // 1. Cascading Wisteria Racemes anchored to the left & right pergola/tree boughs
+        const reach = Math.min(155, Math.round(pw * 0.30));
         const boughZones = [
-            { startX: 0, endX: pw * 0.38, baseArch: 26 },
-            { startX: pw * 0.62, endX: pw, baseArch: 24 }
+            { startX: 6, endX: reach - 4, isLeft: true },
+            { startX: pw - reach + 4, endX: pw - 6, isLeft: false }
         ];
-        boughZones.forEach((zone, zIdx) => {
-            for (let x = zone.startX + 4; x < zone.endX - 4; x += 6 + Math.floor(Math.random() * 5)) {
-                const norm = zIdx === 0 ? (1 - x / zone.endX) : ((x - zone.startX) / (zone.endX - zone.startX));
-                const branchY = Math.round(4 + norm * zone.baseArch + Math.sin(x * 0.12) * 3);
+        boughZones.forEach(zone => {
+            for (let x = zone.startX; x <= zone.endX; x += 6 + Math.floor(Math.random() * 4)) {
+                const t = zone.isLeft ? (x / reach) : ((pw - x) / reach);
+                const branchY = Math.round(5 + Math.pow(t, 1.2) * 15 + Math.sin(x * 0.09) * 1.5);
+                const len = Math.round((1 - t * 0.52) * 34 + 12 + Math.random() * 14);
                 flora.push({
                     type: 'wisteria_cluster',
-                    x,
+                    x: Math.round(x),
                     branchY,
-                    len: 10 + Math.pow(norm, 0.8) * (14 + Math.random() * 22),
+                    len,
                     hue: ['#c084fc', '#e879f9', '#f472b6', '#818cf8'][Math.floor(Math.random() * 4)],
                     phase: Math.random() * Math.PI * 2
                 });
             }
         });
-        for (let x = 10; x < pw - 10; x += 7 + Math.floor(Math.random() * 6)) {
+
+        // 2. Rich Botanical Conservatory Floor: Buddleia (Butterfly Bush), Hydrangeas, Ferns, Glowing Mycena & Foxgloves
+        for (let x = 10; x < pw - 10; x += 7 + Math.floor(Math.random() * 5)) {
+            const nx = x / Math.max(1, pw);
+            if (Math.abs(nx - 0.5) < 0.06 && Math.random() < 0.65) continue;
+
+            const baseY = getGroundY(x, 'botanical') + Math.round((Math.random() - 0.5) * 3);
             const r = Math.random();
-            if (r < 0.25) {
+
+            if (r < 0.24 && (nx < 0.42 || nx > 0.58)) {
+                flora.push({
+                    type: 'buddleia',
+                    x,
+                    baseY,
+                    h: 28 + Math.random() * 26,
+                    hue: ['#c084fc', '#e879f9', '#f472b6', '#facc15'][Math.floor(Math.random() * 4)],
+                    tilt: (nx < 0.5 ? 1 : -1) * (0.12 + Math.random() * 0.14),
+                    phase: Math.random() * Math.PI * 2
+                });
+            } else if (r < 0.42 && (nx < 0.36 || nx > 0.64)) {
+                flora.push({
+                    type: 'hydrangea',
+                    x,
+                    baseY,
+                    r: 6 + Math.floor(Math.random() * 4),
+                    hue: ['#60a5fa', '#c084fc', '#f472b6'][Math.floor(Math.random() * 3)],
+                    phase: Math.random() * Math.PI * 2
+                });
+            } else if (r < 0.60) {
                 flora.push({
                     type: 'fern',
                     x,
-                    h: 16 + Math.random() * 20,
+                    baseY,
+                    h: 15 + Math.random() * 18,
                     dir: Math.random() < 0.5 ? 1 : -1,
                     phase: Math.random() * Math.PI * 2
                 });
-            } else if (r < 0.45) {
+            } else if (r < 0.76) {
                 flora.push({
                     type: 'glow_mushroom',
                     x,
-                    h: 8 + Math.random() * 12,
+                    baseY,
+                    h: 8 + Math.random() * 11,
                     capR: 3 + Math.floor(Math.random() * 3),
                     col: Math.random() < 0.5 ? '#38bdf8' : '#a855f7',
                     phase: Math.random() * Math.PI * 2
                 });
-            } else if (r < 0.68) {
+            } else if (r < 0.90) {
                 flora.push({
                     type: 'foxglove',
                     x,
-                    h: 24 + Math.random() * 26,
+                    baseY,
+                    h: 24 + Math.random() * 24,
                     hue: Math.random() < 0.5 ? '#e879f9' : '#60a5fa',
                     phase: Math.random() * Math.PI * 2
                 });
@@ -297,7 +325,8 @@ export function initHabitat(idx) {
                 flora.push({
                     type: 'meadow',
                     x,
-                    h: 16 + Math.random() * 26,
+                    baseY,
+                    h: 16 + Math.random() * 22,
                     hasBloom: true,
                     kind: 'nightbloom',
                     phase: Math.random() * Math.PI * 2
@@ -541,11 +570,10 @@ function buildStaticEnvironmentLayer(hab) {
         });
     }
 
-    // 3. WETLAND STATIC SCENERY (Pond Water Surface, Far Reed Horizon, Marsh Islands, Weeping Willows, Dock & Driftwood)
+    // 3. WETLAND STATIC SCENERY
     if (hab.sceneProfile === 'wetland') {
         const waterHorizonY = ph - 52;
 
-        // A. Distant Misty Reed Beds & Alder Groves along the far pond shore
         const farReedCol = isLightMode ? 'rgba(20, 83, 45, 0.28)' : 'rgba(6, 46, 38, 0.52)';
         const farTreeCol = isLightMode ? 'rgba(15, 62, 52, 0.22)' : 'rgba(4, 32, 30, 0.45)';
         for (let x = 0; x < pw; x += 2) {
@@ -562,7 +590,6 @@ function buildStaticEnvironmentLayer(hab) {
             }
         }
 
-        // B. Tranquil Pond Water Basin (rich depth gradient from horizon to foreground)
         const waterTop = isLightMode ? '#0e7490' : '#082f49';
         const waterMid = isLightMode ? '#115e59' : '#062830';
         const waterDeep = isLightMode ? '#134e4a' : '#03171e';
@@ -574,16 +601,13 @@ function buildStaticEnvironmentLayer(hab) {
             const col = t < 0.5 ? lerpHex(waterTop, waterMid, t * 2) : lerpHex(waterMid, waterDeep, (t - 0.5) * 2);
             sRect(0, wy, pw, wh, col);
         }
-        //Crisp water horizon shimmer line
         sRect(0, waterHorizonY, pw, 1, isLightMode ? 'rgba(186, 230, 253, 0.45)' : 'rgba(45, 212, 191, 0.18)');
 
-        // C. Mid-Pond Mossy Hummock Islands (with dark underwater reflections)
         const islands = [
             { cx: Math.round(pw * 0.44), y: ph - 21, rx: 22, ry: 5 },
             { cx: Math.round(pw * 0.58), y: ph - 25, rx: 19, ry: 4 }
         ];
         islands.forEach(isl => {
-            // Underwater reflection shadow
             sRect(isl.cx - isl.rx + 2, isl.y + 2, (isl.rx - 2) * 2, 5, 'rgba(2, 12, 18, 0.42)');
             for (let dy = -isl.ry; dy <= 2; dy++) {
                 const span = Math.round(isl.rx * Math.sqrt(Math.max(0, 1 - (dy * dy) / ((isl.ry + 2) * (isl.ry + 2)))));
@@ -592,7 +616,6 @@ function buildStaticEnvironmentLayer(hab) {
             }
         });
 
-        // D. Left & Right Gnarled Weeping Willow Trees (Connected Trunks, Boughs & Overlapping Canopy)
         const willowDark = isLightMode ? '#3b281e' : '#14141b';
         const willowMid = isLightMode ? '#573b2c' : '#24222c';
         const willowHi = isLightMode ? '#78523d' : '#363240';
@@ -608,7 +631,6 @@ function buildStaticEnvironmentLayer(hab) {
             const edgeX = wTree.isLeft ? 0 : pw - 1;
             const bankY = getGroundY(edgeX, 'wetland') + 4;
 
-            // 1. Trunk rooted into the bank
             for (let y = 0; y < bankY; y++) {
                 const prog = y / bankY;
                 const lean = Math.sin((1 - prog) * Math.PI * 0.5) * 12 * wTree.dir;
@@ -620,7 +642,6 @@ function buildStaticEnvironmentLayer(hab) {
                 sRect(tx + (wTree.isLeft ? tw - 1 : 0), y, 1, 1, willowHi);
             }
 
-            // 2. Continuous Overlapping Foliage Canopy (hugs the top edge & follows the branch curve down)
             [0.08, 0.30, 0.52, 0.74, 0.92].forEach(tNode => {
                 const cx = Math.round(wTree.isLeft ? (tNode * reach) : (pw - tNode * reach));
                 const branchY = Math.round(6 + Math.pow(tNode, 1.2) * 14);
@@ -636,7 +657,6 @@ function buildStaticEnvironmentLayer(hab) {
                 }
             });
 
-            // 3. Overhanging Willow Bough (drawn across the lower canopy so leaves & branch never separate)
             for (let s = 0; s <= reach; s++) {
                 const t = s / Math.max(1, reach);
                 const bx = wTree.isLeft ? s : (pw - 1 - s);
@@ -647,17 +667,15 @@ function buildStaticEnvironmentLayer(hab) {
             }
         });
 
-        // E. Foreground Marsh Banks (Left & Right Vegetated Shorelines)
         for (let x = 0; x < pw; x++) {
             const nx = x / Math.max(1, pw);
-            if (nx > 0.36 && nx < 0.64) continue; // Keep center pond open water
+            if (nx > 0.36 && nx < 0.64) continue;
             const gy = getGroundY(x, 'wetland');
-            sRect(x, gy + 3, 1, 4, 'rgba(2, 10, 16, 0.45)'); // Bank water-edge shadow
+            sRect(x, gy + 3, 1, 4, 'rgba(2, 10, 16, 0.45)');
             sRect(x, gy, 1, ph - gy, isLightMode ? '#14532d' : '#052019');
             sRect(x, gy, 1, 2, isLightMode ? '#16a34a' : '#0d4a38');
         }
 
-        // F. Half-Submerged Mossy Driftwood Snag in Right-Midground Water (Perch for dragonflies)
         const snagX = Math.round(pw * 0.66);
         const snagY = ph - 18;
         sRect(snagX - 18, snagY + 2, 28, 3, 'rgba(2, 10, 16, 0.45)');
@@ -711,42 +729,153 @@ function buildStaticEnvironmentLayer(hab) {
 
     // 5. BOTANICAL BUTTERFLY GARDEN STATIC SCENERY
     if (hab.sceneProfile === 'botanical') {
-        const branchDark = isLightMode ? '#3f1d0b' : '#15111e';
-        const branchHi = isLightMode ? '#78350f' : '#2a223a';
-        for (let x = 0; x < pw * 0.40; x++) {
-            const norm = 1 - x / (pw * 0.40);
-            const by = Math.round(3 + norm * 24 + Math.sin(x * 0.12) * 2.5);
-            const thick = Math.max(2, Math.floor(norm * 8));
-            sRect(x, 0, 1, by + thick, branchDark);
-            sRect(x, by + thick - 1, 1, 1, branchHi);
+        const reach = Math.min(155, Math.round(pw * 0.30));
+
+        // A. Distant Victorian Glasshouse Conservatory Dome Silhouette
+        const glassFrameCol = isLightMode ? 'rgba(30, 58, 95, 0.22)' : 'rgba(30, 27, 75, 0.52)';
+        const glassPaneCol = isLightMode ? 'rgba(224, 242, 254, 0.18)' : 'rgba(129, 140, 248, 0.06)';
+        const domeCx = Math.round(pw * 0.50);
+        const domeBaseY = getGroundY(domeCx, 'botanical') - 2;
+        const domeRx = Math.min(76, Math.round(pw * 0.16));
+        const domeRy = 42;
+
+        for (let dy = -domeRy; dy <= 0; dy++) {
+            const span = Math.round(domeRx * Math.sqrt(Math.max(0, 1 - (dy * dy) / (domeRy * domeRy))));
+            sRect(domeCx - span, domeBaseY - 18 + dy, span * 2, 1, glassPaneCol);
+            sRect(domeCx - span, domeBaseY - 18 + dy, 1, 1, glassFrameCol);
+            sRect(domeCx + span - 1, domeBaseY - 18 + dy, 1, 1, glassFrameCol);
+            if (dy % 10 === 0) {
+                sRect(domeCx - span, domeBaseY - 18 + dy, span * 2, 1, glassFrameCol);
+            }
         }
-        for (let x = Math.floor(pw * 0.60); x < pw; x++) {
-            const norm = (x - pw * 0.60) / (pw * 0.40);
-            const by = Math.round(3 + norm * 22 + Math.sin(x * 0.12) * 2.5);
-            const thick = Math.max(2, Math.floor(norm * 8));
-            sRect(x, 0, 1, by + thick, branchDark);
-            sRect(x, by + thick - 1, 1, 1, branchHi);
+        [-0.6, -0.3, 0, 0.3, 0.6].forEach(rib => {
+            const rx = Math.round(domeCx + rib * domeRx);
+            const rh = Math.round(domeRy * Math.sqrt(Math.max(0, 1 - rib * rib)));
+            sRect(rx, domeBaseY - 18 - rh, 1, rh + 18, glassFrameCol);
+        });
+        sRect(domeCx - domeRx, domeBaseY - 18, domeRx * 2, 18, glassPaneCol);
+        sRect(domeCx - domeRx, domeBaseY - 18, domeRx * 2, 1, glassFrameCol);
+        sRect(domeCx - 1, domeBaseY - 18 - domeRy - 6, 2, 6, glassFrameCol);
+
+        // B. Left & Right Gnarled Wisteria Trees (Grounded Trunks, Overlapping Canopy & Boughs)
+        const trunkDark = isLightMode ? '#3b2316' : '#161122';
+        const trunkMid = isLightMode ? '#5c3724' : '#261d38';
+        const trunkHi = isLightMode ? '#7c4d34' : '#3b2d54';
+        const leafDark = isLightMode ? '#14532d' : '#092622';
+        const leafMid = isLightMode ? '#15803d' : '#113e35';
+        const leafHi = isLightMode ? '#22c55e' : '#1d5e4a';
+        const blossomCrown = isLightMode ? '#d8b4fe' : '#6b21a8';
+
+        [
+            { isLeft: true, dir: 1 },
+            { isLeft: false, dir: -1 }
+        ].forEach(tree => {
+            const edgeX = tree.isLeft ? 0 : pw - 1;
+            const groundY = getGroundY(edgeX, 'botanical') + 4;
+
+            for (let y = 0; y < groundY; y++) {
+                const prog = y / groundY;
+                const twist = Math.sin(y * 0.06) * 2.5 + Math.sin((1 - prog) * Math.PI * 0.5) * 10 * tree.dir;
+                const rootFlare = prog > 0.72 ? Math.pow((prog - 0.72) / 0.28, 2) * 18 : 0;
+                const tw = Math.round(13 + prog * 5 + rootFlare);
+                const tx = tree.isLeft ? Math.max(0, Math.round(twist)) : Math.min(pw - tw, Math.round(pw - tw + twist));
+                sRect(tx, y, tw, 1, trunkDark);
+                sRect(tx + (tree.isLeft ? tw - 5 : 2), y, 3, 1, trunkMid);
+                sRect(tx + (tree.isLeft ? tw - 2 : 0), y, 2, 1, trunkHi);
+            }
+
+            [0.06, 0.28, 0.50, 0.72, 0.90].forEach((tNode, idx) => {
+                const cx = Math.round(tree.isLeft ? (tNode * reach) : (pw - tNode * reach));
+                const branchY = Math.round(5 + Math.pow(tNode, 1.2) * 15);
+                const rx = Math.round(30 * (1 - tNode * 0.30));
+                const bottomY = branchY + Math.round(8 * (1 - tNode * 0.28));
+
+                for (let y = 0; y <= bottomY; y++) {
+                    const normY = (y - branchY * 0.5) / Math.max(1, bottomY - branchY * 0.5);
+                    const ellipse = Math.max(0, 1 - normY * normY);
+                    const span = Math.round(rx * (y < branchY * 0.5 ? 1 : Math.sqrt(ellipse)));
+                    let col = y < branchY * 0.35 ? leafHi : (y > branchY ? leafDark : leafMid);
+                    if ((y + idx) % 5 === 0 && y > branchY * 0.4) col = blossomCrown;
+                    sRect(cx - span, y, span * 2, 1, col);
+                }
+            });
+
+            for (let s = 0; s <= reach; s++) {
+                const t = s / Math.max(1, reach);
+                const bx = tree.isLeft ? s : (pw - 1 - s);
+                const by = Math.round(5 + Math.pow(t, 1.2) * 15 + Math.sin(bx * 0.09) * 1.5);
+                const thick = Math.max(2, Math.round(9 * (1 - t * 0.75)));
+                sRect(bx, by - Math.floor(thick * 0.5), 1, thick, trunkDark);
+                sRect(bx, by + Math.ceil(thick * 0.5) - 1, 1, 1, trunkHi);
+            }
+        });
+
+        // C. Ornate Curved Gothic Stone Garden Archway on Right Terrace
+        const gx = pw - 68;
+        const archBaseY = getGroundY(gx + 16, 'botanical') + 2;
+        const pillarH = 44;
+        const archTopY = archBaseY - pillarH;
+        const stoneDark = isLightMode ? '#475569' : '#171c2e';
+        const stoneMid = isLightMode ? '#64748b' : '#242c46';
+        const stoneHi = isLightMode ? '#94a3b8' : '#384366';
+
+        [gx, gx + 28].forEach(px => {
+            sRect(px - 1, archBaseY - 4, 8, 5, stoneDark);
+            sRect(px, archTopY, 6, pillarH, stoneMid);
+            sRect(px, archTopY, 2, pillarH, stoneHi);
+            sRect(px + 4, archTopY, 2, pillarH, stoneDark);
+            sRect(px - 1, archTopY - 2, 8, 2, stoneHi);
+        });
+
+        const archCx = gx + 17;
+        for (let a = 0; a <= 180; a += 3) {
+            const rad = (a * Math.PI) / 180;
+            for (let r = 12; r <= 17; r++) {
+                const ax = Math.round(archCx + Math.cos(rad) * r);
+                const ay = Math.round(archTopY - Math.sin(rad) * (r * 0.85));
+                sRect(ax, ay, 2, 2, r >= 16 ? stoneHi : (r <= 13 ? stoneDark : stoneMid));
+            }
         }
 
-        const gx = pw - 48;
-        const stoneCol = isLightMode ? '#64748b' : '#1e2436';
-        const stoneHi = isLightMode ? '#94a3b8' : '#2e364f';
-        sRect(gx, ph - 58, 6, 58, stoneCol);
-        sRect(gx, ph - 58, 2, 58, stoneHi);
-        sRect(gx + 26, ph - 58, 6, 58, stoneCol);
-        sRect(gx - 3, ph - 62, 38, 4, stoneHi);
-        for (let vy = ph - 56; vy < ph - 8; vy += 5) {
-            const vx = gx + 1 + Math.round(Math.sin(vy * 0.25) * 2);
-            sRect(vx, vy, 3, 2, '#15803d');
-            if (vy % 10 === 0) sRect(vx + 1, vy - 1, 2, 2, '#e879f9');
+        for (let vy = archTopY - 8; vy < archBaseY - 6; vy += 4) {
+            const sideX = (vy % 8 === 0) ? gx + 1 : gx + 29;
+            const vx = sideX + Math.round(Math.sin(vy * 0.25) * 2);
+            sRect(vx, vy, 4, 2, '#15803d');
+            if (vy % 8 === 0) {
+                sRect(vx + 1, vy - 1, 2, 2, '#f472b6');
+                sRect(vx + 2, vy, 1, 1, '#fef08a');
+            }
         }
 
-        for (let i = 0; i < 18; i++) {
-            const progress = i / 17;
-            const pathX = Math.round(pw * 0.5 + Math.sin(i * 0.42) * (16 + progress * 8));
-            const pathY = ph - 4 - Math.round((i % 3) * 1.2);
+        // D. Classical Tiered Stone Birdbath / Nectar Fountain on Left-Midground Terrace
+        const fx = Math.round(pw * 0.18);
+        const fy = getGroundY(fx, 'botanical') + 1;
+        sRect(fx - 9, fy - 2, 19, 3, stoneDark);
+        sRect(fx - 6, fy - 4, 13, 2, stoneMid);
+        sRect(fx - 3, fy - 18, 7, 14, stoneMid);
+        sRect(fx - 2, fy - 18, 2, 14, stoneHi);
+        sRect(fx - 13, fy - 21, 27, 3, stoneMid);
+        sRect(fx - 15, fy - 23, 31, 2, stoneHi);
+        sRect(fx - 12, fy - 23, 25, 1, isLightMode ? '#38bdf8' : '#7dd3fc');
+        sRect(fx - 2, fy - 28, 5, 5, stoneMid);
+        sRect(fx - 1, fy - 30, 3, 2, stoneHi);
+
+        // E. Terraced Velvet Moss Garden Floor & Winding Flagstone Path
+        const mossTop = isLightMode ? '#16a34a' : '#0f3d32';
+        const mossDeep = isLightMode ? '#14532d' : '#061a17';
+        for (let x = 0; x < pw; x++) {
+            const gy = getGroundY(x, 'botanical');
+            sRect(x, gy, 1, ph - gy, mossDeep);
+            sRect(x, gy, 1, 2, mossTop);
+        }
+
+        for (let i = 0; i < 16; i++) {
+            const progress = i / 15;
+            const pathX = Math.round(pw * 0.5 + Math.sin(i * 0.45) * (14 + progress * 10));
+            const pathY = ph - 2 - Math.round((1 - progress) * 9);
             const stoneW = 3 + (i % 3) * 2;
-            sRect(pathX - stoneW, pathY, stoneW * 2, 2, isLightMode ? '#64748b' : '#25263d');
+            sRect(pathX - stoneW, pathY, stoneW * 2, 2, stoneDark);
+            sRect(pathX - stoneW + 1, pathY, stoneW * 2 - 2, 1, stoneHi);
         }
     }
 
@@ -1018,7 +1147,6 @@ export function drawHabitatEnvironment(time) {
     if (hab.sceneProfile === 'wetland') {
         const waterHorizonY = ph - 52;
 
-        // Horizontal shimmering water reflections & sky glints across the pond center
         for (let s = 0; s < 14; s++) {
             const wy = waterHorizonY + 4 + (s * 3.3);
             const sx = Math.round(((s * 67 + Math.sin(time * 0.0012 + s) * 14) % (pw * 0.56)) + pw * 0.22);
@@ -1026,7 +1154,6 @@ export function drawHabitatEnvironment(time) {
             pRect(sx, wy, sw, 1, isLightMode ? 'rgba(224, 242, 254, 0.38)' : 'rgba(94, 234, 212, 0.16)');
         }
 
-        // Expanding concentric water surface ripples (from fish, frogs & skimming dragonflies)
         for (let r = 0; r < 3; r++) {
             const cycle = ((time * 0.014 + r * 33) % 100) / 100;
             const rx = Math.round(pw * (0.35 + r * 0.14) + Math.sin(r * 2.1) * 18);
@@ -1038,7 +1165,6 @@ export function drawHabitatEnvironment(time) {
             pRect(rx - Math.round(radX * 0.6), ry - 1, Math.round(radX * 1.2), 1, `rgba(186, 230, 253, ${(alpha * 0.5).toFixed(2)})`);
         }
 
-        // Drifting low marsh mist wisps above the water surface
         ctx.fillStyle = isLightMode ? 'rgba(255, 255, 255, 0.13)' : 'rgba(167, 243, 208, 0.04)';
         for (let m = 0; m < 5; m++) {
             const mx = Math.round(((m * 95 + time * 0.005 * (m + 1)) % (pw + 90)) - 45);
@@ -1046,7 +1172,6 @@ export function drawHabitatEnvironment(time) {
             ctx.fillRect(mx, my, 48 + (m % 3) * 14, 2);
         }
 
-        // Mossy River Boulder on Right Bank with Singing Emerald Tree Frog + Expanding Frog Ripple
         const stoneX = pw - 74;
         const stoneY = ph - 18;
         pRect(stoneX - 12, stoneY + 7, 26, 4, 'rgba(2, 10, 16, 0.45)');
@@ -1054,35 +1179,31 @@ export function drawHabitatEnvironment(time) {
         pRect(stoneX - 9, stoneY - 3, 18, 4, isLightMode ? '#64748b' : '#334155');
         pRect(stoneX - 7, stoneY - 4, 14, 2, isLightMode ? '#16a34a' : '#15803d');
 
-        // Emerald Tree Frog (Hyla arborea)
         pRect(stoneX - 2, stoneY - 7, 5, 3, '#22c55e');
         pRect(stoneX - 1, stoneY - 8, 3, 1, '#4ade80');
         pRect(stoneX + 2, stoneY - 8, 1, 1, '#fef08a');
         if (Math.sin(time * 0.006) > 0.55) {
-            pRect(stoneX + 3, stoneY - 6, 2, 2, '#bbf7d0'); // Vocal sac pulse
+            pRect(stoneX + 3, stoneY - 6, 2, 2, '#bbf7d0');
         }
 
-        // Rustic Wooden Fisherman's Pier on Left Shoreline with Hanging Brass Lantern & Shimmering Reflection
         const pierCol = isLightMode ? '#5c3a21' : '#1c1917';
         const pierHi = isLightMode ? '#854d0e' : '#332924';
         const py = ph - 40;
         pRect(0, py, 64, 3, pierCol);
         pRect(0, py, 64, 1, pierHi);
-        // Individual deck planks
         for (let px = 2; px < 62; px += 5) {
             pRect(px, py - 1, 3, 1, pierHi);
         }
         [14, 36, 58].forEach(px => {
             pRect(px, py - 9, 3, 25, pierCol);
             pRect(px, py - 9, 1, 25, pierHi);
-            pRect(px - 1, py + 15, 5, 2, 'rgba(2, 10, 16, 0.45)'); // Piling water line
+            pRect(px - 1, py + 15, 5, 2, 'rgba(2, 10, 16, 0.45)');
             if (px === 58) {
                 const sway = Math.round(Math.sin(time * 0.0025) * 1);
                 pRect(px + 2, py - 9, 5, 1, pierCol);
                 pRect(px + 5 + sway, py - 8, 1, 2, '#475569');
                 pRect(px + 4 + sway, py - 6, 3, 4, '#fef08a');
                 pRect(px + 3 + sway, py - 7, 5, 6, 'rgba(253, 224, 71, 0.22)');
-                // Multi-line lantern reflection dancing on the pond water below
                 for (let ry = 0; ry < 5; ry++) {
                     const rShift = Math.sin(time * 0.004 + ry * 1.3) * 2;
                     pRect(px + 3 + rShift, py + 15 + ry * 2, 4 - Math.floor(ry * 0.5), 1, `rgba(253, 224, 71, ${(0.38 - ry * 0.06).toFixed(2)})`);
@@ -1091,13 +1212,38 @@ export function drawHabitatEnvironment(time) {
         });
     }
 
-    // 4. BOTANICAL: Soft Fireflies
+    // 4. BOTANICAL: Hanging Glass Conservatory Lanterns, Trickling Fountain Jets & Drifting Fireflies
     if (hab.sceneProfile === 'botanical') {
-        for (let i = 0; i < 6; i++) {
-            const fx = (i * 83 + Math.sin(time * 0.001 + i) * 9) % pw;
-            const fy = ph * 0.42 + Math.sin(time * 0.0014 + i * 1.7) * 18;
-            const glow = 0.28 + 0.34 * (0.5 + 0.5 * Math.sin(time * 0.004 + i));
-            pRect(fx, fy, 2, 2, `rgba(253, 224, 71, ${glow.toFixed(2)})`);
+        const reach = Math.min(155, Math.round(pw * 0.30));
+        [Math.round(reach * 0.48), Math.round(pw - reach * 0.48)].forEach((lx, idx) => {
+            const t = 0.48;
+            const branchY = Math.round(5 + Math.pow(t, 1.2) * 15);
+            const sway = Math.round(Math.sin(time * 0.002 + idx * 2) * 1);
+            pRect(lx, branchY + 1, 1, 6, '#475569');
+            pRect(lx - 2 + sway, branchY + 7, 5, 1, '#334155');
+            pRect(lx - 2 + sway, branchY + 8, 5, 5, 'rgba(253, 224, 71, 0.88)');
+            pRect(lx - 1 + sway, branchY + 9, 3, 3, '#ffffff');
+            pRect(lx - 4 + sway, branchY + 6, 9, 9, 'rgba(253, 224, 71, 0.18)');
+            pRect(lx - 2 + sway, branchY + 13, 5, 1, '#334155');
+        });
+
+        // Animated water droplets arcing from the left stone fountain finial
+        const fx = Math.round(pw * 0.18);
+        const fy = getGroundY(fx, 'botanical') + 1;
+        const dropPhase = (time * 0.015) % 6;
+        [-1, 1].forEach(side => {
+            const dx = fx + side * Math.round(2 + dropPhase * 1.4);
+            const dy = fy - 29 + Math.round(dropPhase * 1.1);
+            pRect(dx, dy, 1, 2, '#bae6fd');
+        });
+        pRect(fx - 8 + Math.sin(time * 0.005) * 4, fy - 23, 4, 1, '#ffffff');
+
+        // Drifting Golden & Violet Botanical Fireflies
+        for (let i = 0; i < 8; i++) {
+            const fxPos = (i * 73 + Math.sin(time * 0.001 + i) * 12) % pw;
+            const fyPos = ph * 0.36 + Math.sin(time * 0.0014 + i * 1.7) * 22;
+            const glow = 0.32 + 0.40 * (0.5 + 0.5 * Math.sin(time * 0.004 + i));
+            pRect(fxPos, fyPos, 2, 2, i % 3 === 0 ? `rgba(232, 121, 249, ${glow.toFixed(2)})` : `rgba(253, 224, 71, ${glow.toFixed(2)})`);
         }
     }
 
@@ -1188,7 +1334,6 @@ export function drawHabitatEnvironment(time) {
             pRect(f.x, f.y, f.w, f.h, isLightMode ? 'rgba(15, 55, 65, 0.35)' : f.shade);
 
         } else if (f.type === 'willow_frond') {
-            // Cascading Weeping Willow Curtain with opposite-paired lance leaves
             const stemCol = isLightMode ? '#15803d' : '#0b4635';
             const leafCol = isLightMode ? '#22c55e' : '#10b981';
             const tipCol = isLightMode ? '#86efac' : '#34d399';
@@ -1335,6 +1480,46 @@ export function drawHabitatEnvironment(time) {
                 }
             }
 
+        } else if (f.type === 'buddleia') {
+            // Arching Butterfly Bush (Kelebek Çalısı) with conical panicles & live tip tracking
+            const stemCol = isLightMode ? '#15803d' : '#0d4a3a';
+            let tipX = f.x;
+            let tipY = baseGroundY - f.h;
+            for (let y = 0; y < f.h; y++) {
+                const prog = y / f.h;
+                const sway = Math.sin(time * 0.0016 + f.phase + y * 0.05) * prog * 3.2 + (f.tilt || 0) * y * 0.7;
+                const px = f.x + sway;
+                const py = baseGroundY - y;
+                tipX = px;
+                tipY = py;
+                pRect(px, py, 1, 1, stemCol);
+                if (y === Math.floor(f.h * 0.35) || y === Math.floor(f.h * 0.52)) {
+                    pRect(px - 2, py, 5, 1, isLightMode ? '#22c55e' : '#10b981');
+                }
+                if (prog > 0.55 && y % 2 === 0) {
+                    const coneW = Math.max(1, Math.round((1 - prog) * 5.5));
+                    pRect(px - coneW, py, coneW * 2 + 1, 2, f.hue);
+                    pRect(px, py, 1, 1, '#fef08a');
+                }
+            }
+            f.tipX = tipX;
+            f.tipY = tipY;
+
+        } else if (f.type === 'hydrangea') {
+            // Rounded Hydrangea Shrub Mound (Ortanca Çalısı)
+            const sway = Math.sin(time * 0.0012 + f.phase) * 1.2;
+            const cx = f.x + sway;
+            const cy = baseGroundY - f.r;
+            pRect(cx - f.r - 2, baseGroundY - 3, (f.r + 2) * 2, 3, isLightMode ? '#15803d' : '#064e3b');
+            for (let dy = -f.r; dy <= f.r * 0.6; dy += 2) {
+                const span = Math.round(f.r * Math.sqrt(Math.max(0, 1 - (dy * dy) / (f.r * f.r))));
+                for (let dx = -span; dx <= span; dx += 2) {
+                    pRect(cx + dx, cy + dy, 2, 2, (dx + dy) % 4 === 0 ? '#fdf4ff' : f.hue);
+                }
+            }
+            f.tipX = cx;
+            f.tipY = cy - f.r;
+
         } else if (f.type === 'meadow') {
             const stemShade = isLightMode ? '#15803d' : '#14332a';
             for (let y = 0; y < f.h; y++) {
@@ -1416,7 +1601,7 @@ export function drawHabitatEnvironment(time) {
                 for (let y = 0; y < fh; y++) {
                     const curve = Math.pow(y / fh, 1.4) * 6 * side + Math.sin(time * 0.0016 + f.phase) * 1.5;
                     const px = f.x + curve;
-                    const py = ph - y;
+                    const py = baseGroundY - y;
                     pRect(px, py, 1, 1, isLightMode ? '#15803d' : '#065f46');
                     if (y % 2 === 0 && y < fh - 2) {
                         const pinna = Math.max(1, Math.round((1 - y / fh) * 3));
@@ -1428,10 +1613,10 @@ export function drawHabitatEnvironment(time) {
         } else if (f.type === 'glow_mushroom') {
             const sway = Math.sin(time * 0.002 + f.phase) * 0.8;
             for (let y = 0; y < f.h; y++) {
-                pRect(f.x + sway * (y / f.h), ph - y, 1, 1, '#cbd5e1');
+                pRect(f.x + sway * (y / f.h), baseGroundY - y, 1, 1, '#cbd5e1');
             }
             const cx = f.x + sway;
-            const cy = ph - f.h;
+            const cy = baseGroundY - f.h;
             pRect(cx - f.capR, cy, f.capR * 2 + 1, 2, f.col);
             pRect(cx - f.capR + 1, cy - 1, (f.capR - 1) * 2 + 1, 1, '#e0f2fe');
             if (!isLightMode) {
@@ -1439,7 +1624,6 @@ export function drawHabitatEnvironment(time) {
             }
 
         } else if (f.type === 'iris') {
-            // Multi-blade Sword-Leaf Water Iris with 3-petal blossom
             const bladeCol = isLightMode ? '#15803d' : '#0d5946';
             for (let blade = -1; blade <= 1; blade++) {
                 const bh = f.h * (blade === 0 ? 1 : 0.76);
@@ -1480,7 +1664,6 @@ export function drawHabitatEnvironment(time) {
             }
 
         } else if (f.type === 'reed') {
-            // Authentic Cattail (Su Kamışı / Typha) with flanking sedge blades, velvety brown seed cylinder & perch spike
             const stemCol = isLightMode ? '#166534' : '#0d4a3a';
             const bladeCol = isLightMode ? '#15803d' : '#115e49';
             let tipX = f.x;
@@ -1492,23 +1675,20 @@ export function drawHabitatEnvironment(time) {
                 tipX = px;
                 pRect(px, py, 1, 1, stemCol);
 
-                // Flanking arching sedge grass blades up to 65% height
                 if (y < f.h * 0.65 && y % 2 === 0) {
                     const bladeSpread = Math.sin(prog * Math.PI) * 3.5;
                     pRect(px - bladeSpread, py, 1, 2, bladeCol);
                     pRect(px + bladeSpread, py + 1, 1, 2, bladeCol);
                 }
 
-                // Velvety dark-brown Cattail seed cylinder near the top
                 if (f.hasCat && y > f.h - 17 && y < f.h - 5) {
                     pRect(px - 1, py, 3, 1, '#451a03');
                     pRect(px, py, 1, 1, '#78350f');
                     if (y === Math.floor(f.h - 6)) {
-                        pRect(px - 1, py - 1, 2, 1, '#fef3c7'); // Fluffy seed down tuft
+                        pRect(px - 1, py - 1, 2, 1, '#fef3c7');
                     }
                 }
             }
-            // Save live tip position so Dragonflies can perch right on the swaying reed tip!
             f.tipX = tipX;
             f.tipY = baseGroundY - f.h;
 
@@ -1516,7 +1696,6 @@ export function drawHabitatEnvironment(time) {
             const padCol1 = isLightMode ? '#15803d' : '#0f4c3a';
             const padCol2 = isLightMode ? '#16a34a' : '#14634b';
             const driftX = f.x + Math.sin(time * 0.001 + (f.phase || 0)) * 1.2;
-            // Subtle dark shadow under floating pad
             pRect(driftX - f.r + 1, f.y + 2, f.r * 2 - 2, 2, 'rgba(2, 10, 18, 0.35)');
             for (let dy = -Math.ceil(f.r * 0.55); dy <= Math.ceil(f.r * 0.55); dy++) {
                 for (let dx = -f.r; dx <= f.r; dx++) {
