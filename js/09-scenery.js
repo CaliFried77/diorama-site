@@ -15,6 +15,11 @@ const CREATURE_PROFILES = Object.freeze({
     arctic_fox: { count: 7, create: () => new PixelArcticFox() },
 });
 
+// ============================================================================
+// BÖLÜM BAŞI: ZEMİN PROFİLLERİ VE HABİTATIN İLK KURULUMU
+// Her habitatın zemin eğrisi ve ilk canlı/bitki/partikül durumu burada hazırlanır.
+// ============================================================================
+
 function getGroundY(x, profile) {
     const nx = x / Math.max(1, pw);
     if (profile === 'meadow') {
@@ -621,6 +626,11 @@ export function initHabitat(idx) {
 /* ============================================================================
    STATIC LAYER RENDERER (Cached once per habitat/resize for 60 FPS performance)
    ============================================================================ */
+// ============================================================================
+// BÖLÜM SONU: ZEMİN PROFİLLERİ VE HABİTAT KURULUMU
+// BÖLÜM BAŞI: STATİK ORTAM, BİTKİLER VE ARKA PLAN KATMANLARI
+// ============================================================================
+
 function buildStaticEnvironmentLayer(hab) {
     const off = document.createElement('canvas');
     off.width = pw;
@@ -1569,6 +1579,11 @@ function buildStaticEnvironmentLayer(hab) {
 /* ============================================================================
    CONTINUOUS SEAMLESS DIORAMA RENDERER (DAY & NIGHT ADAPTIVE)
    ============================================================================ */
+// ============================================================================
+// BÖLÜM SONU: STATİK ORTAM KATMANI
+// BÖLÜM BAŞI: ANİMASYONLU SAHNE, CANLILARIN DIŞI VE YEM ÇİZİMİ
+// ============================================================================
+
 export function drawHabitatEnvironment(time) {
     const hab = HABITATS[currentHabitatIdx];
     const topCol = isLightMode ? hab.lightTop : hab.skyTop;
@@ -2634,3 +2649,7 @@ export function drawHabitatEnvironment(time) {
         if (s.life <= 0) stimuli.splice(i, 1);
     }
 }
+
+// ============================================================================
+// BÖLÜM SONU: ANİMASYONLU SAHNE ÇİZİMİ
+// ============================================================================
