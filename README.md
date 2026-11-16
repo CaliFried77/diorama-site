@@ -74,6 +74,7 @@ See:
 - [Quality checklist](docs/QA_CHECKLIST.md)
 - [Adding news sources](docs/ADDING_NEWS_SOURCES.md)
 - [Adding habitats](docs/ADDING_HABITATS.md)
+- [Kod haritası ve güvenli düzenleme rehberi (Türkçe)](docs/CODE_MAP_TR.md)
 
 ## Local CSS, fonts and offline behavior
 
