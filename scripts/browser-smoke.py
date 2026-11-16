@@ -214,6 +214,15 @@ async def assert_app_smoke(browser_type, name: str, base_url: str):
     ARTIFACTS.mkdir(exist_ok=True)
     await page.screenshot(path=str(ARTIFACTS / f"{name}-rainforest-1440x900.png"), full_page=True)
 
+    # Capture the Kyoto koi pond so its dedicated pixel-art environment is covered by browser QA.
+    await page.locator("#habitatMenuBtn").click()
+    await page.locator("#habitatPopover.open").wait_for(state="visible")
+    await page.locator("#habitatListContainer button").nth(5).click()
+    selected_habitat = await page.locator("#habitatNameLabel").inner_text()
+    assert "Kyoto Zen Bahçesi" in selected_habitat, f"{name}: Kyoto habitat selection failed: {selected_habitat!r}"
+    await page.wait_for_timeout(450)
+    await page.screenshot(path=str(ARTIFACTS / f"{name}-kyoto-1440x900.png"), full_page=True)
+
     # Select the new Arctic habitat and capture it too, so profile registration is tested in-browser.
     await page.locator("#habitatMenuBtn").click()
     await page.locator("#habitatPopover.open").wait_for(state="visible")
