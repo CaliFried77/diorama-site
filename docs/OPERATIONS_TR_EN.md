@@ -58,6 +58,8 @@ Bunlar Cloudflare hesabında gerçekten var olan namespace'lerle eşleşmelidir.
 
 ## 3. Cloudflare Dashboard kontrol listesi
 
+Workers Builds kullanılıyorsa Overview → Worker → Settings → Build → Branch control altında production branch `migration/cloudflare-pages` olarak seçilmelidir. Preview builds açık olduğunda production dışındaki branch'lere yapılan her push preview build oluşturabilir. Temizlik süresince bu özelliği kapalı tut; yalnızca bilinçli olarak PR preview URL'lerine ihtiyaç duyduğunda aç. Production deploy'un tek bir sahibi olmalı: Workers Builds deploy yapıyorsa GitHub Actions yalnızca kalite kontrolleri ve Wrangler dry-run çalıştırmalıdır.
+
 Aşağıdaki hesap düzeyi ayarlar yalnızca depo dosyalarından doğrulanamaz; Cloudflare hesabında tek tek kontrol edilmelidir:
 
 - GitHub bağlantısı `CaliFried77/diorama-site` deposunu gösteriyor mu?
@@ -139,6 +141,8 @@ They must match namespaces that actually exist in the Cloudflare account. Do not
 
 ## 3. Cloudflare dashboard verification checklist
 
+If using Workers Builds, open Overview → Worker → Settings → Build → Branch control and set the production branch to `migration/cloudflare-pages`. When Preview Builds are enabled, pushes to every non-production branch can create preview builds. Keep previews disabled while cleaning up unless you deliberately need preview URLs for PR review. Use one owner for production deployment: when Workers Builds deploys the Worker, GitHub Actions should remain the quality-check and Wrangler dry-run pipeline.
+
 These account-level settings cannot be confirmed from repository files alone and must be checked in the Cloudflare account:
 
 - Is the GitHub connection pointing to `CaliFried77/diorama-site`?
@@ -165,3 +169,9 @@ These account-level settings cannot be confirmed from repository files alone and
 7. Delete the temporary task branch after merge.
 
 A production deployment should use `npm run deploy` or a verified Cloudflare Git integration. `deploy:dry-run` validates the bundle and does not publish it.
+
+## Resmî kaynaklar / Official Cloudflare references
+
+- [Workers Builds — branch control](https://developers.cloudflare.com/workers/ci-cd/builds/build-branches/)
+- [Workers Static Assets](https://developers.cloudflare.com/workers/static-assets/)
+- [Workers CI/CD](https://developers.cloudflare.com/workers/ci-cd/)
