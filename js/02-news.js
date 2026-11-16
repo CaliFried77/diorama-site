@@ -1,7 +1,6 @@
 import { lsGet, lsSet, normalizeWebUrl } from './storage.js';
 import { NEWS_CATEGORIES, NEWS_CATEGORY_IDS } from '../config/news-feeds.js';
 import {
-  canonicalArticleUrl,
   createArticleId,
   filterNewsArticles,
   formatNewsDate,
