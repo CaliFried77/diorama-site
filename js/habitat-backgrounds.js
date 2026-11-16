@@ -29,6 +29,7 @@ export function buildStaticEnvironmentLayer(hab) {
     sRect(0, ph - 28, pw, 10, mistCol);
 
     if (hab.sceneProfile === 'meadow') {
+        // BÖLÜM BAŞI: ÇAYIR STATİK ÇEVRESİ
         const trunkDark = isLightMode ? '#451a03' : '#181014';
         const trunkMid = isLightMode ? '#78350f' : '#291b22';
         const trunkHi = isLightMode ? '#92400e' : '#3d2832';
@@ -163,9 +164,11 @@ export function buildStaticEnvironmentLayer(hab) {
 
         sRect(hx - 19, bodyTop + 2, 7, 2, trunkDark);
         sRect(hx - 19, bodyTop + 2, 6, 1, trunkHi);
+        // BÖLÜM SONU: ÇAYIR STATİK ÇEVRESİ
     }
 
     else if (hab.sceneProfile === 'wetland') {
+        // BÖLÜM BAŞI: SULAK ALAN STATİK ÇEVRESİ
         const waterHorizonY = ph - 52;
         const farReedCol = isLightMode ? 'rgba(20, 83, 45, 0.28)' : 'rgba(6, 46, 38, 0.52)';
         const farTreeCol = isLightMode ? 'rgba(15, 62, 52, 0.22)' : 'rgba(4, 32, 30, 0.45)';
@@ -282,9 +285,11 @@ export function buildStaticEnvironmentLayer(hab) {
                 sRect(sx, sy - 1, 2, 1, isLightMode ? '#22c55e' : '#10b981');
             }
         }
+        // BÖLÜM SONU: SULAK ALAN STATİK ÇEVRESİ
     }
 
     else if (hab.sceneProfile === 'betta-aquarium') {
+        // BÖLÜM BAŞI: BETTA AKVARYUMU STATİK ÇEVRESİ
         const soilY = (x) => {
             const nx = x / Math.max(1, pw);
             const mound = Math.pow(Math.abs(nx - 0.50) * 1.95, 1.45) * 18;
@@ -421,9 +426,11 @@ export function buildStaticEnvironmentLayer(hab) {
             sRect(lx - 4, ly - 2, 7, 1, '#b45309');
             sRect(lx - 3 + idx * 2, ly - 1, 5, 1, '#d97706');
         });
+        // BÖLÜM SONU: BETTA AKVARYUMU STATİK ÇEVRESİ
     }
 
     else if (hab.sceneProfile === 'botanical') {
+        // BÖLÜM BAŞI: BOTANİK BAHÇE STATİK ÇEVRESİ
         const reach = Math.min(155, Math.round(pw * 0.30));
 
         const glassFrameCol = isLightMode ? 'rgba(30, 58, 95, 0.22)' : 'rgba(30, 27, 75, 0.52)';
@@ -567,9 +574,11 @@ export function buildStaticEnvironmentLayer(hab) {
             sRect(pathX - stoneW, pathY, stoneW * 2, 2, stoneDark);
             sRect(pathX - stoneW + 1, pathY, stoneW * 2 - 2, 1, stoneHi);
         }
+        // BÖLÜM SONU: BOTANİK BAHÇE STATİK ÇEVRESİ
     }
 
     else if (hab.sceneProfile === 'reef') {
+        // BÖLÜM BAŞI: MERCAN RESİFİ STATİK ÇEVRESİ
         const rockDark = isLightMode ? '#0f2942' : '#090d24';
         const rockMid = isLightMode ? '#163e5c' : '#13193b';
         const rockHi = isLightMode ? '#1e5678' : '#232d5e';
@@ -636,9 +645,11 @@ export function buildStaticEnvironmentLayer(hab) {
                 sRect(x, gy + 4 + (x % 5), 3, 1, 'rgba(56, 189, 248, 0.35)');
             }
         }
+        // BÖLÜM SONU: MERCAN RESİFİ STATİK ÇEVRESİ
     }
 
     else if (hab.sceneProfile === 'koi-pond') {
+        // BÖLÜM BAŞI: KOİ GÖLETİ STATİK ÇEVRESİ
         const stoneDark = isLightMode ? '#334155' : '#0f172a';
         const stoneMid = isLightMode ? '#475569' : '#1e293b';
         const stoneHi = isLightMode ? '#64748b' : '#334155';
@@ -762,9 +773,11 @@ export function buildStaticEnvironmentLayer(hab) {
         sRect(bx - 22, by - 4, 12, 2, '#65a30d');
         sRect(bx - 22, by - 4, 12, 1, '#a3e635');
         sRect(bx - 14, by - 8, 2, 12, '#4d7c0f');
+        // BÖLÜM SONU: KOİ GÖLETİ STATİK ÇEVRESİ
     }
 
     else if (hab.sceneProfile === 'arctic-tundra') {
+        // BÖLÜM BAŞI: KUTUP TUNDURASI STATİK ÇEVRESİ
         const rockDark = isLightMode ? '#334155' : '#0f172a';
         const rockMid = isLightMode ? '#475569' : '#1e293b';
         const rockHi = isLightMode ? '#64748b' : '#334155';
@@ -848,9 +861,11 @@ export function buildStaticEnvironmentLayer(hab) {
             sRect(x, gy, 1, 3, snowTop);
             sRect(x, gy + 3, 1, 2, snowShadow);
         }
+        // BÖLÜM SONU: KUTUP TUNDURASI STATİK ÇEVRESİ
     }
 
     else if (hab.sceneProfile === 'rainforest') {
+        // BÖLÜM BAŞI: YAĞMUR ORMANI STATİK ÇEVRESİ
         const canopyShades = isLightMode
             ? ['#0b3d2e', '#115e40', '#16784d', '#22995e']
             : ['#041f1a', '#073026', '#0c4432', '#135e42'];
@@ -950,6 +965,7 @@ export function buildStaticEnvironmentLayer(hab) {
             sRect(x, gy, 1, ph - gy, isLightMode ? '#0b3b2b' : '#041713');
             sRect(x, gy, 1, 2, isLightMode ? '#15803d' : '#0c4a37');
         }
+        // BÖLÜM SONU: YAĞMUR ORMANI STATİK ÇEVRESİ
     }
 
     return off;
