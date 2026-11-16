@@ -16,81 +16,103 @@ export function drawKoiWaterOptics(time) {
     const hab = HABITATS[currentHabitatIdx];
     if (hab.sceneProfile !== 'koi-pond') return;
 
-    const waterSurfaceAt = (x) => getKoiWaterSurfaceY(x, pw, ph);
-    const pondFloorAt = (x) => getGroundY(x, 'koi-pond', pw, ph);
+    let cache = sceneCache.koiWaterOpticsCache;
+    const cacheInvalid = !cache || cache.hab !== hab.id || cache.light !== isLightMode ||
+        cache.width !== pw || cache.height !== ph;
 
-    ctx.save();
-    ctx.beginPath();
-    ctx.moveTo(0, waterSurfaceAt(0) + 7);
-    for (let x = 2; x < pw; x += 2) {
-        ctx.lineTo(x, waterSurfaceAt(x) + 7);
+    if (cacheInvalid) {
+        const layer = document.createElement('canvas');
+        layer.width = pw;
+        layer.height = ph;
+        cache = {
+            canvas: layer,
+            ctx: layer.getContext('2d'),
+            hab: hab.id,
+            light: isLightMode,
+            width: pw,
+            height: ph,
+            updatedAt: -Infinity,
+        };
+        sceneCache.koiWaterOpticsCache = cache;
     }
-    ctx.lineTo(pw, waterSurfaceAt(pw) + 7);
-    ctx.lineTo(pw, pondFloorAt(pw));
-    for (let x = pw - 2; x > 0; x -= 2) {
-        ctx.lineTo(x, pondFloorAt(x));
-    }
-    ctx.lineTo(0, pondFloorAt(0));
-    ctx.closePath();
-    ctx.clip();
 
-    // Water absorbs contrast with depth and shifts white scales toward teal.
-    const depthVeil = ctx.createLinearGradient(0, ph * 0.23, 0, ph);
-    if (isLightMode) {
-        depthVeil.addColorStop(0, 'rgba(105, 190, 178, 0.075)');
-        depthVeil.addColorStop(0.45, 'rgba(31, 119, 128, 0.14)');
-        depthVeil.addColorStop(1, 'rgba(5, 43, 58, 0.22)');
-    } else {
-        depthVeil.addColorStop(0, 'rgba(76, 169, 164, 0.09)');
-        depthVeil.addColorStop(0.48, 'rgba(20, 105, 119, 0.18)');
-        depthVeil.addColorStop(1, 'rgba(2, 35, 51, 0.27)');
-    }
-    ctx.fillStyle = depthVeil;
-    ctx.fillRect(0, 0, pw, ph);
+    // Moving refraction is rasterized into a tiny offscreen layer at 20 Hz.
+    // The main 60 Hz loop then performs one drawImage instead of 180+ fillRects.
+    if (time - cache.updatedAt >= 50) {
+        const waterCtx = cache.ctx;
+        const waterRect = (x, y, width, height, color) => {
+            waterCtx.fillStyle = color;
+            waterCtx.fillRect(Math.round(x), Math.round(y), Math.round(width), Math.round(height));
+        };
+        const waterSurfaceAt = (x) => getKoiWaterSurfaceY(x, pw, ph);
+        const pondFloorAt = (x) => getGroundY(x, 'koi-pond', pw, ph);
 
-    // Broken caustic lines drift across the koi and the pond floor.
-    ctx.globalCompositeOperation = 'screen';
-    for (let lane = 0; lane < 19; lane++) {
-        const baseY = Math.round(ph * (0.34 + (lane % 7) * 0.083));
-        const speed = 0.003 + (lane % 4) * 0.0011;
-        const drift = (time * speed + lane * 43) % (pw + 70) - 35;
-        const phase = time * 0.0012 + lane * 1.7;
-        for (let segment = 0; segment < 6; segment++) {
-            const x = drift + segment * (5 + lane % 3);
-            const y = baseY + Math.sin(phase + segment * 0.72) * 2.4;
-            const alpha = isLightMode ? 0.21 : 0.17;
-            pRect(x, y, 3 + (segment % 3), 1, 'rgba(193, 245, 222, ' + alpha + ')');
-            if (segment % 2 === 0) {
-                pRect(x + 2, y + 2, 2, 1, 'rgba(115, 207, 190, 0.09)');
+        waterCtx.clearRect(0, 0, pw, ph);
+        waterCtx.save();
+        waterCtx.beginPath();
+        waterCtx.moveTo(0, waterSurfaceAt(0) + 7);
+        for (let x = 2; x < pw; x += 2) {
+            waterCtx.lineTo(x, waterSurfaceAt(x) + 7);
+        }
+        waterCtx.lineTo(pw, waterSurfaceAt(pw) + 7);
+        waterCtx.lineTo(pw, pondFloorAt(pw));
+        for (let x = pw - 2; x > 0; x -= 2) {
+            waterCtx.lineTo(x, pondFloorAt(x));
+        }
+        waterCtx.lineTo(0, pondFloorAt(0));
+        waterCtx.closePath();
+        waterCtx.clip();
+
+        const depthVeil = waterCtx.createLinearGradient(0, ph * 0.23, 0, ph);
+        if (isLightMode) {
+            depthVeil.addColorStop(0, 'rgba(105, 190, 178, 0.075)');
+            depthVeil.addColorStop(0.45, 'rgba(31, 119, 128, 0.14)');
+            depthVeil.addColorStop(1, 'rgba(5, 43, 58, 0.22)');
+        } else {
+            depthVeil.addColorStop(0, 'rgba(76, 169, 164, 0.09)');
+            depthVeil.addColorStop(0.48, 'rgba(20, 105, 119, 0.18)');
+            depthVeil.addColorStop(1, 'rgba(2, 35, 51, 0.27)');
+        }
+        waterCtx.fillStyle = depthVeil;
+        waterCtx.fillRect(0, 0, pw, ph);
+
+        waterCtx.globalCompositeOperation = 'screen';
+        for (let lane = 0; lane < 19; lane++) {
+            const baseY = Math.round(ph * (0.34 + (lane % 7) * 0.083));
+            const speed = 0.003 + (lane % 4) * 0.0011;
+            const drift = (time * speed + lane * 43) % (pw + 70) - 35;
+            const phase = time * 0.0012 + lane * 1.7;
+            for (let segment = 0; segment < 6; segment++) {
+                const x = drift + segment * (5 + lane % 3);
+                const y = baseY + Math.sin(phase + segment * 0.72) * 2.4;
+                const alpha = isLightMode ? 0.21 : 0.17;
+                waterRect(x, y, 3 + (segment % 3), 1, 'rgba(193, 245, 222, ' + alpha + ')');
+                if (segment % 2 === 0) waterRect(x + 2, y + 2, 2, 1, 'rgba(115, 207, 190, 0.09)');
             }
         }
+
+        for (let ray = 0; ray < 5; ray++) {
+            const topX = (ray * 89 + Math.sin(time * 0.00045 + ray) * 10 + pw * 0.08) % pw;
+            for (let step = 0; step < 7; step++) {
+                const y = ph * 0.27 + step * (ph * 0.075);
+                const x = topX + Math.sin(time * 0.0006 + step * 0.45 + ray) * (2 + step);
+                const alpha = Math.max(0.025, 0.075 - step * 0.007);
+                waterRect(x, y, 1, 5 + (step % 4), 'rgba(186, 239, 217, ' + alpha + ')');
+                if (step < 4) waterRect(x + 1, y + 2, 1, 3, 'rgba(111, 204, 188, 0.045)');
+            }
+        }
+
+        for (let segment = 0; segment < Math.ceil(pw / 9); segment++) {
+            const x = segment * 9 + Math.sin(time * 0.001 + segment) * 1.5;
+            const y = waterSurfaceAt(x) + 7;
+            if (segment % 3 !== 1) waterRect(x, y, 4 + (segment % 3), 1, 'rgba(211, 246, 229, 0.20)');
+            if (segment % 5 === 0) waterRect(x + 2, y + 2, 3, 1, 'rgba(71, 152, 146, 0.20)');
+        }
+        waterCtx.restore();
+        cache.updatedAt = time;
     }
 
-    // Faint shafts of light descend from the surface and fade with depth.
-    for (let ray = 0; ray < 5; ray++) {
-        const topX = (ray * 89 + Math.sin(time * 0.00045 + ray) * 10 + pw * 0.08) % pw;
-        for (let step = 0; step < 7; step++) {
-            const y = ph * 0.27 + step * (ph * 0.075);
-            const x = topX + Math.sin(time * 0.0006 + step * 0.45 + ray) * (2 + step);
-            const alpha = Math.max(0.025, 0.075 - step * 0.007);
-            pRect(x, y, 1, 5 + (step % 4), 'rgba(186, 239, 217, ' + alpha + ')');
-            if (step < 4) pRect(x + 1, y + 2, 1, 3, 'rgba(111, 204, 188, 0.045)');
-        }
-    }
-
-    // A broken, gently moving sheen at the actual waterline.
-    for (let segment = 0; segment < Math.ceil(pw / 9); segment++) {
-        const x = segment * 9 + Math.sin(time * 0.001 + segment) * 1.5;
-        const y = waterSurfaceAt(x) + 7;
-        if (segment % 3 !== 1) {
-            pRect(x, y, 4 + (segment % 3), 1, 'rgba(211, 246, 229, 0.20)');
-        }
-        if (segment % 5 === 0) {
-            pRect(x + 2, y + 2, 3, 1, 'rgba(71, 152, 146, 0.20)');
-        }
-    }
-
-    ctx.restore();
+    ctx.drawImage(cache.canvas, 0, 0);
 }
 
 // BÖLÜM BAŞI: ANİMASYONLU SAHNE VE HABİTAT EFEKTLERİ
@@ -513,7 +535,40 @@ export function drawHabitatEnvironment(time) {
         }
     }
 
-    drawHabitatFlora(time, hab);
+    if (hab.sceneProfile === 'koi-pond') {
+        // Bamboo, iris and lily movement is cached at 20 Hz. The main scene and
+        // koi remain full-rate; drawing one small bitmap avoids hundreds of
+        // per-stem fillRect calls on every animation frame.
+        let cache = sceneCache.koiFloraCache;
+        const cacheInvalid = !cache || cache.hab !== hab.id || cache.light !== isLightMode ||
+            cache.width !== pw || cache.height !== ph;
+        const refreshFlora = cacheInvalid || time - cache.updatedAt >= 50;
+
+        if (refreshFlora) {
+            if (cacheInvalid) {
+                const layer = document.createElement('canvas');
+                layer.width = pw;
+                layer.height = ph;
+                cache = {
+                    canvas: layer,
+                    ctx: layer.getContext('2d'),
+                    hab: hab.id,
+                    light: isLightMode,
+                    width: pw,
+                    height: ph,
+                    updatedAt: 0,
+                };
+                sceneCache.koiFloraCache = cache;
+            } else {
+                cache.ctx.clearRect(0, 0, pw, ph);
+            }
+            drawHabitatFlora(time, hab, cache.ctx);
+            cache.updatedAt = time;
+        }
+        ctx.drawImage(cache.canvas, 0, 0);
+    } else {
+        drawHabitatFlora(time, hab);
+    }
 
     ambientParticles.forEach((pt, idx) => {
         if (hab.sceneProfile === 'koi-pond') {

@@ -645,7 +645,7 @@ export function buildStaticEnvironmentLayer(hab) {
 
     else if (hab.sceneProfile === 'koi-pond') {
         // BÖLÜM BAŞI: KYOTO ZEN GÖLETİ — KATMANLI MANZARA
-        // Suyun tonu, uzak kıyı, akçaağaç, köprü ve taş işçiliği tek bir
+        // Suyun tonu, uzak kıyı, akçaağaç, çay evleri ve taş işçiliği tek bir
         // önbellek katmanında çizilir; canlılar ve etkileşimler ayrı kalır.
         const waterTop = Math.round(ph * 0.225);
         const water = sCtx.createLinearGradient(0, waterTop, 0, ph);
@@ -800,95 +800,79 @@ export function buildStaticEnvironmentLayer(hab) {
         drawMapleCloud(Math.round(pw * 0.215), 10, 42, 22, 2.1);
         drawMapleCloud(Math.round(pw * 0.285), 28, 25, 17, 3.0);
 
-        // Uzak kıyıyı gerçekten birbirine bağlayan kemerli kızıl köprü.
-        // İki uç, kıyı yüksekliğine ayrı ayrı oturur; taş ayaklar ve kısa döşeli
-        // yaklaşımlar köprünün suyun üzerinde havada asılı görünmesini önler.
-        const bridgeStart = Math.round(pw * 0.575);
-        const bridgeWidth = Math.max(48, Math.min(138, Math.round(pw * 0.235)));
-        const bridgeEnd = bridgeStart + bridgeWidth;
-        const bridgeLeftShore = shoreY(bridgeStart);
-        const bridgeRightShore = shoreY(bridgeEnd);
-        const bridgeLeftY = bridgeLeftShore + 4;
-        const bridgeRightY = bridgeRightShore + 4;
-        const bridgeBaseY = Math.round((bridgeLeftY + bridgeRightY) * 0.5);
-        const bridgeRise = Math.max(8, Math.round(ph * 0.035));
-        const bridgeDark = isLightMode ? '#7f1d1d' : '#57191e';
-        const bridgeMid = isLightMode ? '#b91c1c' : '#9f3030';
-        const bridgeRed = isLightMode ? '#dc4a3d' : '#c34b40';
-        const bridgeLight = isLightMode ? '#f3a184' : '#ed8564';
+        // Köprü yerine uzak kıyıya oturan ikinci, küçük bir çay pavyonu.
+        // Ana çay evinin mimari dilini tekrarlar ama daha alçak ve uzaktadır;
+        // böylece göletin ortası açık kalır ve kıyı boyunca bir bahçe yerleşimi oluşur.
+        const pavilionX = Math.round(pw * 0.685);
+        const pavilionBase = shoreY(pavilionX) + 9;
+        const pavilionW = Math.max(10, Math.round(pw * 0.027));
+        const pavilionBodyTop = pavilionBase - 17;
 
-        const drawBridgeLanding = (x, shoreYValue) => {
-            sRect(x - 8, shoreYValue + 1, 17, 6, stoneDark);
-            sRect(x - 7, shoreYValue + 1, 15, 2, stoneHi);
-            sRect(x - 9, shoreYValue + 5, 19, 2, mossDark);
-            sRect(x - 5, shoreYValue + 3, 11, 2, stoneMid);
-        };
-        drawBridgeLanding(bridgeStart, bridgeLeftShore);
-        drawBridgeLanding(bridgeEnd, bridgeRightShore);
+        sRect(pavilionX - pavilionW - 5, pavilionBase + 1, pavilionW * 2 + 10, 4, 'rgba(1, 12, 18, 0.36)');
+        sRect(pavilionX - pavilionW - 3, pavilionBase - 1, pavilionW * 2 + 6, 3, stoneDark);
+        sRect(pavilionX - pavilionW - 1, pavilionBase - 2, pavilionW * 2 + 2, 1, stoneHi);
+        sRect(pavilionX - pavilionW, pavilionBodyTop, pavilionW * 2, 17, isLightMode ? '#70503a' : '#302522');
+        sRect(pavilionX - pavilionW + 2, pavilionBodyTop + 2, pavilionW * 2 - 4, 13, isLightMode ? '#9a7450' : '#4a342c');
+        sRect(pavilionX - pavilionW + 3, pavilionBodyTop + 3, pavilionW * 2 - 6, 1, barkHi);
 
-        // Kısa taş patikalar iki köprü ayağını kıyı bahçesine bağlar.
-        for (let step = 0; step < 6; step++) {
-            const lx = Math.round(bridgeStart - 22 + step * 3.5);
-            const ly = shoreY(lx) + 2 + (step % 2);
-            sRect(lx, ly, 4, 2, stoneMid);
-            sRect(lx, ly, 2, 1, stoneHi);
-
-            const rx = Math.round(bridgeEnd + 3 + step * 3.5);
-            const ry = shoreY(rx) + 2 + (step % 2);
-            sRect(rx, ry, 4, 2, stoneMid);
-            sRect(rx, ry, 2, 1, stoneHi);
+        // Shoji panels, dark cedar posts and a small warm interior.
+        for (let side = -1; side <= 1; side++) {
+            const postX = pavilionX + side * Math.round(pavilionW * 0.72);
+            sRect(postX - 1, pavilionBodyTop, 2, 17, barkDark);
+            sRect(postX, pavilionBodyTop + 1, 1, 14, barkHi);
         }
+        sRect(pavilionX - 4, pavilionBodyTop + 5, 8, 8, isLightMode ? '#d9bd8c' : '#b68c58');
+        sRect(pavilionX - 3, pavilionBodyTop + 6, 6, 6, isLightMode ? '#f8e2ae' : '#f2c77e');
+        sRect(pavilionX - 1, pavilionBodyTop + 6, 2, 7, barkMid);
+        sRect(pavilionX - 4, pavilionBodyTop + 9, 8, 1, barkMid);
 
-        for (let x = 0; x <= bridgeWidth; x++) {
-            const t = x / bridgeWidth;
-            const arch = Math.sin(t * Math.PI);
-            const landingY = bridgeLeftY + (bridgeRightY - bridgeLeftY) * t;
-            const deckY = Math.round(landingY - arch * bridgeRise);
-
-            sRect(bridgeStart + x, deckY + 4, 1, 2, 'rgba(3, 17, 23, 0.36)');
-            sRect(bridgeStart + x, deckY + 2, 1, 3, bridgeDark);
-            sRect(bridgeStart + x, deckY, 1, 2, bridgeRed);
-            if (x % 4 === 0) sRect(bridgeStart + x, deckY + 1, 1, 1, bridgeLight);
-
-            const railY = deckY - 8;
-            sRect(bridgeStart + x, railY, 1, 2, bridgeMid);
-            if (x % 8 === 0 || x === bridgeWidth) {
-                sRect(bridgeStart + x, railY, 2, 8, bridgeDark);
-                sRect(bridgeStart + x, railY, 1, 2, bridgeLight);
-                sRect(bridgeStart + x, railY + 7, 2, 2, bridgeRed);
+        // Low tiled roof with lifted corners, sized to the smaller building.
+        for (let row = 0; row < 7; row++) {
+            const span = pavilionW + 5 + Math.round(row * 0.55);
+            const roofY = pavilionBodyTop - 8 + row;
+            const roofCol = row < 2
+                ? (isLightMode ? '#3c4b4a' : '#111f26')
+                : (row % 3 === 0 ? '#354744' : '#1d302f');
+            sRect(pavilionX - span, roofY, span * 2, 1, roofCol);
+            if (row % 3 === 0) {
+                sRect(pavilionX - span + 2, roofY, span * 2 - 4, 1, isLightMode ? '#849186' : '#52645a');
             }
         }
-        // Deck caps visually overlap the stone landings at both ends.
-        sRect(bridgeStart - 5, bridgeLeftY + 1, 11, 3, bridgeDark);
-        sRect(bridgeStart + bridgeWidth - 5, bridgeRightY + 1, 11, 3, bridgeDark);
-        sRect(bridgeStart - 4, bridgeLeftY, 9, 1, bridgeLight);
-        sRect(bridgeStart + bridgeWidth - 4, bridgeRightY, 9, 1, bridgeLight);
+        sRect(pavilionX - pavilionW - 7, pavilionBodyTop - 3, 4, 2, barkDark);
+        sRect(pavilionX + pavilionW + 3, pavilionBodyTop - 3, 4, 2, barkDark);
+        sRect(pavilionX - 2, pavilionBodyTop - 10, 4, 2, isLightMode ? '#65736b' : '#2e403a');
 
-        // Gölet yüzeyinde ince, kırık ışık izleri ve köprü/akçaağaç yansımaları.
-        for (let band = 0; band < 23; band++) {
-            const y = Math.round(ph * (0.31 + (band % 11) * 0.057));
-            const count = 2 + (band % 3);
-            for (let seg = 0; seg < count; seg++) {
-                const x = Math.round((band * 37 + seg * 83 + Math.sin(band * 1.7 + seg) * 19) % Math.max(1, pw - 34));
-                const len = 5 + ((band * 7 + seg * 11) % 17);
-                const col = band % 4 === 0
-                    ? 'rgba(193, 238, 215, 0.20)'
-                    : (band % 3 === 0 ? 'rgba(105, 193, 173, 0.16)' : 'rgba(6, 34, 43, 0.12)');
-                sRect(x, y, len, 1, col);
-                if (band % 5 === 0) sRect(x + 2, y + 2, Math.max(2, len - 7), 1, 'rgba(205, 238, 218, 0.09)');
-            }
+        // A low timber veranda and two stone steps tie the pavilion to the bank.
+        sRect(pavilionX - pavilionW - 5, pavilionBase - 3, pavilionW * 2 + 10, 2, barkDark);
+        sRect(pavilionX - pavilionW - 4, pavilionBase - 2, pavilionW * 2 + 8, 1, barkHi);
+        sRect(pavilionX - 5, pavilionBase + 2, 10, 2, stoneMid);
+        sRect(pavilionX - 4, pavilionBase + 2, 8, 1, stoneHi);
+
+        // A quiet stone path follows the far shore between the two tea houses.
+        const mainHouseX = Math.round(pw * 0.405);
+        for (let step = 0; step < 12; step++) {
+            const x = Math.round(mainHouseX + 24 + step * ((pavilionX - mainHouseX - 36) / 11));
+            const y = shoreY(x) + 5 + (step % 3 === 0 ? 1 : 0);
+            const width = step % 4 === 0 ? 5 : 3;
+            sRect(x, y, width, 2, stoneDark);
+            sRect(x + 1, y, Math.max(1, width - 2), 1, step % 2 === 0 ? stoneHi : stoneMid);
+            if (step % 3 === 0) sRect(x + width, y + 1, 1, 1, mossHi);
+        }
+
+        // The pond keeps broad warm reflections from the tea-house windows,
+        // not a long red stripe that would still imply the removed bridge.
+        for (let i = 0; i < 9; i++) {
+            const x = pavilionX - 15 + i * 4;
+            const y = Math.round(ph * 0.30 + Math.sin(i * 0.8) * 2);
+            const length = 2 + (i % 3);
+            sRect(x, y + 3 + (i % 4) * 2, length, 1, 'rgba(238, 185, 111, 0.12)');
+            if (i % 2 === 0) sRect(x + 1, y + 8 + (i % 3) * 2, 2, 1, 'rgba(207, 145, 91, 0.09)');
         }
         for (let x = 10; x < mapleReach; x += 9) {
             const reflectX = Math.round(x + Math.sin(x * 0.14) * 2);
             for (let y = Math.round(ph * 0.31); y < Math.round(ph * 0.68); y += 9 + (x % 4)) {
                 if ((x + y) % 3 === 0) sRect(reflectX, y, 2 + (x % 3), 1, 'rgba(205, 103, 82, 0.10)');
             }
-        }
-        for (let x = bridgeStart; x <= bridgeStart + bridgeWidth; x += 4) {
-            const t = (x - bridgeStart) / bridgeWidth;
-            const reflectionY = bridgeBaseY + 7 + Math.round(Math.sin(t * Math.PI) * 5);
-            sRect(x, reflectionY, 3, 1, 'rgba(220, 83, 68, 0.12)');
-            if (x % 12 === 0) sRect(x + 1, reflectionY + 3, 2, 1, 'rgba(220, 83, 68, 0.08)');
         }
 
         // Ön kıyılar: taş katmanları, koyu toprak ve yumuşak yosun çizgisi.
