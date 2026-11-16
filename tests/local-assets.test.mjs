@@ -199,6 +199,10 @@ test('habitat input is separated from creature classes and Arctic food uses the 
   assert.ok(sceneryModule.includes("from './arctic-geometry.js'"));
   assert.ok(arcticGeometryModule.includes('export function getArcticLandingY'));
   assert.ok(arcticGeometryModule.includes('export const ARCTIC_LEDGE_LINKS'));
+  assert.ok(creatureModule.includes('//#region CANLI: PixelParrot'));
+  assert.ok(sceneryModule.includes('//#region STATİK ÇEVRE ÇİZİMİ'));
+  assert.ok(interactions.includes('//#region YEM ETKİLEŞİMİ'));
+  assert.ok(arcticGeometryModule.includes('//#region KUTUP SAHNESİ GEOMETRİSİ'));
 });
 
 test('service worker precaches local shell assets and leaves external live services to the network', () => {
