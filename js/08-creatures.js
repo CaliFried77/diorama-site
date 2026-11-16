@@ -122,8 +122,7 @@ canvas.addEventListener('pointerdown', (e) => {
                 claimedBy: null
             });
         }
-    }
-   } else if (interactionProfile === 'cloudberry') {
+    } else if (interactionProfile === 'cloudberry') {
         // Spawn Golden Arctic Cloudberries that fall and land onto the nearest snow platform below!
         const ledges = [
             { xMin: 0.01, xMax: 0.25, y: Math.round(ph * 0.72) },
