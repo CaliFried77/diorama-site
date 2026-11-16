@@ -15,7 +15,6 @@ const coreUiModule = await readFile(new URL('../js/01-core-ui.js', import.meta.u
 const dataManagerModule = await readFile(new URL('../js/06-data-manager.js', import.meta.url), 'utf8');
 const sceneryModule = await readFile(new URL('../js/09-scenery.js', import.meta.url), 'utf8');
 const initializerModule = await readFile(new URL('../js/habitat-initializer.js', import.meta.url), 'utf8');
-const initializerModule = await readFile(new URL('../js/habitat-initializer.js', import.meta.url), 'utf8');
 const backgroundsModule = await readFile(new URL('../js/habitat-backgrounds.js', import.meta.url), 'utf8');
 const floraModule = await readFile(new URL('../js/habitat-flora-renderer.js', import.meta.url), 'utf8');
 const creatureModule = await readFile(new URL('../js/08-creatures.js', import.meta.url), 'utf8');
