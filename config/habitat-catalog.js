@@ -132,6 +132,23 @@ export const HABITATS = [
     lightBot: '#fde68a',
     rgb: [52, 211, 153],
   },
+  {
+        id: 'arctic-aurora',
+        name: 'Kuzey Işıkları & Kutup Tilkisi',
+        hint: 'Tıkla: Kar teraslarına altın kutup böğürtleni bırak',
+        dotColor: '#38bdf8',
+        rgb: [56, 189, 248],
+        skyTop: '#040b16',
+        skyMid: '#0b2239',
+        skyBot: '#164e63',
+        lightTop: '#7dd3fc',
+        lightMid: '#bae6fd',
+        lightBot: '#f0f9ff',
+        sceneProfile: 'arctic-tundra',
+        creatureProfile: 'arctic_fox',
+        interactionProfile: 'cloudberry',
+        weatherSky: true
+    },
 ];
 
 export const HABITAT_IDS = new Set(HABITATS.map((habitat) => habitat.id));
