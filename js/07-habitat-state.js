@@ -2,7 +2,7 @@ import { invalidateBackgroundCache } from './scene-state.js';
 import { HABITATS, HABITAT_IDS } from '../config/habitat-catalog.js';
 export { HABITATS };
 import { lsRaw, lsPut } from './storage.js';
-import { calculateFrameChance, calculateFrameSmoothing, scaleSceneCollections, createBackgroundSilhouettes } from './scene-math.js';
+import { calculateFrameChance, calculateFrameSmoothing, scaleSceneCollections } from './scene-math.js';
 
 /* HABITAT STATE — Living Pixel Diorama
    Canvas dimensions, frame timing and shared scene collections for all habitats. */
@@ -51,8 +51,6 @@ import { calculateFrameChance, calculateFrameSmoothing, scaleSceneCollections, c
                     pw / previousWidth,
                     ph / previousHeight,
                 );
-                bgSilhouettes.length = 0;
-                bgSilhouettes.push(...createBackgroundSilhouettes(pw));
             }
         }
         window.addEventListener('resize', resizePixelCanvas, { passive: true });
@@ -90,7 +88,6 @@ import { calculateFrameChance, calculateFrameSmoothing, scaleSceneCollections, c
         export let stimuli = [];
         export let ambientParticles = [];
         export let flora = [];
-        export let bgSilhouettes = [];
         export let shootingStars = [];
 
         // Initial sizing happens after all mutable scene collections are initialized.
