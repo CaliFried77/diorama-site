@@ -18,7 +18,7 @@ import { lsPut, esc } from './storage.js';
                 passing underneath or near the glass card (not just the single closest!).
            ============================================================================ */
         // ============================================================================
-// BÖLÜM BAŞI: CAM YÜZEYİ KIRILMA VE IŞIK EFEKTİ
+        // BÖLÜM BAŞI: CAM YÜZEYİ KIRILMA VE IŞIK EFEKTİ
 // Sahne canvas'ından cam kartlarına örnek alır; maliyetli işlem ayrı aralıkla çalışır.
 // ============================================================================
 
@@ -125,8 +125,8 @@ import { lsPut, esc } from './storage.js';
         }
 
         // ============================================================================
-// BÖLÜM SONU: CAM YÜZEYİ EFEKTİ
-// BÖLÜM BAŞI: HABİTAT SEÇİM MENÜSÜ VE SABİTLEME
+        // BÖLÜM SONU: CAM YÜZEYİ EFEKTİ
+        // BÖLÜM BAŞI: HABİTAT SEÇİM MENÜSÜ VE SABİTLEME
 // ============================================================================
 
         const habitatListContainer = document.getElementById('habitatListContainer');
@@ -194,8 +194,8 @@ import { lsPut, esc } from './storage.js';
         });
 
         // ============================================================================
-// BÖLÜM SONU: HABİTAT SEÇİM MENÜSÜ
-// BÖLÜM BAŞI: SAHNE BAŞLANGICI, ANİMASYON DÖNGÜSÜ VE KLAVYE KISAYOLLARI
+        // BÖLÜM SONU: HABİTAT SEÇİM MENÜSÜ
+        // BÖLÜM BAŞI: SAHNE BAŞLANGICI, ANİMASYON DÖNGÜSÜ VE KLAVYE KISAYOLLARI
 // ============================================================================
 
         initHabitat(currentHabitatIdx);
@@ -327,5 +327,5 @@ import { lsPut, esc } from './storage.js';
         }, { once: true });
 
 // ============================================================================
-// BÖLÜM SONU: SAHNE BAŞLANGICI, ANİMASYON DÖNGÜSÜ VE KLAVYE KISAYOLLARI
+        // BÖLÜM SONU: SAHNE BAŞLANGICI, ANİMASYON DÖNGÜSÜ VE KLAVYE KISAYOLLARI
 // ============================================================================
