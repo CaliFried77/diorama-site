@@ -24,7 +24,7 @@ import { NEWS_CATEGORY_IDS } from '../config/news-feeds.js';
         const dataManagerStatus = document.getElementById('dataManagerStatus');
 
         // ============================================================================
-// BÖLÜM BAŞI: VERİ YÖNETİCİSİ DURUMU VE DEPOLAMA ÖZETİ
+        // BÖLÜM BAŞI: VERİ YÖNETİCİSİ DURUMU VE DEPOLAMA ÖZETİ
 // Kullanıcıya gösterilen durum, kayıt boyutu ve yerel veri istatistikleri.
 // ============================================================================
 
@@ -67,8 +67,8 @@ import { NEWS_CATEGORY_IDS } from '../config/news-feeds.js';
         }
 
         // ============================================================================
-// BÖLÜM SONU: DEPOLAMA ÖZETİ
-// BÖLÜM BAŞI: YEDEK OLUŞTURMA VE DIŞA AKTARMA
+        // BÖLÜM SONU: DEPOLAMA ÖZETİ
+        // BÖLÜM BAŞI: YEDEK OLUŞTURMA VE DIŞA AKTARMA
 // ============================================================================
 
         function makeBackup(scope = 'all') {
@@ -115,8 +115,8 @@ import { NEWS_CATEGORY_IDS } from '../config/news-feeds.js';
         }
 
         // ============================================================================
-// BÖLÜM SONU: YEDEK DIŞA AKTARMA
-// BÖLÜM BAŞI: İÇE AKTARILAN JSON'UN ŞEMA VE VERİ DOĞRULAMASI
+        // BÖLÜM SONU: YEDEK DIŞA AKTARMA
+        // BÖLÜM BAŞI: İÇE AKTARILAN JSON'UN ŞEMA VE VERİ DOĞRULAMASI
 // ============================================================================
 
         function isPlainRecord(value) {
@@ -273,8 +273,8 @@ import { NEWS_CATEGORY_IDS } from '../config/news-feeds.js';
         }
 
         // ============================================================================
-// BÖLÜM SONU: YEDEK VERİ DOĞRULAMA
-// BÖLÜM BAŞI: DOĞRULANMIŞ YEDEĞİ GÜVENLİ ŞEKİLDE UYGULAMA
+        // BÖLÜM SONU: YEDEK VERİ DOĞRULAMA
+        // BÖLÜM BAŞI: DOĞRULANMIŞ YEDEĞİ GÜVENLİ ŞEKİLDE UYGULAMA
 // ============================================================================
 
         function persistImportedBackup(validated) {
@@ -383,5 +383,5 @@ import { NEWS_CATEGORY_IDS } from '../config/news-feeds.js';
 registerDataManagerStatsUpdater(updateDataManagerStats);
 
 // ============================================================================
-// BÖLÜM SONU: DOĞRULANMIŞ YEDEĞİ UYGULAMA
+        // BÖLÜM SONU: DOĞRULANMIŞ YEDEĞİ UYGULAMA
 // ============================================================================
