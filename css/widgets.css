@@ -1,3 +1,4 @@
+/* BÖLÜM BAŞI: WIDGET, HAVA, ODAK, TAKVİM VE DEFTER BİLEŞENLERİ */
 /* Diorama widget refinements — pixel labels, a habitat-aware focus timer and focus HUD. */
 
 /* Only fixed interface labels use pixel typography; live feed and user content remain readable sans-serif. */
@@ -658,3 +659,5 @@
 @media (prefers-reduced-motion: reduce) {
   .calendar-day, .wx-preview-button, .news-card-details { transition: none; animation: none; }
 }
+
+/* BÖLÜM SONU: WIDGET, HAVA, ODAK, TAKVİM VE DEFTER BİLEŞENLERİ */
