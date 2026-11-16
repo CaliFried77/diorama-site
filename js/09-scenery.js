@@ -21,12 +21,16 @@ export function drawKoiWaterOptics(time) {
 
     ctx.save();
     ctx.beginPath();
-    for (let x = 0; x <= pw; x += 2) {
+    ctx.moveTo(0, waterSurfaceAt(0) + 7);
+    for (let x = 2; x < pw; x += 2) {
         ctx.lineTo(x, waterSurfaceAt(x) + 7);
     }
-    for (let x = pw; x >= 0; x -= 2) {
+    ctx.lineTo(pw, waterSurfaceAt(pw) + 7);
+    ctx.lineTo(pw, pondFloorAt(pw));
+    for (let x = pw - 2; x > 0; x -= 2) {
         ctx.lineTo(x, pondFloorAt(x));
     }
+    ctx.lineTo(0, pondFloorAt(0));
     ctx.closePath();
     ctx.clip();
 
