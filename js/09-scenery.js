@@ -444,58 +444,61 @@ const CREATURE_PROFILES = Object.freeze({
 
             // 1. BEES HABITAT: Ancient Meadow Oak Tree, Golden Beehive & Artisanal Rose-Covered Cobblestone Wall + Split-Rail Gate
             if (hab.sceneProfile === 'meadow') {
-                // Artisanal Dry-Stone Base Wall & Weathered Split-Rail Timber Fence with Climbing Wild Roses & Lantern Post
-                const startX = Math.floor(pw * 0.54);
-                const endX = pw - 8;
+                // A short, raised orchard fence sits in the middle distance instead of spanning the meadow.
+                const startX = Math.floor(pw * 0.73);
+                const endX = Math.min(pw - 8, startX + Math.max(42, Math.floor(pw * 0.22)));
+                const fenceLine = ph - 31;
                 const stoneDark = isLightMode ? '#475569' : '#1e293b';
                 const stoneMid = isLightMode ? '#64748b' : '#334155';
                 const stoneHi = isLightMode ? '#94a3b8' : '#475569';
                 const woodDark = isLightMode ? '#5c3a21' : '#291811';
                 const woodHi = isLightMode ? '#854d0e' : '#452719';
 
-                // Low mossy cobblestone foundation wall along the meadow ridge
-                for (let sx = startX; sx < endX; sx += 4) {
-                    const undulate = Math.round(Math.sin(sx * 0.05) * 1.5);
-                    const sy = ph - 8 + undulate;
-                    pRect(sx, sy, 3, 8, stoneDark);
+                // Uneven stones form a low, broken retaining edge below the fence.
+                for (let sx = startX; sx < endX; sx += 5) {
+                    const undulate = Math.round(Math.sin(sx * 0.08) * 1.2);
+                    const sy = fenceLine + undulate;
+                    pRect(sx, sy, 4, 6, stoneDark);
                     pRect(sx, sy, 2, 2, stoneHi);
-                    pRect(sx + 1, sy + 3, 2, 2, stoneMid);
-                    if (sx % 8 === 0) pRect(sx, sy - 1, 3, 1, isLightMode ? '#16a34a' : '#14532d'); // Moss cushion
+                    pRect(sx + 2, sy + 3, 2, 2, stoneMid);
+                    if (sx % 15 < 5) pRect(sx + 1, sy - 1, 3, 1, isLightMode ? '#16a34a' : '#14532d');
                 }
 
-                // Wavy rustic split-rails with natural wood sag between posts
-                for (let sx = startX; sx < endX - 4; sx++) {
-                    const sag = Math.round(Math.sin((sx % 22) / 22 * Math.PI) * 1.4);
-                    pRect(sx, ph - 16 + sag, 1, 2, woodDark);
-                    pRect(sx, ph - 16 + sag, 1, 1, woodHi);
-                    pRect(sx, ph - 10 + sag, 1, 2, woodDark);
-                }
+                // Two short rail sections leave a natural gate opening in the middle.
+                const railSections = [
+                    [startX + 3, startX + Math.floor((endX - startX) * 0.34)],
+                    [startX + Math.floor((endX - startX) * 0.62), endX - 3],
+                ];
+                railSections.forEach(([from, to]) => {
+                    for (let sx = from; sx < to; sx++) {
+                        const sag = Math.round(Math.sin(((sx - from) / Math.max(1, to - from)) * Math.PI) * 1.2);
+                        pRect(sx, fenceLine - 13 + sag, 1, 2, woodDark);
+                        pRect(sx, fenceLine - 13 + sag, 1, 1, woodHi);
+                        pRect(sx, fenceLine - 7 + sag, 1, 2, woodDark);
+                    }
+                });
 
-                // Sculpted Timber Posts with Chamfered Caps, Climbing Rose Vines & Glowing Gate Lantern
-                for (let px = startX; px < endX; px += 22) {
-                    const postH = (px === startX) ? 22 : 18;
-                    const py = ph - 6 - postH;
-                    pRect(px - 1, py, 4, postH, woodDark);
-                    pRect(px - 1, py, 1, postH, woodHi);
-                    pRect(px - 2, py - 1, 6, 2, stoneHi); // Stone post cap
-
-                    // Climbing wild rose bush wrapping the fence post
-                    for (let ry = 4; ry < postH - 2; ry += 3) {
-                        const vx = px + Math.round(Math.sin(ry * 0.6 + px) * 3);
+                // Four weathered posts, rose hips and a single warm lantern mark the gate.
+                [startX, startX + Math.floor((endX - startX) * 0.34), startX + Math.floor((endX - startX) * 0.62), endX - 3].forEach((px, index) => {
+                    const postH = index === 0 || index === 3 ? 19 : 16;
+                    const py = fenceLine - postH;
+                    pRect(px - 1, py, 4, postH + 2, woodDark);
+                    pRect(px - 1, py, 1, postH + 2, woodHi);
+                    pRect(px - 2, py - 1, 6, 2, stoneHi);
+                    for (let ry = 3; ry < postH - 2; ry += 4) {
+                        const vx = px + Math.round(Math.sin(ry * 0.58 + px) * 2);
                         pRect(vx - 1, py + ry, 3, 2, isLightMode ? '#15803d' : '#14532d');
-                        if (ry % 6 === 1) {
+                        if (ry % 8 === 3) {
                             pRect(vx, py + ry - 1, 2, 2, '#fb7185');
                             pRect(vx, py + ry, 1, 1, '#fef08a');
                         }
                     }
-
-                    // Warm iron lantern hanging from the first gatepost
-                    if (px === startX) {
-                        pRect(px - 5, py + 3, 4, 1, '#1e293b');
-                        pRect(px - 5, py + 4, 3, 4, '#fef08a');
-                        pRect(px - 6, py + 3, 5, 6, 'rgba(253, 224, 71, 0.24)');
+                    if (index === 0) {
+                        pRect(px - 6, py + 4, 4, 1, '#1e293b');
+                        pRect(px - 6, py + 5, 3, 4, '#fef08a');
+                        pRect(px - 7, py + 4, 5, 6, 'rgba(253, 224, 71, 0.2)');
                     }
-                }
+                });
 
                 // Grand old oak: a taller, wider trunk with a broad canopy that frames the meadow.
                 const trunkCol = isLightMode ? '#451a03' : '#1c1217';
