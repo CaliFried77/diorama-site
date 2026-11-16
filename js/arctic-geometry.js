@@ -28,6 +28,22 @@ export function getArcticLedges(width, height) {
     ];
 }
 
+
+
+/** Return the first platform surface below a dropped berry, or the valley floor. */
+export function getArcticLandingY(x, dropY, width, height) {
+    const nx = x / Math.max(1, width);
+    const valleyGround = Math.round(height - 5 - Math.pow(Math.abs(nx - 0.5) * 1.9, 1.45) * 18);
+    let landingY = valleyGround;
+
+    for (const ledge of getArcticLedges(width, height).slice(1)) {
+        if (x < ledge.x1 || x > ledge.x2) continue;
+        const surfaceY = ledge.yFn(x);
+        if (surfaceY >= dropY - 12 && surfaceY < landingY) landingY = surfaceY;
+    }
+    return landingY;
+}
+
 // ============================================================================
 // BÖLÜM SONU: PLATFORM KOORDİNATLARI
 // BÖLÜM BAŞI: TİLKİLERİN KULLANABİLECEĞİ PLATFORM BAĞLANTILARI
