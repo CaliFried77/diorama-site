@@ -34,11 +34,11 @@ const PARROT_PALETTES = Object.freeze([
         rgb: [34, 197, 94]
     },
     {
-        bodyHi: '#818cf8', body: '#4f46e5', bodyShade: '#3730a3', belly: '#4338ca',
-        wingShoulder: '#6366f1', wingCovert: '#4f46e5', wingGreen: '#4338ca', wingPrimary: '#312e81', wingTip: '#1e1b4b', wingUnder: '#312e81',
-        tailCenter: '#4f46e5', tailMid: '#3730a3', tailOuter: '#312e81',
-        face: '#facc15', faceLine: '#312e81', beakUpper: '#334155', beakTip: '#0f172a', beakLower: '#0f172a', eye: '#0f172a',
-        rgb: [129, 140, 248]
+        bodyHi: '#60a5fa', body: '#2563eb', bodyShade: '#1e40af', belly: '#1d4ed8',
+        wingShoulder: '#3b82f6', wingCovert: '#2563eb', wingGreen: '#1e40af', wingPrimary: '#1e3a8a', wingTip: '#172554', wingUnder: '#1e40af',
+        tailCenter: '#2563eb', tailMid: '#1e40af', tailOuter: '#0ea5e9',
+        face: '#facc15', faceLine: '#1e3a8a', beakUpper: '#1f2937', beakTip: '#020617', beakLower: '#020617', eye: '#020617',
+        rgb: [37, 99, 235]
     },
 ]);
 
@@ -265,6 +265,10 @@ export class PixelParrot {
 
             px(-2, 3, 2, 2, '#1e293b');
             px(1, 3, 2, 2, '#1e293b');
+            px(-3, 5, 3, 1, '#92400e');
+            px(1, 5, 3, 1, '#92400e');
+            px(-4, 4, 1, 2, '#78350f');
+            px(3, 4, 1, 2, '#78350f');
 
             px(-4, -5 + breath, 7, 4, p.body);
             px(-3, -1 + breath, 6, 4, p.belly);
