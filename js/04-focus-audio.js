@@ -2,7 +2,6 @@ import { closeAllPopovers } from './01-core-ui.js';
 /* FOCUS-AUDIO — Living Pixel Diorama
    Refresh-safe focus timer and Web Audio soundscape generator. */
 import {
-  DEFAULT_FOCUS_MINUTES,
   FOCUS_MAX_MINUTES,
   FOCUS_MIN_MINUTES,
   normalizeFocusSession,
