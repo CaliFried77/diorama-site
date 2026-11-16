@@ -154,40 +154,40 @@ test('rainforest scenery suppresses generic cloud slabs but keeps foreground wea
   assert.ok(weatherModule.includes('if (sky && WX.rain > 0)'));
 });
 
-test('rainforest habitat connects its scenery, parrot flock and edible fruit interaction', () => {
+test('rainforest habitat connects its layered canopy, flora, parrot flock and edible fruit interaction', () => {
   assert.ok(habitatCatalog.includes("id: 'rainforest'"));
   assert.ok(habitatCatalog.includes("sceneProfile: 'rainforest'"));
   assert.ok(habitatCatalog.includes("creatureProfile: 'parrot'"));
   assert.ok(habitatCatalog.includes("interactionProfile: 'fruit'"));
   assert.ok(sceneryModule.includes('new PixelParrot()'));
   assert.ok(sceneryModule.includes("hab.sceneProfile === 'rainforest'"));
+  assert.ok(sceneryModule.includes('const midgroundTrees = ['));
+  assert.ok(sceneryModule.includes('const edgeGiants = ['));
+  assert.ok(sceneryModule.includes('const canopyDomes = ['));
+  assert.ok(sceneryModule.includes('rootFlare = prog > 0.78'));
   assert.ok(sceneryModule.includes("f.type === 'canopy_vine'"));
-  assert.ok(sceneryModule.includes("s.type === 'tropical_fruit'"));
-  assert.ok(creatureModule.includes('export class PixelParrot'));
-  assert.ok(creatureModule.includes("findAvailableStimulus(this, 'tropical_fruit'"));
-  assert.ok(creatureModule.includes("interactionProfile === 'fruit'"));
-  assert.ok(sceneryModule.includes('const canopyShades = isLightMode'));
-  assert.ok(sceneryModule.includes('Three buttress-root trees have irregular bark'));
   assert.ok(sceneryModule.includes("f.type === 'jungle_fern'"));
   assert.ok(sceneryModule.includes("f.type === 'heliconia'"));
   assert.ok(sceneryModule.includes("f.type === 'epiphyte'"));
-  assert.ok(sceneryModule.includes("f.type === 'understory_bush'"));
-  assert.ok(sceneryModule.includes('Smaller midground trees and forked branches'));
-  assert.ok(sceneryModule.includes('humid mist floats as separate wisps'));
-  assert.ok(creatureModule.includes('Individually layered pixel plumage'));
-  assert.ok(creatureModule.includes('Pale macaw cheek patch'));
-  assert.ok(creatureModule.includes('strong hooked beak'));
-  assert.ok(creatureModule.includes('Long, joined macaw tail feathers'));
+  assert.ok(sceneryModule.includes("f.type === 'orchid'"));
+  assert.ok(sceneryModule.includes("s.type === 'tropical_fruit'"));
+  assert.ok(creatureModule.includes('export class PixelParrot'));
+  assert.ok(creatureModule.includes('this.palette'));
+  assert.ok(creatureModule.includes('const tailLen = 19'));
+  assert.ok(creatureModule.includes('p.beakUpper'));
 });
 
 test('existing habitat improvements preserve bespoke scene layers', () => {
-  assert.ok(sceneryModule.includes('const groveX = Math.round(pw * 0.33)'));
-  assert.ok(sceneryModule.includes('const branchY = ph - 119'));
-  assert.ok(sceneryModule.includes('Suspended oxygen bubbles rise'));
-  assert.ok(sceneryModule.includes('worn stepping-stone path'));
-  assert.ok(sceneryModule.includes('Broken limestone shelves'));
+  assert.ok(sceneryModule.includes('const drawOrchardTree ='));
+  assert.ok(sceneryModule.includes('const leftTree1X = 24'));
+  assert.ok(sceneryModule.includes('const willowZones = ['));
+  assert.ok(sceneryModule.includes("type: 'willow_frond'"));
+  assert.ok(sceneryModule.includes("type: 'pebble'"));
+  assert.ok(sceneryModule.includes("type: 'staghorn_coral'"));
+  assert.ok(sceneryModule.includes("type: 'sea_fan'"));
+  assert.ok(sceneryModule.includes("hab.sceneProfile === 'reef'"));
+  assert.ok(sceneryModule.includes("hab.sceneProfile === 'wetland'"));
 });
-
 test('service worker precaches local shell assets and leaves external live services to the network', () => {
   assert.match(main, /serviceWorker\.register/);
   assert.match(sw, /\!url\.origin === self\.location\.origin|url\.origin !== self\.location\.origin/);
