@@ -171,11 +171,13 @@ test('rainforest habitat connects its scenery, parrot flock and edible fruit int
   assert.ok(sceneryModule.includes("f.type === 'jungle_fern'"));
   assert.ok(sceneryModule.includes("f.type === 'heliconia'"));
   assert.ok(sceneryModule.includes("f.type === 'epiphyte'"));
+  assert.ok(sceneryModule.includes("f.type === 'understory_bush'"));
+  assert.ok(sceneryModule.includes('Smaller midground trees and forked branches'));
   assert.ok(sceneryModule.includes('humid mist floats as separate wisps'));
   assert.ok(creatureModule.includes('Individually layered pixel plumage'));
   assert.ok(creatureModule.includes('Pale macaw cheek patch'));
   assert.ok(creatureModule.includes('strong hooked beak'));
-  assert.ok(creatureModule.includes('Five separated, tapered tail feathers'));
+  assert.ok(creatureModule.includes('Long, joined macaw tail feathers'));
 });
 
 test('existing habitat improvements preserve bespoke scene layers', () => {
