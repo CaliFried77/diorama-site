@@ -15,6 +15,7 @@ const coreUiModule = await readFile(new URL('../js/01-core-ui.js', import.meta.u
 const dataManagerModule = await readFile(new URL('../js/06-data-manager.js', import.meta.url), 'utf8');
 const sceneryModule = await readFile(new URL('../js/09-scenery.js', import.meta.url), 'utf8');
 const initializerModule = await readFile(new URL('../js/habitat-initializer.js', import.meta.url), 'utf8');
+const initializerModule = await readFile(new URL('../js/habitat-initializer.js', import.meta.url), 'utf8');
 const backgroundsModule = await readFile(new URL('../js/habitat-backgrounds.js', import.meta.url), 'utf8');
 const floraModule = await readFile(new URL('../js/habitat-flora-renderer.js', import.meta.url), 'utf8');
 const creatureModule = await readFile(new URL('../js/08-creatures.js', import.meta.url), 'utf8');
@@ -186,11 +187,11 @@ test('rainforest habitat connects its layered canopy, flora, parrot flock and ed
 test('existing habitat improvements preserve bespoke scene layers', () => {
   assert.ok(backgroundsModule.includes('const drawOrchardTree ='));
   assert.ok(backgroundsModule.includes('const leftTree1X = 24'));
-  assert.ok(sceneryModule.includes('const willowZones = ['));
-  assert.ok(sceneryModule.includes("type: 'willow_frond'"));
-  assert.ok(sceneryModule.includes("type: 'pebble'"));
-  assert.ok(sceneryModule.includes("type: 'staghorn_coral'"));
-  assert.ok(sceneryModule.includes("type: 'sea_fan'"));
+  assert.ok(initializerModule.includes('const willowZones = ['));
+  assert.ok(initializerModule.includes("type: 'willow_frond'"));
+  assert.ok(initializerModule.includes("type: 'pebble'"));
+  assert.ok(initializerModule.includes("type: 'staghorn_coral'"));
+  assert.ok(initializerModule.includes("type: 'sea_fan'"));
   assert.ok(sceneryModule.includes("hab.sceneProfile === 'reef'"));
   assert.ok(sceneryModule.includes("hab.sceneProfile === 'wetland'"));
 });
