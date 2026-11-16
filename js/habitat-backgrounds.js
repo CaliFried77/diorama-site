@@ -1,6 +1,7 @@
 import { bgSilhouettes, pw, ph, lerpHex } from './07-habitat-state.js';
 import { isLightMode } from './01-core-ui.js';
 import { getGroundY } from './habitat-geometry.js';
+import { getArcticLedges } from './arctic-geometry.js';
 
 /* HABITAT BACKGROUNDS — cached static pixel-art environment layers. */
 
