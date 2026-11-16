@@ -561,24 +561,32 @@ export function initHabitat(idx) {
             }
         }
 
+       // Epiphytes locked onto the exact trunk curves & branch crotches (zero floating flowers!)
+        const treeSpecs = [
+            { baseX: Math.floor(pw * 0.14), top: Math.floor(ph * 0.24), idx: 0, prog: 0.42 },
+            { baseX: Math.floor(pw * 0.27), top: Math.floor(ph * 0.36), idx: 1, prog: 0.46 },
+            { baseX: Math.floor(pw * 0.75), top: Math.floor(ph * 0.34), idx: 2, prog: 0.40 },
+            { baseX: Math.floor(pw * 0.86), top: Math.floor(ph * 0.22), idx: 3, prog: 0.48 }
+        ];
         const epiphyteAnchors = [
-            { x: 18, y: ph * 0.44 },
-            { x: Math.round(pw * 0.14), y: ph * 0.52 },
-            { x: Math.round(pw * 0.25), y: ph * 0.58 },
-            { x: Math.round(pw * 0.78), y: ph * 0.48 },
-            { x: pw - 22, y: ph * 0.42 },
-            { x: pw - 16, y: ph * 0.62 }
+            { x: 16, y: Math.round(ph * 0.45) }, // Left giant trunk edge
+            ...treeSpecs.map(t => {
+                const y = Math.round(t.top + t.prog * (ph - t.top));
+                const curve = Math.sin(t.prog * Math.PI * 1.2 + t.idx) * 2.5;
+                return { x: Math.round(t.baseX + curve), y };
+            }),
+            { x: pw - 18, y: Math.round(ph * 0.52) } // Right giant trunk edge
         ];
         epiphyteAnchors.forEach((pt, i) => {
             flora.push({
                 type: 'epiphyte',
                 x: pt.x,
-                y: Math.round(pt.y),
-                hue: ['#f9a8d4', '#e879f9', '#facc15'][i % 3],
+                y: pt.y,
+                hue: ['#f472b6', '#e879f9', '#facc15'][i % 3],
                 phase: i * 1.1
             });
         });
-
+      
         const vineXPositions = [
             pw * 0.07, pw * 0.16, pw * 0.28, pw * 0.73, pw * 0.84, pw * 0.93
         ];
@@ -2375,15 +2383,18 @@ export function drawHabitatEnvironment(time) {
         const s = stimuli[i];
         s.life -= frameScale;
 
-        if (s.type === 'tropical_fruit') {
-            s.phase += 0.09 * frameScale;
-            s.y = s.baseY + Math.sin(s.phase) * 1.4;
-            pRect(s.x - 2, s.y - 1, 5, 4, s.hue || '#f97316');
-            pRect(s.x - 1, s.y - 2, 3, 1, '#facc15');
-            pRect(s.x + 1, s.y - 3, 3, 1, '#16a34a');
-            pRect(s.x + 1, s.y - 4, 1, 2, '#4ade80');
-            pRect(s.x - 1, s.y, 2, 1, 'rgba(255,255,255,0.6)');
-
+       } else if (f.type === 'epiphyte') {
+            const x = f.x;
+            const y = f.y;
+            const petalSway = Math.round(Math.sin(time * 0.0015 + f.phase) * 0.6);
+            // Bark-clasping moss & bromeliad rosette fixed tightly to the tree trunk
+            pRect(x - 3, y + 1, 7, 2, '#2c221e');
+            pRect(x - 4, y, 9, 2, isLightMode ? '#166534' : '#0d5138');
+            pRect(x - 2, y - 1, 5, 2, isLightMode ? '#22c55e' : '#10b981');
+            // Blooming tropical orchid/bromeliad crown
+            pRect(x - 3 + petalSway, y - 3, 7, 2, f.hue);
+            pRect(x - 1 + petalSway, y - 4, 3, 2, '#fef08a');
+        
         } else if (s.type === 'honey_nectar') {
             s.phase += 0.12 * frameScale;
             s.y = s.baseY + Math.sin(s.phase) * 1.6;
