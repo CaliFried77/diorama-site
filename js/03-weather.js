@@ -30,7 +30,7 @@ import { registerWeatherPreviewRenderer } from './services.js';
             71: 'Hafif kar', 73: 'Kar yağışı', 75: 'Yoğun kar', 77: 'Kar taneleri', 80: 'Hafif sağanak', 81: 'Sağanak', 82: 'Şiddetli sağanak',
             85: 'Hafif kar sağanağı', 86: 'Kar sağanağı', 95: 'Gök gürültülü fırtına', 96: 'Dolulu fırtına', 99: 'Şiddetli dolulu fırtına' };
         // ============================================================================
-// BÖLÜM BAŞI: HAVA DURUMU SINIFLANDIRMASI, İKONLAR VE AY EVRESİ
+        // BÖLÜM BAŞI: HAVA DURUMU SINIFLANDIRMASI, İKONLAR VE AY EVRESİ
 // API'den gelen hava kodları bu bölümde arayüz ve sahne profillerine çevrilir.
 // ============================================================================
 
@@ -162,8 +162,8 @@ import { registerWeatherPreviewRenderer } from './services.js';
         }
 
         // ============================================================================
-// BÖLÜM SONU: HAVA GÖRSELİ VE ÖNİZLEME YARDIMCILARI
-// BÖLÜM BAŞI: HAVA PANELİNİN HTML/ARIA GÖRÜNÜMÜ
+        // BÖLÜM SONU: HAVA GÖRSELİ VE ÖNİZLEME YARDIMCILARI
+        // BÖLÜM BAŞI: HAVA PANELİNİN HTML/ARIA GÖRÜNÜMÜ
 // ============================================================================
 
         function renderWeatherPanel() {
@@ -298,8 +298,8 @@ import { registerWeatherPreviewRenderer } from './services.js';
         }
 
         // ============================================================================
-// BÖLÜM SONU: HAVA PANELİ GÖRÜNÜMÜ
-// BÖLÜM BAŞI: SERVİS YANITLARI, ÖNBELLEK VE HAVA VERİSİ İSTEKLERİ
+        // BÖLÜM SONU: HAVA PANELİ GÖRÜNÜMÜ
+        // BÖLÜM BAŞI: SERVİS YANITLARI, ÖNBELLEK VE HAVA VERİSİ İSTEKLERİ
 // ============================================================================
 
         function parseWeatherLocalTime(value) {
@@ -524,8 +524,8 @@ import { registerWeatherPreviewRenderer } from './services.js';
 
         /* ---- Sahne parçacıkları ---- */
         // ============================================================================
-// BÖLÜM SONU: HAVA VERİSİ İSTEKLERİ VE ÖNBELLEK
-// BÖLÜM BAŞI: SAHNEDE GÜNEŞ, AY, BULUT VE HAVA EFEKTLERİ
+        // BÖLÜM SONU: HAVA VERİSİ İSTEKLERİ VE ÖNBELLEK
+        // BÖLÜM BAŞI: SAHNEDE GÜNEŞ, AY, BULUT VE HAVA EFEKTLERİ
 // ============================================================================
 
         function ensureWx() {
@@ -655,5 +655,5 @@ import { registerWeatherPreviewRenderer } from './services.js';
 registerWeatherPreviewRenderer(renderWxPreviewButtons);
 
 // ============================================================================
-// BÖLÜM SONU: SAHNEDE HAVA EFEKTLERİ
+        // BÖLÜM SONU: SAHNEDE HAVA EFEKTLERİ
 // ============================================================================
