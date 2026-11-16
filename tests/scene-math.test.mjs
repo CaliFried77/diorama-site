@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { calculateFrameChance, calculateFrameSmoothing, scaleSceneCollections } from '../js/scene-math.js';
+import { calculateFrameChance, calculateFrameSmoothing, scaleSceneCollections, createBackgroundSilhouettes } from '../js/scene-math.js';
 
 test('frame chance is deterministic with an injected random value and bounded probability', () => {
   assert.equal(calculateFrameChance(0.5, 1, 0.49), true);
@@ -31,4 +31,25 @@ test('habitat resize no longer requests a full habitat reinitialization', async 
   const source = await readFile(new URL('../js/07-habitat-state.js', import.meta.url), 'utf8');
   assert.match(source, /scaleSceneCollections/);
   assert.doesNotMatch(source, /requestHabitatInit/);
+});
+
+
+test('habitat background silhouettes use one shared valley profile on initialization and resize', async () => {
+  const silhouettes = createBackgroundSilhouettes(12);
+  const expectedXs = [0, 3, 6, 9];
+  const expectedHeights = expectedXs.map((x) => {
+    const nx = x / 12;
+    const valleyMask = 0.55 + Math.pow(Math.abs(nx - 0.5) * 1.8, 1.4) * 0.75;
+    return Math.round((18 + Math.sin(x * 0.016) * 10 + Math.cos(x * 0.042) * 5) * valleyMask);
+  });
+  assert.deepEqual(silhouettes.map(({ x }) => x), expectedXs);
+  assert.deepEqual(silhouettes.map(({ h }) => h), expectedHeights);
+
+  const { readFile } = await import('node:fs/promises');
+  const [stateSource, initializerSource] = await Promise.all([
+    readFile(new URL('../js/07-habitat-state.js', import.meta.url), 'utf8'),
+    readFile(new URL('../js/habitat-initializer.js', import.meta.url), 'utf8'),
+  ]);
+  assert.match(stateSource, /createBackgroundSilhouettes\(pw\)/);
+  assert.match(initializerSource, /createBackgroundSilhouettes\(pw\)/);
 });
