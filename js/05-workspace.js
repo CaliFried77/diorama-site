@@ -16,7 +16,7 @@ import { lsGet, lsSet, esc, normalizeTaskList, normalizeNoteList } from './stora
 // BÖLÜM BAŞI: GÖREV VE NOT VERİLERİ / YEREL KAYIT
 // ============================================================================
 
-export let tasks = normalizeTaskList(lsGet('diorama_tasks', null), DEFAULT_TASKS);
+        export let tasks = normalizeTaskList(lsGet('diorama_tasks', null), DEFAULT_TASKS);
         export let notes = normalizeNoteList(lsGet('diorama_notes', null), DEFAULT_NOTES);
 
         const priorities = ['normal', 'high', 'low'];
@@ -40,7 +40,7 @@ export let tasks = normalizeTaskList(lsGet('diorama_tasks', null), DEFAULT_TASKS
 // BÖLÜM BAŞI: GÖREV LİSTESİNİN OLUŞTURULMASI VE ETKİLEŞİMİ
 // ============================================================================
 
-export function renderTasks() {
+        export function renderTasks() {
             lsSet('diorama_tasks', tasks);
             tasksListContainer.innerHTML = '';
             const activeCount = tasks.filter(t => !t.done).length;
@@ -97,7 +97,7 @@ export function renderTasks() {
 // BÖLÜM BAŞI: NOT LİSTESİNİN OLUŞTURULMASI VE ETKİLEŞİMİ
 // ============================================================================
 
-export function renderNotes() {
+        export function renderNotes() {
             lsSet('diorama_notes', notes);
             stickyNotesGrid.innerHTML = '';
             notes.forEach((n, idx) => {
@@ -141,7 +141,7 @@ export function renderNotes() {
 // BÖLÜM BAŞI: GÖREV/NOT SEKME GEÇİŞİ VE DIŞARIYA AÇILAN DURUM GÜNCELLEYİCİLERİ
 // ============================================================================
 
-function activateWorkspaceTab(btn, moveFocus = false) {
+        function activateWorkspaceTab(btn, moveFocus = false) {
             const tab = btn.dataset.tab;
             document.querySelectorAll('.workspace-tab-btn').forEach(b => {
                 const selected = b === btn;
