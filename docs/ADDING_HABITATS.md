@@ -28,10 +28,12 @@ Mevcut profiller:
 
 | Profil alanı | Kullanılabilir değerler |
 |---|---|
-| `sceneProfile` | `meadow`, `betta-aquarium`, `wetland`, `botanical`, `reef`, `koi-pond`, `rainforest` |
-| `creatureProfile` | `bee`, `betta`, `dragonfly`, `butterfly`, `jellyfish`, `koi`, `parrot` |
-| `interactionProfile` | `nectar`, `bloodworm`, `midge`, `blossom`, `plankton`, `pellet`, `fruit` |
+| `sceneProfile` | `meadow`, `betta-aquarium`, `wetland`, `botanical`, `reef`, `koi-pond`, `rainforest`, `arctic-tundra` |
+| `creatureProfile` | `bee`, `betta`, `dragonfly`, `butterfly`, `jellyfish`, `koi`, `parrot`, `arctic_fox` |
+| `interactionProfile` | `nectar`, `bloodworm`, `midge`, `blossom`, `plankton`, `pellet`, `fruit`, `cloudberry` |
 
 Tamamen yeni bir ekosistem veya tür tasarlanacaksa mevcut profil kodu kopyalanarak genişletilmemeli; `js/09-scenery.js` içindeki habitat başlangıç/çevre çizim profiline, `js/08-creatures.js` içindeki yeni canlı sınıfına ve `js/03-weather.js` ile `js/10-glass-renderer.js` etkileşimlerine bilinçli katkı yapılmalıdır. Sonrasında veri yedekleme doğrulaması `HABITAT_IDS` üzerinden katalogla otomatik eşleşir.
+
+Yeni `arctic-tundra` profili `PixelArcticFox` ile kutup tilkileri ve karlı platformları kullanır. `cloudberry` etkileşimi sahneye düşen ve platformlara yerleşen altın kutup böğürtlenleri bırakır; tilkiler bu yemleri takip eder. Yeni profil eklerken katalogdaki izin listelerini ve ilgili sahne/canlı/yem uygulamalarını aynı değişiklikte güncelle.
 
 Yeni `rainforest` profili `PixelParrot` sürüsünü, katmanlı tropik ağaç gövdelerini, dev yaprakları, bromelyaları, orkideleri ve sarkan sarmaşıkları kullanır. `fruit` etkileşimi sahneye yenilebilir tropik meyveler bırakır; papağanlar en yakın serbest meyveye yönelir ve yediğinde uyaranı tüketir. Yeni fauna eklerken çizim sınıfını `js/08-creatures.js`, sahne üretimini/çizimini `js/09-scenery.js` içinde tut ve katalogdaki üç profil listesini birlikte güncelle.
