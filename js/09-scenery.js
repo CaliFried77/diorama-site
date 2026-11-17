@@ -258,7 +258,7 @@ export function drawHabitatEnvironment(time) {
         }
     }
     
-    if (hab.sceneProfile === 'wetland') {
+if (hab.sceneProfile === 'wetland') {
         const waterHorizonY = ph - 52;
         for (let s = 0; s < 14; s++) {
             const wy = waterHorizonY + 4 + (s * 3.3);
@@ -269,7 +269,7 @@ export function drawHabitatEnvironment(time) {
 
         for (let r = 0; r < 3; r++) {
             const cycle = ((time * 0.014 + r * 33) % 100) / 100;
-            const rx = Math.round(pw * (0.35 + r * 0.14) + Math.sin(r * 2.1) * 18);
+            const rx = Math.round(pw * (0.35 + r * 0.14) + Math.sin(r * 2.1) * 14);
             const ry = Math.round(ph - 34 + (r % 2) * 14);
             const radX = Math.round(2 + cycle * 14);
             const alpha = ((1 - cycle) * 0.35).toFixed(2);
@@ -287,39 +287,73 @@ export function drawHabitatEnvironment(time) {
 
         const stoneX = pw - 74;
         const stoneY = ph - 18;
-        pRect(stoneX - 12, stoneY + 7, 26, 4, 'rgba(2, 10, 16, 0.45)');
-        pRect(stoneX - 11, stoneY, 24, 9, isLightMode ? '#475569' : '#1e293b');
-        pRect(stoneX - 9, stoneY - 3, 18, 4, isLightMode ? '#64748b' : '#334155');
+        pRect(stoneX - 13, stoneY + 7, 28, 4, 'rgba(2, 10, 16, 0.48)');
+        pRect(stoneX - 12, stoneY + 8, 26, 1, isLightMode ? 'rgba(186, 230, 253, 0.35)' : 'rgba(45, 212, 191, 0.18)');
+        pRect(stoneX - 11, stoneY, 24, 8, isLightMode ? '#475569' : '#1e293b');
+        pRect(stoneX - 9, stoneY - 3, 19, 4, isLightMode ? '#64748b' : '#334155');
+        pRect(stoneX - 8, stoneY - 3, 12, 1, isLightMode ? '#94a3b8' : '#475569');
         pRect(stoneX - 7, stoneY - 4, 14, 2, isLightMode ? '#16a34a' : '#15803d');
 
+        pRect(stoneX - 3, stoneY - 6, 2, 2, '#15803d');
         pRect(stoneX - 2, stoneY - 7, 5, 3, '#22c55e');
-        pRect(stoneX - 1, stoneY - 8, 3, 1, '#4ade80');
+        pRect(stoneX - 1, stoneY - 8, 4, 2, '#4ade80');
         pRect(stoneX + 2, stoneY - 8, 1, 1, '#fef08a');
-        if (Math.sin(time * 0.006) > 0.55) {
+        if (Math.sin(time * 0.006) > 0.45) {
             pRect(stoneX + 3, stoneY - 6, 2, 2, '#bbf7d0');
+            pRect(stoneX + 3, stoneY - 6, 1, 1, '#ffffff');
         }
 
+        const pierShadow = isLightMode ? '#3b2313' : '#0f0d0c';
         const pierCol = isLightMode ? '#5c3a21' : '#1c1917';
         const pierHi = isLightMode ? '#854d0e' : '#332924';
         const py = ph - 40;
+
+        pRect(0, py + 3, 64, 2, pierShadow);
         pRect(0, py, 64, 3, pierCol);
         pRect(0, py, 64, 1, pierHi);
         for (let px = 2; px < 62; px += 5) {
-            pRect(px, py - 1, 3, 1, pierHi);
+            pRect(px, py - 1, 4, 1, pierHi);
+            pRect(px + 3, py, 1, 2, pierShadow);
         }
-        [14, 36, 58].forEach(px => {
-            pRect(px, py - 9, 3, 25, pierCol);
-            pRect(px, py - 9, 1, 25, pierHi);
-            pRect(px - 1, py + 15, 5, 2, 'rgba(2, 10, 16, 0.45)');
+
+        for (let b = 0; b < 18; b++) {
+            const bx = 16 + b;
+            const by = py + 3 + Math.round(b * 0.42);
+            pRect(bx, by, 2, 1, pierShadow);
+            const bx2 = 38 + b;
+            const by2 = py + 3 + Math.round(b * 0.45);
+            pRect(bx2, by2, 2, 1, pierShadow);
+        }
+
+        [14, 36, 58].forEach((px, pIdx) => {
+            const bankSurfaceY = getGroundY(px, 'wetland', pw, ph);
+            const waterLineY = Math.min(ph - 10, bankSurfaceY + 4 + pIdx * 3);
+            const postH = Math.max(18, waterLineY - (py - 9));
+
+            pRect(px, py - 9, 3, postH, pierCol);
+            pRect(px, py - 9, 1, postH, pierHi);
+            pRect(px + 2, py - 9, 1, postH, pierShadow);
+            pRect(px, py - 10, 3, 1, '#a16207');
+
+            pRect(px - 2, waterLineY - 1, 7, 2, 'rgba(2, 10, 16, 0.48)');
+            pRect(px - 3, waterLineY, 9, 1, isLightMode ? 'rgba(186, 230, 253, 0.38)' : 'rgba(45, 212, 191, 0.20)');
+            for (let ry = 1; ry <= 4; ry++) {
+                pRect(px, waterLineY + ry * 2, 3, 1, 'rgba(15, 23, 42, 0.30)');
+            }
+
             if (px === 58) {
                 const sway = Math.round(Math.sin(time * 0.0025) * 1);
-                pRect(px + 2, py - 9, 5, 1, pierCol);
-                pRect(px + 5 + sway, py - 8, 1, 2, '#475569');
-                pRect(px + 4 + sway, py - 6, 3, 4, '#fef08a');
-                pRect(px + 3 + sway, py - 7, 5, 6, 'rgba(253, 224, 71, 0.22)');
+                pRect(px + 2, py - 9, 6, 1, pierCol);
+                pRect(px + 2, py - 8, 2, 1, pierShadow);
+                pRect(px + 6 + sway, py - 8, 1, 2, '#475569');
+                pRect(px + 4 + sway, py - 6, 5, 1, '#451a03');
+                pRect(px + 5 + sway, py - 5, 3, 4, '#fef08a');
+                pRect(px + 6 + sway, py - 4, 1, 2, '#ffffff');
+                pRect(px + 4 + sway, py - 1, 5, 1, '#451a03');
+                pRect(px + 3 + sway, py - 7, 7, 7, 'rgba(253, 224, 71, 0.22)');
                 for (let ry = 0; ry < 5; ry++) {
                     const rShift = Math.sin(time * 0.004 + ry * 1.3) * 2;
-                    pRect(px + 3 + rShift, py + 15 + ry * 2, 4 - Math.floor(ry * 0.5), 1, `rgba(253, 224, 71, ${(0.38 - ry * 0.06).toFixed(2)})`);
+                    pRect(px + 4 + rShift, waterLineY + 1 + ry * 2, 4 - Math.floor(ry * 0.5), 1, `rgba(253, 224, 71, ${(0.38 - ry * 0.06).toFixed(2)})`);
                 }
             }
         });
