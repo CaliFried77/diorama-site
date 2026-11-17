@@ -1,5 +1,6 @@
 import { pw, ph, frameScale, frameChance, pRect, frameSmoothing } from './07-habitat-state.js';
 import { findAvailableStimulus } from './creature-utils.js';
+import { getGroundY } from './habitat-geometry.js';
 
 /* PIXELKOI — dedicated koi̇ baliği behavior and pixel-art rendering. */
 
@@ -14,10 +15,18 @@ import { findAvailableStimulus } from './creature-utils.js';
 // ============================================================================
 // ============================================================================
 
+function getKoiWaterFloorY(x) {
+    const nx = x / Math.max(1, pw);
+    if (nx <= 0.30 || nx >= 0.68) {
+        return getGroundY(x, 'koi-pond', pw, ph) - 10;
+    }
+    return ph - 14;
+}
+
 export class PixelKoi {
     constructor() {
-        this.x = 28 + Math.random() * (pw - 56);
-        this.y = 34 + Math.random() * (ph - 58);
+        this.x = Math.round(pw * 0.25 + Math.random() * (pw * 0.45));
+        this.y = 36 + Math.random() * Math.max(24, ph - 76);
         this.angle = Math.random() * Math.PI * 2;
         this.targetAngle = this.angle;
         this.speed = 0.25 + Math.random() * 0.12;
@@ -26,11 +35,11 @@ export class PixelKoi {
         this.biteRipple = 0;
 
         const varieties = [
-            { kind: 'kohaku', base: '#f8fafc', shade: '#cbd5e1', patch1: '#ef4444', patch2: '#dc2626', fin: 'rgba(254, 226, 226, 0.85)', rgb: [248, 113, 113] },
-            { kind: 'tancho', base: '#ffffff', shade: '#e2e8f0', patch1: '#dc2626', patch2: '#f8fafc', fin: 'rgba(248, 250, 252, 0.88)', rgb: [239, 68, 68] },
-            { kind: 'showa', base: '#f1f5f9', shade: '#cbd5e1', patch1: '#e11d48', patch2: '#0f172a', fin: 'rgba(241, 245, 249, 0.85)', rgb: [251, 113, 133] },
-            { kind: 'ogon', base: '#fef08a', shade: '#eab308', patch1: '#f59e0b', patch2: '#ca8a04', fin: 'rgba(254, 249, 195, 0.85)', rgb: [250, 204, 21] },
-            { kind: 'asagi', base: '#93c5fd', shade: '#3b82f6', patch1: '#1d4ed8', patch2: '#ef4444', fin: 'rgba(254, 202, 202, 0.85)', rgb: [96, 165, 250] }
+            { kind: 'kohaku', base: '#f8fafc', shade: '#cbd5e1', patch1: '#ef4444', patch2: '#dc2626', fin: 'rgba(254, 226, 226, 0.85)', finRay: '#ffffff', rgb: [248, 113, 113] },
+            { kind: 'tancho', base: '#ffffff', shade: '#e2e8f0', patch1: '#dc2626', patch2: '#f8fafc', fin: 'rgba(248, 250, 252, 0.88)', finRay: '#ffffff', rgb: [239, 68, 68] },
+            { kind: 'showa', base: '#f1f5f9', shade: '#cbd5e1', patch1: '#e11d48', patch2: '#0f172a', fin: 'rgba(241, 245, 249, 0.85)', finRay: '#fecdd3', rgb: [251, 113, 133] },
+            { kind: 'ogon', base: '#fef08a', shade: '#eab308', patch1: '#f59e0b', patch2: '#ca8a04', fin: 'rgba(254, 249, 195, 0.85)', finRay: '#fef9c3', rgb: [250, 204, 21] },
+            { kind: 'asagi', base: '#93c5fd', shade: '#3b82f6', patch1: '#1d4ed8', patch2: '#ef4444', fin: 'rgba(254, 202, 202, 0.85)', finRay: '#e0f2fe', rgb: [96, 165, 250] }
         ];
         this.pal = varieties[Math.floor(Math.random() * varieties.length)];
         this.rgb = this.pal.rgb;
@@ -74,20 +83,30 @@ export class PixelKoi {
             this.targetAngle += (Math.random() - 0.5) * 0.95;
         }
 
-        if (this.y < 32) this.targetAngle = Math.cos(this.angle) >= 0 ? 0.45 : Math.PI - 0.45;
-        if (this.y > ph - 24) this.targetAngle = Math.cos(this.angle) >= 0 ? -0.45 : Math.PI + 0.45;
-        if (this.x > pw - 68 && this.y > ph - 42) {
-            this.targetAngle = Math.PI + (Math.random() - 0.5) * 0.5;
+        const maxFloorY = getKoiWaterFloorY(this.x);
+        if (this.y < 32) {
+            this.targetAngle = Math.cos(this.angle) >= 0 ? 0.45 : Math.PI - 0.45;
+        }
+        if (this.y > maxFloorY) {
+            const toCenter = this.x < pw * 0.5 ? 0.35 : Math.PI - 0.35;
+            this.targetAngle = -Math.abs(Math.sin(toCenter)) + (this.x < pw * 0.5 ? -0.35 : -Math.PI + 0.35);
+        }
+        if (this.x > pw - 74 && this.y > ph - 46) {
+            this.targetAngle = Math.PI + (Math.random() - 0.5) * 0.45;
+        }
+        if (this.x < 72 && this.y > ph - 36) {
+            this.targetAngle = (Math.random() - 0.5) * 0.45;
         }
 
         let diff = this.targetAngle - this.angle;
         while (diff > Math.PI) diff -= Math.PI * 2;
         while (diff < -Math.PI) diff += Math.PI * 2;
-        this.angle += diff * frameSmoothing(pellet ? 0.065 : 0.038);
+        this.angle += diff * frameSmoothing(pellet ? 0.068 : 0.038);
 
         const spd = this.speed * (pellet ? 1.55 : 1.0);
         this.x += Math.cos(this.angle) * spd * frameScale;
         this.y += Math.sin(this.angle) * spd * frameScale;
+        this.y = Math.max(28, Math.min(getKoiWaterFloorY(this.x) + 4, this.y));
 
         if (this.x < -38) {
             const d = pw + 76;
@@ -123,7 +142,7 @@ export class PixelKoi {
         for (let i = 1; i < 14; i++) {
             const pt = this.spine[i];
             if (Math.abs(pt.x - this.x) > 45) continue;
-            pRect(pt.x + 2, pt.y + 5, 4, 3, 'rgba(2, 10, 18, 0.30)');
+            pRect(pt.x + 2, pt.y + 5, 4, 3, 'rgba(2, 10, 18, 0.32)');
         }
 
         const pecNode = this.spine[3];
@@ -136,17 +155,26 @@ export class PixelKoi {
                 for (let r = 2; r <= 7; r++) {
                     const halfW = r <= 5 ? 2 : 1;
                     for (let w = -halfW; w <= 1; w++) {
-                        pRect(pecNode.x + fCos * r - fSin * w, pecNode.y + fSin * r + fCos * w, 1, 1, this.pal.fin);
+                        const isLeadingEdge = w === 1 && r <= 6;
+                        pRect(
+                            pecNode.x + fCos * r - fSin * w,
+                            pecNode.y + fSin * r + fCos * w,
+                            1,
+                            1,
+                            isLeadingEdge ? this.pal.finRay : this.pal.fin
+                        );
                     }
                 }
             });
         }
+
         const venNode = this.spine[7];
         if (Math.abs(venNode.x - this.x) < 40) {
+            const vFlutter = Math.sin(this.phase * 0.9 - 1.2) * 0.14;
             [-1, 1].forEach(side => {
-                const vAng = this.angle + side * (Math.PI * 0.65);
-                for (let r = 2; r <= 4; r++) {
-                    pRect(venNode.x + Math.cos(vAng) * r, venNode.y + Math.sin(vAng) * r, 1, 1, this.pal.fin);
+                const vAng = this.angle + side * (Math.PI * 0.65 + vFlutter);
+                for (let r = 2; r <= 5; r++) {
+                    pRect(venNode.x + Math.cos(vAng) * r, venNode.y + Math.sin(vAng) * r, 1, 1, r === 2 ? this.pal.finRay : this.pal.fin);
                 }
             });
         }
@@ -158,10 +186,11 @@ export class PixelKoi {
             const segAng = Math.atan2(prev.y - pt.y, prev.x - pt.x);
             const tPerpX = -Math.sin(segAng);
             const tPerpY = Math.cos(segAng);
-            const spread = (i - 12) * 1.45;
+            const spread = (i - 12) * 1.5;
             for (let w = -Math.ceil(spread); w <= Math.ceil(spread); w++) {
                 if (i >= 16 && Math.abs(w) <= 1) continue;
-                pRect(pt.x + tPerpX * w, pt.y + tPerpY * w, 1, 1, this.pal.fin);
+                const isOuterRay = Math.abs(w) === Math.ceil(spread);
+                pRect(pt.x + tPerpX * w, pt.y + tPerpY * w, 1, 1, isOuterRay ? this.pal.finRay : this.pal.fin);
             }
         }
 
@@ -183,7 +212,10 @@ export class PixelKoi {
                             if (i <= 1 && d2 <= 3.2) col = this.pal.patch1;
                         } else if (this.pal.kind === 'asagi') {
                             if (isEdge && i >= 2 && i <= 9) col = this.pal.patch2;
-                            else if ((dx + dy + i) % 2 === 0 && d2 < rad * rad * 0.6) col = this.pal.patch1;
+                            else if ((dx + dy + i) % 2 === 0 && d2 < rad * rad * 0.65) col = this.pal.patch1;
+                        } else if (this.pal.kind === 'ogon') {
+                            if (d2 < rad * rad * 0.35 && (dx + dy + i) % 2 === 0) col = '#ffffff';
+                            else if (!isEdge && (i + dx) % 3 === 0) col = this.pal.patch1;
                         } else {
                             if ((i >= 1 && i <= 4 && dx >= -2) || (i >= 7 && i <= 10 && dy <= 1)) {
                                 col = this.pal.patch1;
@@ -204,8 +236,9 @@ export class PixelKoi {
             const segAng = Math.atan2(prev.y - pt.y, prev.x - pt.x);
             const dPerpX = -Math.sin(segAng);
             const dPerpY = Math.cos(segAng);
-            const sway = Math.sin(this.phase - i * 0.3) * 0.8;
-            pRect(pt.x + dPerpX * sway, pt.y + dPerpY * sway, 2, 1, 'rgba(255, 255, 255, 0.88)');
+            const sway = Math.sin(this.phase - i * 0.3) * 0.85;
+            pRect(pt.x + dPerpX * sway * 0.5, pt.y + dPerpY * sway * 0.5, 2, 1, this.pal.fin);
+            pRect(pt.x + dPerpX * sway, pt.y + dPerpY * sway, 2, 1, 'rgba(255, 255, 255, 0.90)');
         }
 
         const head = this.spine[0];
