@@ -13,27 +13,27 @@ import { findAvailableStimulus } from './creature-utils.js';
    ============================================================================ */
 const DRAGONFLY_SPECIES = Object.freeze([
     {
-        thorax: '#22c55e', thoraxHi: '#86efac', body: '#38bdf8', seg: '#0f172a',
+        thorax: '#16a34a', thoraxHi: '#86efac', body: '#38bdf8', bodyHi: '#bae6fd', seg: '#0f172a',
         eye: '#10b981', eyeHi: '#d1fae5',
-        wing: 'rgba(224, 242, 254, 0.72)', vein: 'rgba(125, 211, 252, 0.9)', stigma: '#0369a1',
+        wing: 'rgba(224, 242, 254, 0.72)', vein: 'rgba(125, 211, 252, 0.90)', stigma: '#0369a1',
         rgb: [56, 189, 248]
     },
     {
-        thorax: '#dc2626', thoraxHi: '#fca5a5', body: '#ef4444', seg: '#7f1d1d',
+        thorax: '#b91c1c', thoraxHi: '#fca5a5', body: '#ef4444', bodyHi: '#fecaca', seg: '#450a0a',
         eye: '#f97316', eyeHi: '#fef08a',
-        wing: 'rgba(254, 243, 199, 0.68)', vein: 'rgba(253, 186, 116, 0.88)', stigma: '#b91c1c',
+        wing: 'rgba(254, 243, 199, 0.68)', vein: 'rgba(253, 186, 116, 0.88)', stigma: '#991b1b',
         rgb: [248, 113, 113]
     },
     {
-        thorax: '#0d9488', thoraxHi: '#5eead4', body: '#10b981', seg: '#064e3b',
+        thorax: '#0f766e', thoraxHi: '#5eead4', body: '#10b981', bodyHi: '#a7f3d0', seg: '#042f2e',
         eye: '#34d399', eyeHi: '#ecfdf5',
-        wing: 'rgba(209, 250, 229, 0.70)', vein: 'rgba(110, 231, 183, 0.9)', stigma: '#047857',
+        wing: 'rgba(209, 250, 229, 0.70)', vein: 'rgba(110, 231, 183, 0.90)', stigma: '#065f46',
         rgb: [52, 211, 153]
     },
     {
-        thorax: '#eab308', thoraxHi: '#fef08a', body: '#facc15', seg: '#18181b',
+        thorax: '#ca8a04', thoraxHi: '#fef08a', body: '#facc15', bodyHi: '#fef9c3', seg: '#18181b',
         eye: '#22c55e', eyeHi: '#dcfce7',
-        wing: 'rgba(254, 249, 195, 0.68)', vein: 'rgba(253, 224, 71, 0.85)', stigma: '#713f12',
+        wing: 'rgba(254, 249, 195, 0.68)', vein: 'rgba(253, 224, 71, 0.86)', stigma: '#713f12',
         rgb: [250, 204, 21]
     }
 ]);
@@ -63,18 +63,18 @@ export class PixelDragonfly {
 
     pickNextDestination() {
         const reeds = flora.filter(f => f.type === 'reed' && f.h > 42);
-        if (reeds.length > 0 && Math.random() < 0.36) {
+        if (reeds.length > 0 && Math.random() < 0.38) {
             const r = reeds[Math.floor(Math.random() * reeds.length)];
             this.perchedReed = r;
             this.perched = false;
-            this.targetX = r.tipX || r.x;
-            this.targetY = (r.tipY || (ph - r.h)) - 2;
+            this.targetX = r.tipX !== undefined ? r.tipX : r.x;
+            this.targetY = (r.tipY !== undefined ? r.tipY : (ph - r.h)) - 2;
             this.hoverTimer = 85 + Math.floor(Math.random() * 95);
         } else {
             this.perchedReed = null;
             this.perched = false;
             this.targetX = 28 + Math.random() * (pw - 56);
-            this.targetY = 26 + Math.random() * (ph - 52);
+            this.targetY = 26 + Math.random() * (ph - 56);
             this.hoverTimer = 28 + Math.floor(Math.random() * 52);
         }
     }
@@ -101,8 +101,8 @@ export class PixelDragonfly {
 
         if (this.perched && this.perchedReed) {
             this.phase += 0.05 * frameScale;
-            this.x = (this.perchedReed.tipX || this.perchedReed.x);
-            this.y = (this.perchedReed.tipY || (ph - this.perchedReed.h)) - 2;
+            this.x = (this.perchedReed.tipX !== undefined ? this.perchedReed.tipX : this.perchedReed.x);
+            this.y = (this.perchedReed.tipY !== undefined ? this.perchedReed.tipY : (ph - this.perchedReed.h)) - 2;
             this.vx = 0;
             this.vy = 0;
             this.hoverTimer -= frameScale;
@@ -116,8 +116,8 @@ export class PixelDragonfly {
         }
 
         if (this.perchedReed) {
-            this.targetX = this.perchedReed.tipX || this.perchedReed.x;
-            this.targetY = (this.perchedReed.tipY || (ph - this.perchedReed.h)) - 2;
+            this.targetX = this.perchedReed.tipX !== undefined ? this.perchedReed.tipX : this.perchedReed.x;
+            this.targetY = (this.perchedReed.tipY !== undefined ? this.perchedReed.tipY : (ph - this.perchedReed.h)) - 2;
         }
 
         this.phase += 0.42 * frameScale;
@@ -166,8 +166,10 @@ export class PixelDragonfly {
         };
 
         const waterHorizonY = ph - 52;
-        if (by > waterHorizonY - 28 && bx > pw * 0.22 && bx < pw * 0.78) {
-            const reflY = Math.min(ph - 3, Math.round(waterHorizonY + (by - (waterHorizonY - 28)) * 0.75 + 14));
+        const nx = bx / Math.max(1, pw);
+        const overOpenWater = nx > 0.35 && nx < 0.65 && !(nx > 0.40 && nx < 0.49) && !(nx > 0.54 && nx < 0.62);
+        if (by > waterHorizonY - 28 && overOpenWater) {
+            const reflY = Math.min(ph - 4, Math.round(waterHorizonY + (by - (waterHorizonY - 28)) * 0.72 + 12));
             pRect(bx - 6, reflY, 13, 1, 'rgba(186, 230, 253, 0.22)');
             pRect(bx - 3, reflY + 1, 7, 1, `rgba(${this.rgb[0]}, ${this.rgb[1]}, ${this.rgb[2]}, 0.28)`);
         }
@@ -176,38 +178,55 @@ export class PixelDragonfly {
         const flapFore = this.perched ? -1 : Math.round(Math.sin(this.phase) * 4);
         const flapHind = this.perched ? 1 : Math.round(Math.cos(this.phase) * 4);
 
-        for (let s = 1; s <= 10; s++) {
+        // Arka kanat (Hindwing) ve damar yapısı
+        for (let s = 1; s <= 11; s++) {
             const wx = -1 - Math.floor(s * 0.65);
-            const wy = -2 - Math.round((s / 10) * flapHind) - Math.floor(s * 0.25);
+            const wy = -2 - Math.round((s / 11) * flapHind) - Math.floor(s * 0.25);
             px(wx, wy, 2, 2, p.wing);
             if (s % 2 === 0) px(wx, wy, 1, 1, p.vein);
-            if (s === 9) px(wx, wy, 2, 1, p.stigma);
+            if (s === 9 || s === 10) px(wx, wy, 2, 1, p.stigma);
         }
 
-        for (let seg = 0; seg < 13; seg++) {
+        // 10 boğumlu İmparator Yusufçuk karnı (abdomen) ve kuyruk kıskaçları
+        for (let seg = 0; seg < 14; seg++) {
             const ax = -3 - seg;
-            const ay = (seg > 5 ? dartTilt : 0) + (this.perched && seg > 7 ? -1 : 0);
-            const isRing = (seg % 2 === 1);
-            px(ax, ay, 1, 1, isRing ? p.seg : p.body);
+            const ay = (seg > 5 ? dartTilt : 0) + (this.perched && seg > 8 ? -1 : 0);
+            const isRing = (seg % 3 === 2);
+            const col = isRing ? p.seg : (seg % 3 === 0 ? p.bodyHi : p.body);
+            px(ax, ay, 1, 1, col);
             if (seg < 4) {
                 px(ax, ay + 1, 1, 1, p.seg);
+            } else if (seg >= 11 && seg <= 12) {
+                px(ax, ay + 1, 1, 1, p.body);
             }
         }
-        px(-16, dartTilt, 1, 1, p.seg);
+        px(-17, dartTilt + (this.perched ? -1 : 0), 2, 1, p.seg);
 
+        // Kaslı göğüs (Synthothorax) ve diyagonal çizgiler
         px(-2, -1, 5, 3, p.thorax);
         px(-1, -1, 3, 1, p.thoraxHi);
+        px(0, 0, 2, 1, p.thoraxHi);
         px(-2, 1, 4, 1, p.seg);
-        px(-1, 2, 1, 2, '#0f172a');
-        px(1, 2, 1, 2, '#0f172a');
-        px(2, 2, 1, 1, '#0f172a');
 
+        // Sazlığa veya avına uzanan eklemli bacaklar
+        if (this.perched) {
+            px(-1, 2, 1, 2, '#0f172a');
+            px(0, 2, 1, 2, '#0f172a');
+            px(2, 2, 1, 1, '#0f172a');
+        } else {
+            px(-1, 2, 1, 1, '#0f172a');
+            px(1, 2, 1, 2, '#0f172a');
+            px(2, 2, 1, 1, '#0f172a');
+        }
+
+        // Küresel bileşik gözler ve baş
         px(3, -2, 3, 3, p.eye);
         px(4, -2, 2, 1, p.eyeHi);
         px(5, 0, 1, 1, '#0f172a');
 
+        // Ön kanat (Forewing), ön kenar damarı (costa) ve pterostigma
         for (let s = 1; s <= 12; s++) {
-            const wx = 1 + Math.floor(s * 0.35);
+            const wx = 1 + Math.floor(s * 0.38);
             const wy = -2 - Math.round((s / 12) * flapFore) - Math.floor(s * 0.35);
             px(wx, wy, 2, 2, p.wing);
             if (s % 2 === 1) px(wx, wy, 1, 1, p.vein);
