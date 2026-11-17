@@ -1,5 +1,6 @@
 import { pw, ph, frameScale, frameChance, pRect, frameSmoothing } from './07-habitat-state.js';
 import { findAvailableStimulus } from './creature-utils.js';
+import { getGroundY } from './habitat-geometry.js';
 
 /* PIXELJELLYFISH — dedicated deni̇zanasi behavior and pixel-art rendering. */
 
@@ -14,10 +15,18 @@ import { findAvailableStimulus } from './creature-utils.js';
 // ============================================================================
 // ============================================================================
 
+function getReefFloorY(x) {
+    const nx = x / Math.max(1, pw);
+    const sideMound = nx < 0.26 ? Math.pow((0.26 - nx) / 0.26, 1.5) * 34
+                    : (nx > 0.74 ? Math.pow((nx - 0.74) / 0.26, 1.5) * 34 : 0);
+    return Math.round(getGroundY(x, 'reef', pw, ph) - sideMound);
+}
+
 export class PixelJellyfish {
     constructor() {
-        this.x = 24 + Math.random() * (pw - 48);
-        this.y = 24 + Math.random() * (ph - 52);
+        this.x = 28 + Math.random() * (pw - 56);
+        const maxStartY = Math.max(36, getReefFloorY(this.x) - 24);
+        this.y = 24 + Math.random() * Math.max(16, maxStartY - 24);
         this.angle = -Math.PI / 2 + (Math.random() - 0.5) * 1.8;
         this.targetAngle = this.angle;
         this.phase = Math.random() * Math.PI * 2;
@@ -97,15 +106,16 @@ export class PixelJellyfish {
             this.targetAngle += (Math.random() - 0.5) * 0.9;
         }
 
+        const safeFloorY = getReefFloorY(this.x) - (plankton ? 14 : 24);
         if (this.y < 22) this.targetAngle = Math.PI * 0.45 + (Math.random() - 0.5) * 0.4;
-        if (this.y > ph - 38) this.targetAngle = -Math.PI * 0.5 + (Math.random() - 0.5) * 0.4;
+        if (this.y > safeFloorY) this.targetAngle = -Math.PI * 0.5 + (Math.random() - 0.5) * 0.35;
         if (this.x < 34) this.targetAngle = (Math.random() - 0.5) * 0.7;
         if (this.x > pw - 34) this.targetAngle = Math.PI + (Math.random() - 0.5) * 0.7;
 
         let diff = this.targetAngle - this.angle;
         while (diff > Math.PI) diff -= Math.PI * 2;
         while (diff < -Math.PI) diff += Math.PI * 2;
-        this.angle += diff * frameSmoothing(0.035);
+        this.angle += diff * frameSmoothing(0.038);
 
         const sinP = Math.sin(this.phase);
         const pulse = sinP > 0 ? Math.pow(sinP, 1.4) : 0;
@@ -133,13 +143,14 @@ export class PixelJellyfish {
         const spanScale = 1 - contract * 0.18;
 
         for (let k = 0; k < this.numTentacles; k++) {
-            const offset = (k - (this.numTentacles - 1) / 2) * 2.1 * spanScale;
-            const nodes = this.tentacles[k];
-            nodes[0].x = this.x - cos * 2.5 + perpX * offset;
-            nodes[0].y = this.y - sin * 2.5 + perpY * offset;
-
             const isOral = (k >= 3 && k <= 5);
-            const segSpacing = isOral ? 1.05 : 1.35;
+            const offset = (k - (this.numTentacles - 1) / 2) * (isOral ? 1.5 : 2.0) * spanScale;
+            const nodes = this.tentacles[k];
+            const attachDepth = isOral ? 1.2 : 1.6;
+            nodes[0].x = this.x - cos * attachDepth + perpX * offset;
+            nodes[0].y = this.y - sin * attachDepth + perpY * offset;
+
+            const segSpacing = isOral ? 1.05 : 1.32;
 
             for (let s = 1; s < this.segCount; s++) {
                 const prev = nodes[s - 1];
@@ -176,28 +187,28 @@ export class PixelJellyfish {
         for (let k = 0; k < this.numTentacles; k++) {
             const nodes = this.tentacles[k];
             const isOral = (k >= 3 && k <= 5);
-            const maxS = isOral ? 12 : this.segCount;
+            const maxS = isOral ? 13 : this.segCount;
 
             for (let s = 0; s < maxS; s++) {
                 const pt = nodes[s];
                 if (Math.abs(pt.x - this.x) > 42 || Math.abs(pt.y - this.y) > 42) continue;
 
                 if (isOral) {
-                    const frill = (s % 2 === 0) ? 1 : -1;
-                    pRect(pt.x, pt.y, 1, 1, s < 5 ? p.core : p.oralArm);
-                    if (s < 9) {
-                        pRect(pt.x + perpX * frill, pt.y + perpY * frill, 1, 1, p.oralArm);
+                    const frill = Math.sin(this.phase * 1.4 + s * 0.8 + k) >= 0 ? 1 : -1;
+                    pRect(pt.x, pt.y, 1, 1, s < 4 ? p.core : p.oralArm);
+                    if (s < 10) {
+                        pRect(pt.x + perpX * frill, pt.y + perpY * frill, 1, 1, s % 3 === 0 ? p.rim : p.oralArm);
                     }
                 } else {
-                    if (s > 11 && s % 2 === 1) continue;
+                    if (s > 12 && s % 2 === 1) continue;
                     const isBead = (s % 4 === 2);
                     pRect(pt.x, pt.y, 1, 1, isBead ? p.bead : p.tent);
                 }
             }
         }
 
-        const auraW = bellW + (this.glowBoost > 0 ? 3 : 2);
-        const auraH = bellH + (this.glowBoost > 0 ? 3 : 2);
+        const auraW = bellW + (this.glowBoost > 0 ? 4 : 2);
+        const auraH = bellH + (this.glowBoost > 0 ? 4 : 2);
         for (let dy = -auraH; dy <= 1; dy += 2) {
             const span = Math.round(auraW * Math.sqrt(Math.max(0, 1 - (dy * dy) / (auraH * auraH))));
             for (let dx = -span; dx <= span; dx += 2) {
@@ -222,12 +233,15 @@ export class PixelJellyfish {
                 }
 
                 let col = p.bell;
+                const isApexCap = (dy <= -bellH + 2 && distSq <= 0.85);
                 const isOuterRim = (distSq > 0.76 && dy <= 0) || dy >= 1;
                 const isInnerCore = (distSq < 0.22 && dy < -1 && dy > -bellH * 0.75);
                 const isGonadRing = (distSq >= 0.22 && distSq <= 0.44 && dy < -1);
-                const isRadialCanal = (Math.abs(dx) === 0 || Math.abs(dx) === Math.round(bellW * 0.5));
+                const isRadialCanal = (Math.abs(dx) === 0 || Math.abs(dx) === Math.round(bellW * 0.45) || Math.abs(dx) === Math.round(bellW * 0.80));
 
-                if (isOuterRim) {
+                if (isApexCap) {
+                    col = p.rim;
+                } else if (isOuterRim) {
                     col = (dy === 2 || distSq > 0.88) ? p.rim : p.bell;
                 } else if (isInnerCore) {
                     col = p.core;
