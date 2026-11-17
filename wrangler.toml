@@ -25,3 +25,20 @@ namespace_id = "271120261502"
 [ratelimits.simple]
 limit = 40
 period = 60
+
+# Preview-only namespaces. Keep these separate from production rate-limit namespaces.
+[[previews.ratelimits]]
+name = "NEWS_RATE_LIMITER"
+namespace_id = "991711170001"
+
+[previews.ratelimits.simple]
+limit = 40
+period = 60
+
+[[previews.ratelimits]]
+name = "CUSTOM_NEWS_RATE_LIMITER"
+namespace_id = "991711170002"
+
+[previews.ratelimits.simple]
+limit = 40
+period = 60
