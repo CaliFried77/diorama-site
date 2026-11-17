@@ -411,36 +411,51 @@ export function drawHabitatEnvironment(time) {
     }
 
     if (hab.sceneProfile === 'arctic-tundra') {
-        const auroraAlpha = isLightMode ? 0.08 : 0.16;
+        const auroraAlpha = isLightMode ? 0.08 : 0.15;
         for (let band = 0; band < 2; band++) {
-            const col = band === 0
+            const upperCol = band === 0
+                ? `rgba(16, 185, 129, ${(auroraAlpha * 0.55).toFixed(2)})`
+                : `rgba(139, 92, 246, ${(auroraAlpha * 0.50).toFixed(2)})`;
+            const midCol = band === 0
                 ? `rgba(52, 211, 153, ${auroraAlpha})`
                 : `rgba(168, 85, 247, ${(auroraAlpha * 0.85).toFixed(2)})`;
-            const topRim = band === 0
-                ? `rgba(167, 243, 208, ${(auroraAlpha * 1.4).toFixed(2)})`
-                : `rgba(192, 132, 252, ${auroraAlpha})`;
+            const lowerRim = band === 0
+                ? `rgba(167, 243, 208, ${(auroraAlpha * 1.45).toFixed(2)})`
+                : `rgba(216, 180, 254, ${(auroraAlpha * 1.15).toFixed(2)})`;
 
-            for (let x = 0; x < pw; x += 4) {
-                const wave = Math.sin(x * 0.018 + time * 0.0008 + band * 2.2) * 10
-                           + Math.cos(x * 0.042 - time * 0.0011) * 5;
-                const ay = Math.round(14 + band * 14 + wave);
-                const ah = Math.round(16 + Math.sin(x * 0.05 + time * 0.0015) * 6);
-                pRect(x, ay, 3, ah, col);
-                pRect(x, ay + ah - 2, 3, 2, topRim);
+            for (let x = 0; x < pw; x += 2) {
+                const wave = Math.sin(x * 0.016 + time * 0.0007 + band * 2.1) * 9
+                           + Math.cos(x * 0.038 - time * 0.0010) * 4;
+                const curtainRay = Math.max(0, Math.sin(x * 0.09 + time * 0.0016 + band)) * 8;
+                const ay = Math.round(12 + band * 15 + wave);
+                const ah = Math.round(14 + curtainRay);
+                pRect(x, ay - Math.floor(curtainRay * 0.5), 2, Math.floor(ah * 0.55), upperCol);
+                pRect(x, ay + Math.floor(ah * 0.35), 2, Math.floor(ah * 0.65), midCol);
+                pRect(x, ay + ah - 2, 2, 2, lowerRim);
             }
         }
 
-        const cabX = Math.round(pw * 0.73) + 6;
-        const cabY = Math.round(ph * 0.60) - 22;
-        for (let s = 0; s < 5; s++) {
-            const rise = ((time * 0.012 + s * 6) % 26);
-            const sx = cabX + Math.sin(time * 0.002 + s) * (1 + rise * 0.15);
-            const sy = cabY - rise;
-            const alpha = ((1 - rise / 26) * 0.45).toFixed(2);
-            pRect(sx, sy, 2 + Math.floor(rise / 9), 2, `rgba(226, 232, 240, ${alpha})`);
+        const cabBaseX = Math.round(pw * 0.73);
+        const cabSurfaceY = Math.round(ph * 0.60 + Math.sin(cabBaseX * 0.06) * 1.5) + 1;
+        const glowPulse = (0.72 + 0.22 * Math.sin(time * 0.003)).toFixed(2);
+        const snowGlow = (0.16 + 0.08 * Math.sin(time * 0.003)).toFixed(2);
+
+        pRect(cabBaseX - 1, cabSurfaceY - 10, 3, 1, `rgba(254, 249, 195, ${glowPulse})`);
+        pRect(cabBaseX + 3, cabSurfaceY - 10, 3, 1, `rgba(254, 249, 195, ${glowPulse})`);
+        pRect(cabBaseX - 3, cabSurfaceY - 2, 12, 2, `rgba(253, 224, 71, ${snowGlow})`);
+
+        const flueX = cabBaseX + 6;
+        const flueY = cabSurfaceY - 26;
+        for (let s = 0; s < 6; s++) {
+            const rise = ((time * 0.011 + s * 5) % 28);
+            const sx = flueX + Math.sin(time * 0.002 + s * 0.9) * (0.8 + rise * 0.14);
+            const sy = flueY - rise;
+            const alpha = ((1 - rise / 28) * 0.42).toFixed(2);
+            const size = 2 + Math.floor(rise / 10);
+            pRect(sx, sy, size, 2, `rgba(226, 232, 240, ${alpha})`);
         }
     }
-
+    
     if (hab.sceneProfile === 'rainforest') {
         for (let ray = 0; ray < 5; ray++) {
             const baseX = (ray * 112 + 34) % pw;
