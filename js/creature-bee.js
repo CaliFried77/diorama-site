@@ -1,5 +1,6 @@
 import { pw, ph, frameScale, frameChance, flora, pRect } from './07-habitat-state.js';
 import { findAvailableStimulus } from './creature-utils.js';
+import { getGroundY } from './habitat-geometry.js';
 
 /* PIXELBEE — dedicated ari behavior and pixel-art rendering. */
 
@@ -36,6 +37,7 @@ export class PixelBee {
         this.perchedFlower = null;
         this.hasPollen = Math.random() < 0.4;
         this.visitingHive = null;
+        this.sipSpot = null;
         this.trail = [];
     }
 
@@ -52,10 +54,13 @@ export class PixelBee {
                 const tx = this.perchedFlower.tipX !== undefined ? this.perchedFlower.tipX : this.perchedFlower.x;
                 const ty = this.perchedFlower.tipY !== undefined ? this.perchedFlower.tipY : (ph - (this.perchedFlower.h || 24));
                 this.x = tx;
-                this.y = ty - 4;
+                this.y = ty - 3;
             } else if (this.visitingHive) {
                 this.x = this.visitingHive.x;
                 this.y = this.visitingHive.y;
+            } else if (this.sipSpot) {
+                this.x = this.sipSpot.x;
+                this.y = this.sipSpot.y;
             }
 
             if (this.sipTimer === 0) {
@@ -63,6 +68,7 @@ export class PixelBee {
                 if (this.visitingHive) this.hasPollen = false;
                 this.perchedFlower = null;
                 this.visitingHive = null;
+                this.sipSpot = null;
 
                 const awayAngle = -Math.PI * 0.5 + (Math.random() - 0.5) * 1.5;
                 this.vx = Math.cos(awayAngle) * 0.48;
@@ -75,22 +81,25 @@ export class PixelBee {
 
         const nectar = findAvailableStimulus(this, 'honey_nectar', Math.max(350, pw * 0.8));
         if (nectar) {
+            const targetY = nectar.y - 3;
             const dx = nectar.x - this.x;
-            const dy = nectar.y - this.y;
+            const dy = targetY - this.y;
             const dist = Math.max(1, Math.hypot(dx, dy));
             if (dist < 6) {
+                this.sipSpot = { x: nectar.x, y: targetY };
                 nectar.life = 0;
                 this.hasPollen = true;
-                this.sipTimer = 24;
+                this.sipTimer = 26;
                 return;
             }
-            this.vx += (dx / dist) * 0.045 * frameScale;
-            this.vy += (dy / dist) * 0.045 * frameScale;
+            this.vx += (dx / dist) * 0.048 * frameScale;
+            this.vy += (dy / dist) * 0.048 * frameScale;
         } else if (this.eatCooldown === 0 && this.hasPollen && frameChance(0.008)) {
             const apiaryX = Math.round(pw * 0.84);
+            const hgy = getGroundY(apiaryX, 'meadow', pw, ph) + 1;
             const hiveTargets = [
-                { x: apiaryX - 2, y: ph - 22 },
-                { x: apiaryX - 1, y: ph - 36 }
+                { x: apiaryX - 1, y: hgy - 11 },
+                { x: apiaryX - 1, y: hgy - 24 }
             ];
             const target = hiveTargets[Math.floor(Math.random() * hiveTargets.length)];
             const dx = target.x - this.x;
@@ -110,7 +119,7 @@ export class PixelBee {
             if (flowers.length > 0) {
                 const fl = flowers[Math.floor(Math.random() * flowers.length)];
                 const fx = fl.tipX !== undefined ? fl.tipX : fl.x;
-                const fy = (fl.tipY !== undefined ? fl.tipY : (ph - fl.h)) - 4;
+                const fy = (fl.tipY !== undefined ? fl.tipY : (ph - fl.h)) - 3;
                 const dx = fx - this.x;
                 const dy = fy - this.y;
                 const dist = Math.hypot(dx, dy);
@@ -140,8 +149,9 @@ export class PixelBee {
 
         if (Math.abs(this.vx) > 0.06) this.dir = this.vx >= 0 ? 1 : -1;
 
+        const groundLim = getGroundY(this.x, 'meadow', pw, ph) - (nectar ? 8 : 22);
         if (this.y < 24) this.vy += 0.038 * frameScale;
-        if (this.y > ph - 38) this.vy -= 0.038 * frameScale;
+        if (this.y > groundLim) this.vy -= 0.042 * frameScale;
 
         this.x += this.vx * frameScale;
         this.y += this.vy * frameScale;
@@ -149,7 +159,7 @@ export class PixelBee {
         if (this.x < -20) { this.x = pw + 20; this.trail = []; }
         if (this.x > pw + 20) { this.x = -20; this.trail = []; }
 
-        if (frameChance(0.35)) {
+        if (!this.perchedFlower && !this.visitingHive && !this.sipSpot && frameChance(0.32)) {
             this.trail.push({ x: this.x, y: this.y + 1, life: 14 });
             if (this.trail.length > 5) this.trail.shift();
         }
@@ -169,15 +179,28 @@ export class PixelBee {
         for (let i = 0; i < this.trail.length; i++) {
             const tr = this.trail[i];
             const tCol = this.species === 'carpenter'
-                ? `rgba(216, 180, 254, ${(tr.life / 18).toFixed(2)})`
-                : `rgba(253, 224, 71, ${(tr.life / 18).toFixed(2)})`;
+                ? `rgba(216, 180, 254, ${(tr.life / 20).toFixed(2)})`
+                : `rgba(253, 224, 71, ${(tr.life / 20).toFixed(2)})`;
             pRect(tr.x - dir * 6, tr.y, 1, 1, tCol);
         }
 
-        const flap = isPerched ? 0 : Math.round(Math.sin(this.phase * 2.2) * 3);
-        const wingH = 4 + Math.abs(flap);
-        const backWingCol = this.species === 'carpenter' ? 'rgba(192, 132, 252, 0.52)' : 'rgba(186, 230, 253, 0.48)';
-        pRect(bx - dir * 3, by - 2 - wingH, 4, wingH, backWingCol);
+        const flap = isPerched ? 0 : Math.round(Math.sin(this.phase * 2.3) * 3);
+        const wingH = isPerched ? 2 : (4 + Math.abs(flap));
+        const backWingCol = this.species === 'carpenter'
+            ? 'rgba(192, 132, 252, 0.50)'
+            : 'rgba(186, 230, 253, 0.46)';
+        if (isPerched) {
+            pRect(bx - (dir > 0 ? 5 : 0), by - 4, 5, 2, backWingCol);
+        } else {
+            pRect(bx - (dir > 0 ? 3 : 1), by - 2 - wingH, 4, wingH, backWingCol);
+        }
+
+        const legDrop = isPerched ? 1 : 0;
+        const legCol = '#18181b';
+        pRect(bx + 2 * dir, by + 2, 1, 2 + legDrop, legCol);
+        pRect(bx, by + 2, 1, 2 + legDrop, legCol);
+        pRect(bx - 2 * dir, by + 2, 1, 2 + legDrop, legCol);
+        pRect(bx - 3 * dir, by + 3 + legDrop, 1, 1, legCol);
 
         const abLen = this.isBumble ? 7 : 6;
         for (let s = -abLen; s <= -2; s++) {
@@ -187,25 +210,29 @@ export class PixelBee {
                 let col = '#18181b';
                 const band = Math.abs(s);
                 if (this.species === 'carpenter') {
-                    col = dy === -halfH ? '#6b21a8' : '#1e1b4b';
+                    col = dy === -halfH ? '#7e22ce' : (dy < 0 ? '#312e81' : '#0f172a');
                 } else if (band === 3 || band === 4 || (this.isBumble && band === 6)) {
-                    col = dy < 0 ? '#fde047' : '#f59e0b';
+                    col = dy === -halfH ? '#fef08a' : (dy <= 0 ? '#fbbf24' : '#d97706');
                 } else if (this.species === 'bumble' && band === 7) {
-                    col = '#f8fafc';
+                    col = dy < 0 ? '#ffffff' : '#fef3c7';
                 } else if (dy === -halfH) {
                     col = '#3f3f46';
+                } else if (dy === halfH) {
+                    col = '#09090b';
                 }
                 pRect(bx + s * dir, yOff + dy, 1, 1, col);
             }
         }
-        pRect(bx - (abLen + 1) * dir, by + tilt, 1, 1, '#09090b');
+        pRect(bx - (abLen + 1) * dir, by + tilt, 1, 1, this.species === 'bumble' ? '#e2e8f0' : '#09090b');
 
         for (let s = -1; s <= 2; s++) {
             for (let dy = -3; dy <= 2; dy++) {
                 if ((s === -1 || s === 2) && Math.abs(dy) === 3) continue;
-                let col = dy <= -1 ? '#fbbf24' : (dy === 0 ? '#d97706' : '#78350f');
+                let col = dy === -3 ? '#fde047' : (dy <= -1 ? '#f59e0b' : (dy === 0 ? '#b45309' : '#78350f'));
                 if (this.species === 'carpenter') {
-                    col = dy <= -1 ? '#4c1d95' : '#1e1b4b';
+                    col = dy <= -2 ? '#6b21a8' : (dy <= 0 ? '#312e81' : '#1e1b4b');
+                } else if (this.species === 'bumble' && s === 2) {
+                    col = dy <= -1 ? '#fef08a' : '#d97706';
                 }
                 pRect(bx + s * dir, by + dy, 1, 1, col);
             }
@@ -213,25 +240,41 @@ export class PixelBee {
 
         for (let s = 3; s <= 4; s++) {
             for (let dy = -2; dy <= 1; dy++) {
+                if (s === 4 && dy === -2) continue;
                 pRect(bx + s * dir, by + dy, 1, 1, '#18181b');
             }
         }
-        pRect(bx + 4 * dir, by - 1, 1, 2, '#0ea5e9');
+        pRect(bx + 4 * dir, by - 1, 1, 2, '#0284c7');
         pRect(bx + 4 * dir, by - 1, 1, 1, '#e0f2fe');
-        pRect(bx + 5 * dir, by - 2, 1, 1, '#27272a');
-        pRect(bx + 6 * dir, by - 3, 1, 1, '#fbbf24');
 
-        pRect(bx + 1 * dir, by + 3, 1, 2, '#18181b');
-        pRect(bx - 2 * dir, by + 3, 1, 2, '#18181b');
-        if (this.hasPollen) {
-            pRect(bx - 3 * dir, by + 3, 2, 2, '#fde047');
-            pRect(bx - 2 * dir, by + 4, 1, 1, '#f59e0b');
+        const antTwitch = Math.round(Math.sin(this.phase * 0.5) * 0.4);
+        pRect(bx + 5 * dir, by - 2, 1, 1, '#27272a');
+        pRect(bx + 6 * dir, by - 3 + antTwitch, 1, 1, this.species === 'carpenter' ? '#a855f7' : '#fbbf24');
+
+        if (isPerched) {
+            pRect(bx + 4 * dir, by + 2, 1, 2, '#92400e');
+            pRect(bx + 5 * dir, by + 3, 1, 1, '#b45309');
         }
 
-        const fwY = by - 3 - Math.abs(flap);
-        const foreWingCol = this.species === 'carpenter' ? 'rgba(233, 213, 255, 0.78)' : 'rgba(240, 249, 255, 0.84)';
-        pRect(bx - dir * 1, fwY, 5, 3, foreWingCol);
-        pRect(bx, fwY - 1, 3, 1, 'rgba(255, 255, 255, 0.94)');
+        if (this.hasPollen) {
+            const polX = dir > 0 ? bx - 3 : bx + 2;
+            pRect(polX, by + 2 + legDrop, 2, 2, '#f59e0b');
+            pRect(polX, by + 2 + legDrop, 2, 1, '#fde047');
+        }
+
+        const foreWingCol = this.species === 'carpenter'
+            ? 'rgba(233, 213, 255, 0.78)'
+            : 'rgba(240, 249, 255, 0.84)';
+        if (isPerched) {
+            const foldX = dir > 0 ? bx - 6 : bx + 1;
+            pRect(foldX, by - 3, 6, 2, foreWingCol);
+            pRect(foldX + (dir > 0 ? 1 : 0), by - 3, 5, 1, 'rgba(255, 255, 255, 0.94)');
+        } else {
+            const fwY = by - 3 - Math.abs(flap);
+            const fwX = dir > 0 ? bx - 2 : bx - 3;
+            pRect(fwX, fwY, 5, 3, foreWingCol);
+            pRect(fwX + (dir > 0 ? 1 : 0), fwY - 1, 4, 1, 'rgba(255, 255, 255, 0.95)');
+        }
     }
 }
 
