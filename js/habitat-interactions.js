@@ -129,7 +129,6 @@ canvas.addEventListener('pointerdown', (e) => {
         // Spawn Golden Arctic Cloudberries that fall and land onto the nearest snow platform below!
         for (let i = 0; i < 2; i++) {
             const bx = Math.max(12, Math.min(pw - 12, px + (i - 0.5) * 14));
-            const nx = bx / Math.max(1, pw);
             const landY = getArcticLandingY(bx, py, pw, ph);
             stimuli.push({
                 type: 'cloudberry',
@@ -213,10 +212,26 @@ export function drawHabitatStimuli() {
             s.phase += 0.09 * frameScale;
             const bx = Math.round(s.x);
             const by = Math.round(s.y);
-            pRect(bx - 2, by, 5, 1, '#15803d');
-            pRect(bx - 2, by - 3, 5, 3, '#f97316');
-            pRect(bx - 1, by - 4, 3, 3, '#facc15');
-            pRect(bx, by - 4, 1, 1, '#fef9c3');
+
+            if (s.landed) {
+                pRect(bx - 4, by + 1, 9, 2, 'rgba(15, 23, 42, 0.32)');
+                pRect(bx - 3, by + 1, 7, 1, '#bae6fd');
+                pRect(bx, by - 1, 1, 2, '#451a03');
+                pRect(bx - 4, by, 3, 1, '#14532d');
+                pRect(bx + 2, by, 3, 1, '#14532d');
+                pRect(bx - 3, by - 1, 7, 1, '#15803d');
+            } else {
+                pRect(bx - 2, by, 5, 1, '#15803d');
+                pRect(bx, by - 6, 1, 1, 'rgba(254, 240, 138, 0.85)');
+            }
+
+            pRect(bx - 3, by - 3, 7, 2, '#d97706');
+            pRect(bx - 2, by - 4, 5, 3, '#f59e0b');
+            pRect(bx - 2, by - 3, 2, 2, '#fbbf24');
+            pRect(bx + 1, by - 3, 2, 2, '#fbbf24');
+            pRect(bx - 1, by - 5, 3, 2, '#fde047');
+            pRect(bx - 1, by - 4, 1, 1, '#fef9c3');
+            pRect(bx + 1, by - 4, 1, 1, '#fef9c3');
 
         } else if (s.type === 'honey_nectar') {
             const groundY = getGroundY(s.x, 'meadow', pw, ph);
@@ -279,6 +294,7 @@ export function drawHabitatStimuli() {
                     pRect(mx, my, 1, 1, 'rgba(254, 240, 138, 0.82)');
                 }
             }
+
         } else if (s.type === 'floating_blossom') {
             s.phase += 0.08 * frameScale;
             s.x += (s.vx + Math.sin(s.phase) * 0.12) * frameScale;
@@ -328,7 +344,7 @@ export function drawHabitatStimuli() {
                     if (seg === 3) pRect(sx, sy, 1, 1, '#fda4af');
                 }
             }
-            
+
         } else if (s.type === 'midge') {
             s.phase += 0.25 * frameScale;
             s.x = s.baseX + Math.sin(s.phase) * 4;
