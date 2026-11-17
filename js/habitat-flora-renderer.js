@@ -414,39 +414,65 @@ export function drawHabitatFlora(time, hab) {
             f.tipX = topX;
             f.tipY = baseGroundY - f.h;
 
-        } else if (f.type === 'buddleia') {
+       } else if (f.type === 'buddleia') {
+            const woodyCol = isLightMode ? '#451a03' : '#1e1b2e';
             const stemCol = isLightMode ? '#15803d' : '#0d4a3a';
+            const leafCol = isLightMode ? '#22c55e' : '#10b981';
             let tipX = f.x;
             let tipY = baseGroundY - f.h;
+
+            pRect(f.x - 3, baseGroundY - 1, 7, 2, stemCol);
+            pRect(f.x - 1, baseGroundY - 3, 3, 3, woodyCol);
+
             for (let y = 0; y < f.h; y++) {
                 const prog = y / f.h;
                 const sway = Math.sin(time * 0.0016 + f.phase + y * 0.05) * prog * 3.2 + (f.tilt || 0) * y * 0.7;
-                const px = f.x + sway;
+                const px = Math.round(f.x + sway);
                 const py = baseGroundY - y;
                 tipX = px;
                 tipY = py;
-                pRect(px, py, 1, 1, stemCol);
-                if (y === Math.floor(f.h * 0.35) || y === Math.floor(f.h * 0.52)) {
-                    pRect(px - 2, py, 5, 1, isLightMode ? '#22c55e' : '#10b981');
+                pRect(px, py, 1, 1, y < 5 ? woodyCol : stemCol);
+
+                if (y === Math.floor(f.h * 0.26) || y === Math.floor(f.h * 0.44)) {
+                    pRect(px - 3, py, 7, 1, stemCol);
+                    pRect(px - 2, py - 1, 2, 1, leafCol);
+                    pRect(px + 1, py - 1, 2, 1, leafCol);
                 }
-                if (prog > 0.55 && y % 2 === 0) {
+                if (prog > 0.52 && y % 2 === 0) {
                     const coneW = Math.max(1, Math.round((1 - prog) * 5.5));
                     pRect(px - coneW, py, coneW * 2 + 1, 2, f.hue);
+                    if (coneW >= 2) pRect(px - coneW + 1, py - 1, coneW * 2 - 1, 1, '#fdf4ff');
                     pRect(px, py, 1, 1, '#fef08a');
                 }
             }
+            pRect(tipX, tipY - 1, 1, 2, f.hue);
             f.tipX = tipX;
             f.tipY = tipY;
 
         } else if (f.type === 'hydrangea') {
             const sway = Math.sin(time * 0.0012 + f.phase) * 1.2;
-            const cx = f.x + sway;
-            const cy = baseGroundY - f.r;
-            pRect(cx - f.r - 2, baseGroundY - 3, (f.r + 2) * 2, 3, isLightMode ? '#15803d' : '#064e3b');
-            for (let dy = -f.r; dy <= f.r * 0.6; dy += 2) {
+            const cx = Math.round(f.x + sway);
+            const cy = baseGroundY - f.r - 2;
+            const bushDark = isLightMode ? '#14532d' : '#063729';
+            const bushMid = isLightMode ? '#15803d' : '#064e3b';
+            const bushHi = isLightMode ? '#22c55e' : '#10b981';
+
+            pRect(f.x - f.r - 2, baseGroundY, (f.r + 2) * 2, 2, 'rgba(2, 8, 16, 0.35)');
+            for (let by = 0; by < 5; by++) {
+                const bw = f.r + 3 - Math.floor(by * 0.5);
+                pRect(f.x - bw + sway * 0.4, baseGroundY - by, bw * 2, 1, by < 2 ? bushDark : bushMid);
+            }
+            [-2, 0, 2].forEach(stemOff => {
+                pRect(f.x + stemOff, baseGroundY - 5, 1, 4, '#3b2316');
+                pRect(f.x + stemOff * 1.5, baseGroundY - 5, 2, 1, bushHi);
+            });
+
+            for (let dy = -f.r; dy <= f.r * 0.65; dy += 2) {
                 const span = Math.round(f.r * Math.sqrt(Math.max(0, 1 - (dy * dy) / (f.r * f.r))));
                 for (let dx = -span; dx <= span; dx += 2) {
-                    pRect(cx + dx, cy + dy, 2, 2, (dx + dy) % 4 === 0 ? '#fdf4ff' : f.hue);
+                    const floretCol = (dx + dy) % 4 === 0 ? '#fdf4ff' : f.hue;
+                    pRect(cx + dx, cy + dy, 2, 2, floretCol);
+                    if ((dx * dy) % 3 === 0) pRect(cx + dx, cy + dy, 1, 1, '#fef9c3');
                 }
             }
             f.tipX = cx;
@@ -590,15 +616,18 @@ export function drawHabitatFlora(time, hab) {
                 }
             }
             
-        } else if (f.type === 'wisteria_cluster') {
+       } else if (f.type === 'wisteria_cluster') {
+            pRect(f.x - 1, f.branchY - 1, 3, 2, '#3b2316');
+            pRect(f.x - 3, f.branchY + 1, 7, 1, isLightMode ? '#15803d' : '#0d4a36');
+            pRect(f.x - 2, f.branchY + 2, 5, 1, isLightMode ? '#22c55e' : '#10b981');
             for (let y = 0; y < f.len; y++) {
-                const sway = Math.sin(time * 0.0015 + f.phase + y * 0.09) * (y / f.len) * 3.5;
-                const px = f.x + sway;
+                const prog = y / f.len;
+                const sway = Math.sin(time * 0.0015 + f.phase + y * 0.09) * prog * 3.5;
+                const px = Math.round(f.x + sway);
                 const py = f.branchY + y;
                 pRect(px, py, 1, 1, '#14532d');
                 if (y > 2 && y % 2 === 0) {
-                    const prog = y / f.len;
-                    const halfW = Math.max(0, Math.round((1 - prog) * 3.2));
+                    const halfW = Math.max(0, Math.round((1 - prog) * 3.4));
                     for (let dx = -halfW; dx <= halfW; dx++) {
                         const petalCol = (dx === 0 && y % 4 === 0) ? '#fdf4ff' : f.hue;
                         pRect(px + dx, py, 1, 2, petalCol);
@@ -607,16 +636,18 @@ export function drawHabitatFlora(time, hab) {
             }
 
         } else if (f.type === 'fern') {
+            pRect(f.x - 2, baseGroundY - 1, 5, 2, '#14532d');
             for (let i = 1; i <= 3; i++) {
                 const side = (i === 2) ? -f.dir : f.dir;
                 const fh = f.h * (0.65 + i * 0.12);
                 for (let y = 0; y < fh; y++) {
-                    const curve = Math.pow(y / fh, 1.4) * 6 * side + Math.sin(time * 0.0016 + f.phase) * 1.5;
-                    const px = f.x + curve;
+                    const prog = y / fh;
+                    const curve = Math.pow(prog, 1.4) * 6 * side + Math.sin(time * 0.0016 + f.phase) * prog * 1.5;
+                    const px = Math.round(f.x + curve);
                     const py = baseGroundY - y;
                     pRect(px, py, 1, 1, isLightMode ? '#15803d' : '#065f46');
                     if (y % 2 === 0 && y < fh - 2) {
-                        const pinna = Math.max(1, Math.round((1 - y / fh) * 3));
+                        const pinna = Math.max(1, Math.round((1 - prog) * 3));
                         pRect(px - pinna, py, pinna * 2 + 1, 1, isLightMode ? '#22c55e' : '#10b981');
                     }
                 }
@@ -624,11 +655,13 @@ export function drawHabitatFlora(time, hab) {
 
         } else if (f.type === 'glow_mushroom') {
             const sway = Math.sin(time * 0.002 + f.phase) * 0.8;
+            pRect(f.x - 2, baseGroundY - 1, 5, 2, isLightMode ? '#14532d' : '#064e3b');
             for (let y = 0; y < f.h; y++) {
-                pRect(f.x + sway * (y / f.h), baseGroundY - y, 1, 1, '#cbd5e1');
+                pRect(f.x + sway * (y / f.h), baseGroundY - y, 1, 1, '#e2e8f0');
             }
-            const cx = f.x + sway;
-            const cy = baseGroundY - f.h;
+            const cx = Math.round(f.x + sway);
+            const cy = Math.round(baseGroundY - f.h);
+            pRect(cx - f.capR + 1, cy + 1, Math.max(1, (f.capR - 1) * 2 + 1), 1, '#94a3b8');
             pRect(cx - f.capR, cy, f.capR * 2 + 1, 2, f.col);
             pRect(cx - f.capR + 1, cy - 1, (f.capR - 1) * 2 + 1, 1, '#e0f2fe');
             if (!isLightMode) {
