@@ -98,12 +98,20 @@ canvas.addEventListener('pointerdown', (e) => {
         }
     } else if (interactionProfile === 'pellet') {
         for (let i = 0; i < 3; i++) {
+            const rawX = Math.max(20, Math.min(pw - 24, px + (i - 1) * 6 + (Math.random() - 0.5) * 4));
+            const nx = rawX / Math.max(1, pw);
+            const maxWaterY = (nx <= 0.30 || nx >= 0.68)
+                ? getGroundY(rawX, 'koi-pond', pw, ph) - 10
+                : ph - 12;
+            const rawY = Math.max(28, Math.min(maxWaterY, py + (Math.random() - 0.5) * 8));
             stimuli.push({
                 type: 'koi_pellet',
-                x: px + (Math.random() - 0.5) * 14,
-                y: py + (Math.random() - 0.5) * 10,
+                x: rawX,
+                y: rawY,
+                baseY: rawY,
+                phase: Math.random() * Math.PI * 2,
                 ripple: 1,
-                life: 250,
+                life: 260,
                 claimedBy: null
             });
         }
@@ -362,14 +370,25 @@ export function drawHabitatStimuli() {
             }
 
         } else if (s.type === 'koi_pellet') {
-            s.ripple += 0.18 * frameScale;
-            if (s.ripple < 14) {
-                for (let a = 0; a < Math.PI * 2; a += 0.5) {
-                    pRect(s.x + Math.cos(a) * s.ripple, s.y + Math.sin(a) * s.ripple, 1, 1, 'rgba(255,255,255,0.26)');
+            s.phase = (s.phase || 0) + 0.09 * frameScale;
+            s.ripple += 0.16 * frameScale;
+            const bobY = (s.baseY !== undefined ? s.baseY : s.y) + Math.sin(s.phase) * 0.6;
+            s.y = bobY;
+            const px = Math.round(s.x);
+            const py = Math.round(bobY);
+
+            if (s.ripple < 15) {
+                const alpha = ((1 - s.ripple / 15) * 0.35).toFixed(2);
+                for (let a = 0; a < Math.PI * 2; a += 0.55) {
+                    pRect(px + Math.cos(a) * s.ripple, py + Math.sin(a) * (s.ripple * 0.65), 1, 1, `rgba(224, 242, 254, ${alpha})`);
                 }
             }
-            pRect(s.x - 1, s.y - 1, 2, 2, '#f59e0b');
-            pRect(s.x, s.y, 1, 1, '#fef08a');
+
+            pRect(px - 2, py + 2, 5, 1, 'rgba(2, 10, 18, 0.42)');
+            pRect(px - 2, py, 4, 2, '#92400e');
+            pRect(px - 1, py - 1, 3, 2, '#d97706');
+            pRect(px, py - 1, 2, 1, '#fbbf24');
+            pRect(px, py - 1, 1, 1, '#fef08a');
         }
 
         if (s.life <= 0) stimuli.splice(i, 1);
