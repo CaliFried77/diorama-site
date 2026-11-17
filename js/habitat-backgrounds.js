@@ -822,37 +822,70 @@ export function buildStaticEnvironmentLayer(hab) {
         const stoneDark = isLightMode ? '#334155' : '#0f172a';
         const stoneMid = isLightMode ? '#475569' : '#1e293b';
         const stoneHi = isLightMode ? '#64748b' : '#334155';
+        const stoneRim = isLightMode ? '#94a3b8' : '#475569';
         const mossDark = isLightMode ? '#14532d' : '#062e22';
         const mossMid = isLightMode ? '#15803d' : '#0d4a36';
         const mossHi = isLightMode ? '#22c55e' : '#10b981';
 
+        const waterTop = isLightMode ? '#0f766e' : '#082230';
+        const waterMid = isLightMode ? '#115e59' : '#061a26';
+        const waterDeep = isLightMode ? '#134e4a' : '#04121b';
+        const waterSteps = 28;
+        for (let s = 0; s < waterSteps; s++) {
+            const t = s / (waterSteps - 1);
+            const wy = Math.floor(18 + t * (ph - 18));
+            const wh = Math.ceil((ph - 18) / waterSteps) + 1;
+            const col = t < 0.5 ? lerpHex(waterTop, waterMid, t * 2) : lerpHex(waterMid, waterDeep, (t - 0.5) * 2);
+            sRect(0, wy, pw, wh, col);
+        }
+
         for (let x = 0; x < pw; x++) {
             const bankH = Math.round(18 + Math.sin(x * 0.03) * 4 + Math.cos(x * 0.08) * 2);
             sRect(x, 0, 1, bankH, isLightMode ? '#1e293b' : '#09131c');
-            if (x % 3 === 0) sRect(x, bankH - 5, 2, 2, mossDark);
-            sRect(x, bankH - 3, 1, 2, stoneDark);
+            sRect(x, 0, 1, Math.max(2, bankH - 5), mossDark);
+            if (x % 3 === 0) sRect(x, bankH - 6, 2, 2, mossMid);
+            if (x % 7 === 0) sRect(x, bankH - 7, 2, 1, mossHi);
+            sRect(x, bankH - 4, 1, 3, stoneDark);
+            if (x % 8 < 5) sRect(x, bankH - 3, 1, 2, stoneMid);
             sRect(x, bankH - 1, 1, 1, stoneHi);
-            sRect(x, bankH, 1, 3, 'rgba(2, 8, 16, 0.42)');
+            sRect(x, bankH, 1, 4, 'rgba(2, 8, 16, 0.48)');
+            sRect(x, bankH + 4, 1, 1, isLightMode ? 'rgba(186, 230, 253, 0.35)' : 'rgba(56, 189, 248, 0.16)');
         }
 
         const brStart = Math.round(pw * 0.60);
         const brWidth = Math.min(88, Math.round(pw * 0.20));
-        const redDark = isLightMode ? '#991b1b' : '#7f1d1d';
-        const redMid = isLightMode ? '#dc2626' : '#b91c1c';
-        const redHi = isLightMode ? '#fca5a5' : '#ef4444';
+        const redDark = isLightMode ? '#7f1d1d' : '#450a0a';
+        const redMid = isLightMode ? '#dc2626' : '#991b1b';
+        const redHi = isLightMode ? '#f87171' : '#ef4444';
+
+        [brStart - 2, brStart + brWidth - 2].forEach(pierX => {
+            sRect(pierX - 1, 15, 6, 11, stoneDark);
+            sRect(pierX, 16, 4, 8, stoneMid);
+            sRect(pierX, 15, 4, 1, stoneRim);
+            sRect(pierX - 1, 25, 6, 2, 'rgba(2, 8, 16, 0.45)');
+        });
 
         for (let bx = 0; bx <= brWidth; bx++) {
             const t = bx / brWidth;
             const arch = Math.round(Math.sin(t * Math.PI) * 9);
             const wx = brStart + bx;
             const wy = 21 - arch;
-            sRect(wx, 25 + Math.floor(arch * 0.5), 1, 2, 'rgba(185, 28, 28, 0.22)');
-            sRect(wx, wy + 4, 1, 3, '#451a03');
-            sRect(wx, wy, 1, 2, redMid);
-            sRect(wx, wy, 1, 1, redHi);
+
+            sRect(wx, 25 + Math.floor(arch * 0.45), 1, 2, 'rgba(220, 38, 38, 0.18)');
             if (bx % 9 === 0 || bx === brWidth) {
-                sRect(wx, wy - 2, 2, 6, redDark);
-                sRect(wx, wy - 2, 2, 1, '#fef08a');
+                sRect(wx, wy + 2, 2, Math.max(2, 24 - wy), '#3b1806');
+            }
+            sRect(wx, wy + 3, 1, 3, '#451a03');
+            sRect(wx, wy + 3, 1, 1, '#78350f');
+            sRect(wx, wy, 1, 2, redMid);
+            sRect(wx, wy - 3, 1, 1, redMid);
+            sRect(wx, wy - 4, 1, 1, redHi);
+
+            if (bx % 9 === 0 || bx === brWidth) {
+                sRect(wx, wy - 5, 2, 8, redDark);
+                sRect(wx, wy - 5, 1, 7, redMid);
+                sRect(wx, wy - 6, 2, 1, '#fbbf24');
+                sRect(wx, wy - 7, 1, 1, '#fef08a');
             }
         }
 
@@ -860,9 +893,9 @@ export function buildStaticEnvironmentLayer(hab) {
         const trunkDark = isLightMode ? '#3b1d14' : '#181014';
         const trunkMid = isLightMode ? '#5c2d1e' : '#291b21';
         const trunkHi = isLightMode ? '#7c3f2a' : '#3d2830';
-        const mapleDark = isLightMode ? '#991b1b' : '#65121b';
+        const mapleDark = isLightMode ? '#7f1d1d' : '#4c0d14';
         const mapleMid = isLightMode ? '#dc2626' : '#991b1b';
-        const mapleHi = isLightMode ? '#f87171' : '#dc2626';
+        const mapleHi = isLightMode ? '#f87171' : '#ef4444';
         const mapleGold = '#f59e0b';
 
         const leftBankY = getGroundY(0, 'koi-pond', pw, ph) + 2;
@@ -873,22 +906,26 @@ export function buildStaticEnvironmentLayer(hab) {
             const tw = Math.round(12 + prog * 5 + rootFlare);
             const tx = Math.max(0, Math.round(lean));
             sRect(tx, y, tw, 1, trunkDark);
-            sRect(tx + tw - 4, y, 3, 1, trunkMid);
-            sRect(tx + tw - 1, y, 1, 1, trunkHi);
+            sRect(tx + tw - 5, y, 3, 1, trunkMid);
+            sRect(tx + tw - 2, y, 2, 1, trunkHi);
+            if (prog > 0.75 && y % 2 === 0) {
+                sRect(tx + 1, y, 3, 1, mossMid);
+            }
         }
 
         [0.06, 0.28, 0.50, 0.72, 0.90].forEach((tNode, idx) => {
             const cx = Math.round(tNode * mapleReach);
             const branchY = Math.round(6 + Math.pow(tNode, 1.2) * 14);
             const rx = Math.round(29 * (1 - tNode * 0.28));
-            const bottomY = branchY + Math.round(8 * (1 - tNode * 0.28));
+            const bottomY = branchY + Math.round(9 * (1 - tNode * 0.26));
 
             for (let y = 0; y <= bottomY; y++) {
                 const normY = (y - branchY * 0.5) / Math.max(1, bottomY - branchY * 0.5);
                 const ellipse = Math.max(0, 1 - normY * normY);
-                const span = Math.round(rx * (y < branchY * 0.5 ? 1 : Math.sqrt(ellipse)));
+                const scallop = Math.sin(y * 0.9 + idx) * 2;
+                const span = Math.round(rx * (y < branchY * 0.5 ? 1 : Math.sqrt(ellipse)) + scallop);
                 let col = y < branchY * 0.35 ? mapleHi : (y > branchY ? mapleDark : mapleMid);
-                if ((y + idx) % 6 === 0 && span > 6) col = mapleGold;
+                if ((y + idx) % 5 === 0 && span > 6) col = mapleGold;
                 sRect(cx - span, y, span * 2, 1, col);
             }
         });
@@ -898,50 +935,78 @@ export function buildStaticEnvironmentLayer(hab) {
             const by = Math.round(6 + Math.pow(t, 1.2) * 14 + Math.sin(s * 0.09) * 1.5);
             const thick = Math.max(2, Math.round(8 * (1 - t * 0.75)));
             sRect(s, by - Math.floor(thick * 0.5), 1, thick, trunkDark);
+            sRect(s, by - Math.floor(thick * 0.5), 1, 1, trunkMid);
             sRect(s, by + Math.ceil(thick * 0.5) - 1, 1, 1, trunkHi);
+            if (s > 18 && s % 26 === 0 && s < mapleReach - 14) {
+                for (let sub = 0; sub < 10; sub++) {
+                    sRect(s + sub, by - 2 - Math.floor(sub * 0.5), 1, 2, trunkDark);
+                }
+            }
         }
 
         for (let x = 0; x < pw; x++) {
             const nx = x / Math.max(1, pw);
             if (nx > 0.28 && nx < 0.70) continue;
             const gy = getGroundY(x, 'koi-pond', pw, ph);
-            sRect(x, gy - 2, 1, 3, 'rgba(2, 8, 16, 0.45)');
+            sRect(x, gy - 3, 1, 4, 'rgba(2, 8, 16, 0.48)');
+            sRect(x, gy - 1, 1, 2, stoneDark);
             sRect(x, gy, 1, ph - gy, mossDark);
             sRect(x, gy, 1, 2, mossMid);
-            if (x % 5 === 0) sRect(x, gy - 1, 2, 1, mossHi);
+            if (x % 4 === 0) sRect(x, gy - 1, 2, 1, mossHi);
         }
 
         [
             { cx: 22, cy: ph - 10, rx: 14, ry: 7 },
             { cx: 46, cy: ph - 6, rx: 11, ry: 5 },
+            { cx: 68, cy: ph - 4, rx: 8, ry: 4 },
             { cx: pw - 68, cy: ph - 8, rx: 13, ry: 6 }
         ].forEach(rock => {
-            sRect(rock.cx - rock.rx, rock.cy + 2, rock.rx * 2, 4, 'rgba(2, 8, 16, 0.45)');
+            sRect(rock.cx - rock.rx - 1, rock.cy + 2, (rock.rx + 1) * 2, 4, 'rgba(2, 8, 16, 0.48)');
             for (let dy = -rock.ry; dy <= 2; dy++) {
                 const span = Math.round(rock.rx * Math.sqrt(Math.max(0, 1 - (dy * dy) / ((rock.ry + 2) * (rock.ry + 2)))));
                 sRect(rock.cx - span, rock.cy + dy, span * 2, 1, dy < -2 ? stoneHi : (dy > 0 ? stoneDark : stoneMid));
+                if (dy === -rock.ry) sRect(rock.cx - Math.floor(span * 0.5), rock.cy + dy, Math.max(2, span), 1, stoneRim);
                 if (dy === -rock.ry + 1) sRect(rock.cx - Math.floor(span * 0.6), rock.cy + dy, Math.floor(span * 1.2), 1, mossHi);
             }
         });
 
         const bx = pw - 42;
         const by = ph - 18;
-        sRect(bx - 20, by + 6, 56, 12, isLightMode ? '#1e3a3a' : '#0a1720');
-        sRect(bx - 16, by + 4, 46, 4, mossDark);
-        sRect(bx - 12, by + 3, 36, 2, mossHi);
+        sRect(bx - 22, by + 7, 58, 11, 'rgba(2, 8, 16, 0.52)');
+        sRect(bx - 20, by + 5, 56, 12, stoneDark);
+        for (let sx = bx - 18; sx <= bx + 28; sx += 7) {
+            sRect(sx, by + 5, 5, 3, stoneMid);
+            sRect(sx, by + 5, 4, 1, stoneHi);
+        }
+        sRect(bx - 16, by + 3, 46, 4, mossDark);
+        sRect(bx - 14, by + 2, 42, 2, mossMid);
+        sRect(bx - 12, by + 1, 36, 2, mossHi);
 
-        sRect(bx - 6, by, 13, 4, stoneDark);
-        sRect(bx - 3, by - 10, 7, 10, stoneMid);
-        sRect(bx - 2, by - 10, 2, 10, stoneHi);
-        sRect(bx - 5, by - 17, 11, 7, stoneDark);
-        sRect(bx - 10, by - 19, 21, 2, stoneDark);
-        sRect(bx - 8, by - 21, 17, 2, stoneMid);
-        sRect(bx - 5, by - 23, 11, 2, stoneHi);
-        sRect(bx - 1, by - 25, 3, 2, stoneHi);
+        sRect(bx - 7, by, 3, 3, stoneDark);
+        sRect(bx + 5, by, 3, 3, stoneDark);
+        sRect(bx - 6, by - 2, 13, 3, stoneMid);
+        sRect(bx - 5, by - 2, 11, 1, stoneHi);
+        sRect(bx - 3, by - 10, 7, 8, stoneMid);
+        sRect(bx - 2, by - 10, 2, 8, stoneHi);
+        sRect(bx - 5, by - 11, 11, 2, stoneHi);
 
-        sRect(bx - 22, by - 4, 12, 2, '#65a30d');
+        sRect(bx - 5, by - 17, 11, 6, stoneDark);
+        sRect(bx - 3, by - 16, 7, 4, '#fef08a');
+        sRect(bx, by - 16, 1, 4, stoneDark);
+        sRect(bx - 11, by - 19, 23, 2, stoneDark);
+        sRect(bx - 12, by - 18, 2, 1, stoneHi);
+        sRect(bx + 11, by - 18, 2, 1, stoneHi);
+        sRect(bx - 9, by - 21, 19, 2, stoneMid);
+        sRect(bx - 6, by - 23, 13, 2, stoneHi);
+        sRect(bx - 3, by - 24, 7, 1, mossMid);
+        sRect(bx - 1, by - 26, 3, 2, stoneRim);
+
+        sRect(bx - 14, by - 9, 2, 12, '#3f6212');
+        sRect(bx - 14, by - 9, 1, 12, '#65a30d');
+        sRect(bx - 11, by - 6, 2, 9, '#365314');
+        sRect(bx - 22, by - 4, 13, 2, '#65a30d');
         sRect(bx - 22, by - 4, 12, 1, '#a3e635');
-        sRect(bx - 14, by - 8, 2, 12, '#4d7c0f');
+        sRect(bx - 15, by - 5, 3, 4, '#451a03');
         // BÖLÜM SONU: KOİ GÖLETİ STATİK ÇEVRESİ
     }
 
