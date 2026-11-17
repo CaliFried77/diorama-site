@@ -141,16 +141,22 @@ export function drawHabitatEnvironment(time) {
     }
 
     if (hab.sceneProfile === 'betta-aquarium') {
-        for (let s = 0; s < 10; s++) {
+        for (let s = 0; s < 12; s++) {
             const sx = Math.round(((s * 79 + Math.sin(time * 0.001 + s) * 14) % (pw - 40)) + 20);
-            pRect(sx, 1, 10 + (s % 3) * 6, 1, isLightMode ? 'rgba(255, 255, 255, 0.55)' : 'rgba(125, 211, 252, 0.25)');
+            pRect(sx, 1 + (s % 2), 10 + (s % 3) * 6, 1, isLightMode ? 'rgba(255, 255, 255, 0.58)' : 'rgba(125, 211, 252, 0.28)');
         }
-        pRect(22, 2, 14, 2, '#b45309');
-        pRect(24, 1, 10, 1, '#f59e0b');
-        for (let b = 0; b < 14; b++) {
-            const bx = 24 + (b * 2) + Math.sin(time * 0.002 + b) * 0.6;
+
+        const leafSway = Math.round(Math.sin(time * 0.0012) * 1);
+        const catX = 18 + leafSway;
+        pRect(catX - 4, 2, 4, 1, '#78350f');
+        pRect(catX, 1, 22, 2, '#92400e');
+        pRect(catX + 2, 1, 17, 1, '#b45309');
+        pRect(catX + 5, 2, 12, 1, '#d97706');
+        pRect(catX + 3, 3, 16, 1, '#78350f');
+        for (let b = 0; b < 16; b++) {
+            const bx = catX + 1 + (b * 1.5) + Math.sin(time * 0.002 + b) * 0.4;
             const by = 2 + (b % 3);
-            pRect(bx, by, 2, 2, 'rgba(240, 249, 255, 0.75)');
+            pRect(bx, by, 2, 2, 'rgba(224, 242, 254, 0.78)');
             pRect(bx, by, 1, 1, '#ffffff');
         }
 
@@ -158,15 +164,29 @@ export function drawHabitatEnvironment(time) {
         for (let x = 22; x < maxTrunkX - 16; x += 22) {
             const t = x / maxTrunkX;
             const archY = Math.round(ph - 18 - Math.sin(t * Math.PI * 0.88) * 54 + Math.cos(t * 4) * 3);
-            const rhizomeY = archY - 2;
+            const rhizomeY = archY - 1;
             const isBuce = (x % 44 === 0);
 
-            pRect(x - 3, rhizomeY, 7, 2, '#064e3b');
+            pRect(x - 4, rhizomeY, 9, 2, '#064e3b');
+            pRect(x - 3, rhizomeY, 7, 1, '#047857');
+            [-3, 0, 3].forEach(rx => {
+                pRect(x + rx, rhizomeY + 2, 1, 3, '#14532d');
+            });
+
             [-6, -3, 0, 3, 6].forEach((lx, lIdx) => {
-                const sway = Math.sin(time * 0.002 + x + lIdx) * 1.2;
+                const sway = Math.sin(time * 0.002 + x + lIdx) * 1.1;
                 const leafX = Math.round(x + lx + sway);
-                const leafY = rhizomeY - 5 - (lIdx % 2) * 3;
-                pRect(x + lx * 0.4, rhizomeY - 2, 1, 2, '#14532d');
+                const leafY = rhizomeY - 4 - (lIdx % 2) * 2;
+                const stemBaseX = x + Math.round(lx * 0.5);
+
+                const stemSteps = Math.max(1, rhizomeY - leafY);
+                for (let st = 0; st <= stemSteps; st++) {
+                    const prog = st / stemSteps;
+                    const sx = Math.round(stemBaseX + (leafX - stemBaseX) * prog);
+                    const sy = rhizomeY - st;
+                    pRect(sx, sy, 1, 1, '#14532d');
+                }
+
                 if (isBuce) {
                     pRect(leafX - 2, leafY - 2, 4, 4, isLightMode ? '#0f766e' : '#115e59');
                     pRect(leafX - 1, leafY - 3, 3, 4, isLightMode ? '#14b8a6' : '#0d9488');
@@ -175,41 +195,58 @@ export function drawHabitatEnvironment(time) {
                 } else {
                     pRect(leafX - 2, leafY - 2, 5, 4, isLightMode ? '#15803d' : '#065f46');
                     pRect(leafX - 1, leafY - 3, 3, 5, isLightMode ? '#22c55e' : '#10b981');
-                    if (!isLightMode) pRect(leafX, leafY - 3, 1, 1, '#6ee7b7');
+                    pRect(leafX, leafY - 2, 1, 2, '#86efac');
                 }
             });
 
             if (isBuce) {
-                const flX = x + Math.round(Math.sin(time * 0.0025 + x) * 1.5);
-                const flY = rhizomeY - 12;
-                pRect(x, rhizomeY - 9, 1, 6, '#10b981');
-                pRect(flX - 1, flY, 3, 3, '#f8fafc');
-                pRect(flX, flY - 1, 1, 2, '#fef08a');
-                pRect(flX - 2, flY - 1, 5, 5, 'rgba(224, 242, 254, 0.22)');
+                const flX = x + Math.round(Math.sin(time * 0.0025 + x) * 1.4);
+                const flY = rhizomeY - 11;
+                for (let sy = rhizomeY - 1; sy >= flY + 2; sy--) {
+                    const prog = (rhizomeY - sy) / 10;
+                    pRect(Math.round(x + (flX - x) * prog), sy, 1, 1, '#10b981');
+                }
+                pRect(flX - 1, flY + 2, 3, 1, '#047857');
+                pRect(flX - 2, flY, 5, 2, '#f8fafc');
+                pRect(flX - 1, flY - 1, 3, 3, '#ffffff');
+                pRect(flX, flY - 2, 1, 2, '#fef08a');
+                pRect(flX - 3, flY - 2, 7, 5, 'rgba(224, 242, 254, 0.18)');
             }
         }
 
-        [Math.round(pw * 0.32), Math.round(pw * 0.66)].forEach((cx, cIdx) => {
+        [Math.round(pw * 0.31), Math.round(pw * 0.67)].forEach((cx, cIdx) => {
             const nx = cx / Math.max(1, pw);
-            const baseY = Math.round(ph - 4 - Math.pow(Math.abs(nx - 0.50) * 1.95, 1.45) * 18);
+            const baseY = Math.round(ph - 4 - Math.pow(Math.abs(nx - 0.50) * 1.95, 1.45) * 18 - Math.sin(cx * 0.04) * 2);
+            pRect(cx - 2, baseY - 1, 5, 2, '#4c0519');
             for (let blade = -2; blade <= 2; blade++) {
                 const sway = Math.sin(time * 0.0018 + blade + cIdx) * 1.5;
-                const bx = cx + blade * 3 + sway;
-                const bh = 9 + (2 - Math.abs(blade)) * 3;
-                pRect(bx - 1, baseY - bh, 3, bh, blade % 2 === 0 ? '#881337' : '#9f1239');
-                pRect(bx, baseY - bh - 1, 1, bh, '#fb7185');
+                const bh = 10 + (2 - Math.abs(blade)) * 4;
+                const tipX = Math.round(cx + blade * 3.5 + sway);
+                const tipY = baseY - bh;
+                for (let st = 0; st < bh - 2; st++) {
+                    const prog = st / Math.max(1, bh - 2);
+                    pRect(Math.round(cx + (tipX - cx) * prog), baseY - st, 1, 1, '#881337');
+                }
+                pRect(tipX - 2, tipY, 5, 4, blade % 2 === 0 ? '#881337' : '#9f1239');
+                pRect(tipX - 1, tipY - 1, 3, 4, '#e11d48');
+                pRect(tipX, tipY, 1, 2, '#fda4af');
             }
         });
 
-        const diffX = pw - 18;
-        const diffY = ph - 26;
-        pRect(diffX - 2, diffY, 5, 4, 'rgba(224, 242, 254, 0.55)');
+        const diffX = pw - 16;
+        const diffFloorY = Math.round(ph - 4 - Math.pow(Math.abs((diffX / Math.max(1, pw)) - 0.50) * 1.95, 1.45) * 18);
+        const diffY = diffFloorY - 10;
+        pRect(pw - 3, diffY + 2, 3, 2, 'rgba(148, 163, 184, 0.55)');
+        pRect(diffX + 3, diffY + 3, Math.max(1, pw - diffX - 5), 1, 'rgba(186, 230, 253, 0.45)');
+        pRect(pw - 2, 3, 1, diffY + 1, 'rgba(186, 230, 253, 0.28)');
+        pRect(diffX - 2, diffY, 5, 5, 'rgba(224, 242, 254, 0.52)');
+        pRect(diffX - 1, diffY + 1, 3, 3, 'rgba(186, 230, 253, 0.35)');
         pRect(diffX - 1, diffY, 3, 1, '#ffffff');
-        for (let m = 0; m < 10; m++) {
-            const mRise = ((time * 0.015 + m * 7) % (diffY - 4));
-            const mx = diffX + Math.sin(time * 0.005 + m * 1.3) * 1.8;
+        for (let m = 0; m < 12; m++) {
+            const mRise = ((time * 0.015 + m * 6.5) % Math.max(8, diffY - 4));
+            const mx = diffX + Math.sin(time * 0.005 + m * 1.3) * 1.6;
             const my = diffY - 2 - mRise;
-            pRect(mx, my, 1, 1, 'rgba(224, 242, 254, 0.72)');
+            pRect(mx, my, 1, 1, 'rgba(224, 242, 254, 0.75)');
         }
 
         for (let i = 0; i < 12; i++) {
@@ -220,7 +257,7 @@ export function drawHabitatEnvironment(time) {
             pRect(bx, by, 1, 1, 'rgba(224, 242, 254, 0.58)');
         }
     }
-
+    
     if (hab.sceneProfile === 'wetland') {
         const waterHorizonY = ph - 52;
         for (let s = 0; s < 14; s++) {
