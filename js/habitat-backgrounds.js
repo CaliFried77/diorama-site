@@ -412,23 +412,36 @@ export function buildStaticEnvironmentLayer(hab) {
             return Math.round(ph - 4 - mound - Math.sin(x * 0.04) * 2);
         };
 
-        const bgPlantCol = isLightMode ? 'rgba(15, 82, 72, 0.24)' : 'rgba(6, 48, 44, 0.48)';
+        sRect(0, 0, pw, 2, isLightMode ? 'rgba(186, 230, 253, 0.38)' : 'rgba(56, 189, 248, 0.16)');
+        sRect(0, 2, pw, 1, isLightMode ? 'rgba(255, 255, 255, 0.45)' : 'rgba(125, 211, 252, 0.22)');
+
+        const farSilhouetteCol = isLightMode ? 'rgba(11, 61, 56, 0.16)' : 'rgba(4, 34, 34, 0.38)';
+        const bgPlantCol = isLightMode ? 'rgba(15, 82, 72, 0.26)' : 'rgba(6, 48, 44, 0.52)';
         for (let x = 0; x < pw; x += 3) {
             const nx = x / Math.max(1, pw);
-            if (nx > 0.38 && nx < 0.62) continue;
-            const stemH = Math.round((36 + Math.sin(x * 0.14) * 14 + Math.cos(x * 0.27) * 8) * (0.6 + Math.abs(nx - 0.5)));
-            sRect(x, soilY(x) - stemH, 2, stemH, bgPlantCol);
+            const base = soilY(x);
+            if (nx < 0.42 || nx > 0.58) {
+                const stemH = Math.round((38 + Math.sin(x * 0.14) * 14 + Math.cos(x * 0.27) * 8) * (0.62 + Math.abs(nx - 0.5)));
+                sRect(x, base - stemH, 2, stemH, bgPlantCol);
+                if (x % 6 === 0) {
+                    sRect(x - 1, base - Math.floor(stemH * 0.7), 4, 1, bgPlantCol);
+                }
+            }
+            const farH = Math.round(20 + Math.sin(x * 0.05) * 8);
+            sRect(x, base - farH, 3, farH, farSilhouetteCol);
         }
 
         const stoneDark = isLightMode ? '#1e293b' : '#09111e';
         const stoneMid = isLightMode ? '#334155' : '#132033';
         const stoneHi = isLightMode ? '#64748b' : '#243854';
+        const stoneRim = isLightMode ? '#94a3b8' : '#38bdf8';
         const mossPocket = isLightMode ? '#16a34a' : '#0d9488';
 
         const dragonStones = [
-            { bx: pw - 58, topY: ph - 68, baseW: 38, lean: -0.22 },
-            { bx: pw - 82, topY: ph - 44, baseW: 26, lean: -0.30 },
-            { bx: pw - 28, topY: ph - 52, baseW: 28, lean: 0.15 }
+            { bx: 38, topY: ph - 46, baseW: 26, lean: 0.24 },
+            { bx: pw - 58, topY: ph - 70, baseW: 40, lean: -0.22 },
+            { bx: pw - 84, topY: ph - 46, baseW: 28, lean: -0.30 },
+            { bx: pw - 28, topY: ph - 54, baseW: 30, lean: 0.15 }
         ];
         dragonStones.forEach((st, sIdx) => {
             const bY = ph;
@@ -439,19 +452,23 @@ export function buildStaticEnvironmentLayer(hab) {
                 const cx = st.bx + Math.round((1 - prog) * h * st.lean);
                 const left = cx - Math.floor(w * 0.5);
                 sRect(left, st.topY + y, w, 1, stoneDark);
-                sRect(left + 1, st.topY + y, Math.max(2, Math.floor(w * 0.55)), 1, stoneMid);
+                sRect(left + 1, st.topY + y, Math.max(2, Math.floor(w * 0.58)), 1, stoneMid);
                 sRect(left + 1, st.topY + y, 2, 1, stoneHi);
-                if (y > 6 && y % 7 === 0 && w > 12) {
+                if (y < 6 && prog < 0.2) {
+                    sRect(left + 1, st.topY + y, 1, 1, stoneRim);
+                }
+                if (y > 6 && y % 6 === 0 && w > 12) {
                     const holeX = left + 4 + ((y * 3 + sIdx * 5) % Math.max(2, w - 9));
                     sRect(holeX, st.topY + y, 4, 2, '#040811');
                     sRect(holeX, st.topY + y - 1, 3, 1, mossPocket);
-                    if (!isLightMode && y % 14 === 0) {
+                    if (!isLightMode && y % 12 === 0) {
                         sRect(holeX + 1, st.topY + y - 1, 2, 1, 'rgba(45, 212, 191, 0.55)');
                     }
                 }
             }
         });
 
+        const woodShadow = isLightMode ? '#271105' : '#0f080b';
         const woodDark = isLightMode ? '#3f1d0b' : '#1a1014';
         const woodMid = isLightMode ? '#5c2d16' : '#2c1a21';
         const woodHi = isLightMode ? '#854d0e' : '#4a2c36';
@@ -462,6 +479,7 @@ export function buildStaticEnvironmentLayer(hab) {
             const archY = Math.round(ph - 18 - Math.sin(t * Math.PI * 0.88) * 54 + Math.cos(t * 4) * 3);
             const thick = Math.max(2, Math.floor(15 * (1 - t * 0.74)));
             sRect(x, archY, 2, thick, woodDark);
+            sRect(x, archY + thick - 1, 2, 1, woodShadow);
             sRect(x, archY + 1, 2, Math.max(1, thick - 3), woodMid);
             sRect(x, archY, 2, 2, woodHi);
 
@@ -469,19 +487,33 @@ export function buildStaticEnvironmentLayer(hab) {
                 const subT = (t - 0.18) / 0.66;
                 const upperY = Math.round(archY - 12 - Math.sin(subT * Math.PI) * 24);
                 const uThick = Math.max(2, Math.floor(6 * (1 - subT * 0.68)));
+                if (subT < 0.14) {
+                    const joinH = Math.max(1, archY - (upperY + uThick) + 2);
+                    sRect(x, upperY + uThick - 1, 2, joinH, woodDark);
+                }
                 sRect(x, upperY, 2, uThick, woodDark);
                 sRect(x, upperY, 2, 1, woodHi);
                 if (x % 2 === 0) {
                     sRect(x, upperY - 2, 2, 2, isLightMode ? '#16a34a' : '#0d9488');
+                    sRect(x, upperY - 3, 1, 1, isLightMode ? '#4ade80' : '#2dd4bf');
                 }
             }
 
             if (t > 0.12 && t < 0.48) {
                 const legT = (t - 0.12) / 0.36;
-                const legY = Math.round(archY + thick + legT * (ph - (archY + thick)));
+                const targetFloor = soilY(x) + 3;
+                const legY = Math.round(archY + thick + legT * (targetFloor - (archY + thick)));
                 const legW = Math.max(2, Math.floor(7 * (1 - legT * 0.5)));
-                sRect(x, legY, legW, 2, woodDark);
+                sRect(x, legY, legW, 3, woodDark);
                 sRect(x, legY, 2, 1, woodHi);
+            }
+
+            if (t > 0.62) {
+                const propT = (t - 0.62) / 0.38;
+                const groundTarget = soilY(x) + 2;
+                const branchY = Math.round(archY + Math.pow(propT, 1.15) * (groundTarget - archY));
+                sRect(x, branchY, 2, 3, woodDark);
+                sRect(x, branchY, 2, 1, woodHi);
             }
         }
 
@@ -489,18 +521,20 @@ export function buildStaticEnvironmentLayer(hab) {
         for (let s = 0; s < rightRootSpan; s++) {
             const t = s / rightRootSpan;
             const rx = pw - 42 - s;
-            const ry = Math.round(ph - 26 - Math.sin(t * Math.PI * 0.82) * 26 + Math.sin(t * 5) * 2);
-            const rThick = Math.max(2, Math.floor(8 * (1 - t * 0.75)));
-            sRect(rx, ry, 2, rThick, woodDark);
-            sRect(rx, ry, 2, 1, woodHi);
-            if (s % 3 === 0 && t < 0.7) {
-                sRect(rx, ry - 2, 2, 2, isLightMode ? '#16a34a' : '#0d9488');
+            const anchorY = soilY(rx) + 2;
+            const arch = Math.round((ph - 28 - Math.sin(t * Math.PI * 0.78) * 24) * (1 - Math.pow(t, 1.6)) + anchorY * Math.pow(t, 1.6));
+            const rThick = Math.max(2, Math.floor(8 * (1 - t * 0.72)));
+            sRect(rx, arch, 2, rThick, woodDark);
+            sRect(rx, arch, 2, 1, woodHi);
+            if (s % 3 === 0 && t < 0.72) {
+                sRect(rx, arch - 2, 2, 2, isLightMode ? '#16a34a' : '#0d9488');
             }
         }
 
         const soilDark = isLightMode ? '#1e1b18' : '#090d16';
         const soilMid = isLightMode ? '#292524' : '#131c2b';
         const soilRim = isLightMode ? '#15803d' : '#0f5138';
+        const sandShadow = isLightMode ? '#94a3b8' : '#1e293b';
         const sandBase = isLightMode ? '#cbd5e1' : '#334155';
         const sandHi = isLightMode ? '#f1f5f9' : '#475569';
 
@@ -513,18 +547,32 @@ export function buildStaticEnvironmentLayer(hab) {
                 const sandY = ph - 5 - Math.round(Math.cos((nx - 0.50) * 18) * 2);
                 sRect(x, sandY, 1, ph - sandY, sandBase);
                 sRect(x, sandY, 1, 2, sandHi);
+                if (Math.abs(nx - 0.50) > 0.068) {
+                    sRect(x, sandY, 1, 2, sandShadow);
+                }
             } else {
                 sRect(x, gy, 1, ph - gy, soilDark);
-                sRect(x, gy + 1, 1, Math.max(1, Math.floor((ph - gy) * 0.5)), soilMid);
+                sRect(x, gy + 2, 1, Math.max(1, Math.floor((ph - gy) * 0.5)), soilMid);
                 sRect(x, gy, 1, 2, soilRim);
+                if ((x * 7) % 5 === 0 && ph - gy > 5) {
+                    sRect(x, gy + 3 + (x % 4), 1, 1, stoneDark);
+                }
             }
         }
 
+        [Math.round(pw * 0.415), Math.round(pw * 0.585)].forEach((bx, bIdx) => {
+            const by = soilY(bx);
+            sRect(bx - 5, by - 2, 10, 5, stoneDark);
+            sRect(bx - 4, by - 3, 8, 3, stoneMid);
+            sRect(bx - 3, by - 3, 5, 1, stoneHi);
+            sRect(bx - 2 + bIdx, by - 4, 3, 1, mossPocket);
+        });
+
         const marimoBalls = [
-            { x: Math.round(pw * 0.36), r: 5 },
-            { x: Math.round(pw * 0.39), r: 4 },
-            { x: Math.round(pw * 0.61), r: 5 },
-            { x: Math.round(pw * 0.64), r: 3 }
+            { x: Math.round(pw * 0.35), r: 5 },
+            { x: Math.round(pw * 0.38), r: 4 },
+            { x: Math.round(pw * 0.62), r: 5 },
+            { x: Math.round(pw * 0.65), r: 3 }
         ];
         marimoBalls.forEach(mb => {
             const my = soilY(mb.x) - mb.r + 2;
@@ -533,14 +581,19 @@ export function buildStaticEnvironmentLayer(hab) {
                 const span = Math.round(mb.r * Math.sqrt(Math.max(0, 1 - (dy * dy) / (mb.r * mb.r))));
                 const col = dy < -1 ? '#22c55e' : (dy > 1 ? '#14532d' : '#15803d');
                 sRect(mb.x - span, my + dy, span * 2, 1, col);
+                if (dy === -mb.r + 1 && span > 2) {
+                    sRect(mb.x - Math.floor(span * 0.5), my + dy, Math.max(1, span), 1, '#4ade80');
+                }
             }
         });
 
-        [Math.round(pw * 0.43), Math.round(pw * 0.56)].forEach((lx, idx) => {
-            const ly = soilY(lx);
+        [Math.round(pw * 0.44), Math.round(pw * 0.55)].forEach((lx, idx) => {
+            const ly = ph - 5;
+            sRect(lx - 5, ly, 10, 1, 'rgba(2, 8, 16, 0.38)');
             sRect(lx - 5, ly - 1, 10, 2, '#78350f');
-            sRect(lx - 4, ly - 2, 7, 1, '#b45309');
+            sRect(lx - 4, ly - 2, 8, 1, '#b45309');
             sRect(lx - 3 + idx * 2, ly - 1, 5, 1, '#d97706');
+            sRect(lx - 6, ly - 1, 2, 1, '#451a03');
         });
         // BÖLÜM SONU: BETTA AKVARYUMU STATİK ÇEVRESİ
     }
