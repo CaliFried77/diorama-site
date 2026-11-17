@@ -128,14 +128,18 @@ canvas.addEventListener('pointerdown', (e) => {
         const kinds = ['mango', 'guava', 'banana'];
         for (let i = 0; i < 3; i++) {
             const offset = (i - 1) * 11;
-            const fruitX = px + offset + (Math.random() - 0.5) * 3;
-            const fruitY = py + (Math.random() - 0.5) * 6;
+            const fruitX = Math.max(14, Math.min(pw - 14, px + offset + (Math.random() - 0.5) * 3));
+            const groundY = getGroundY(fruitX, 'rainforest', pw, ph);
+            const rawY = Math.max(18, Math.min(groundY - 4, py + (Math.random() - 0.5) * 6));
+            const isGroundFruit = rawY >= groundY - 22;
             stimuli.push({
                 type: 'tropical_fruit',
                 kind: kinds[i],
                 x: fruitX,
-                y: fruitY,
-                baseY: fruitY,
+                y: isGroundFruit ? groundY - 5 : rawY,
+                baseY: isGroundFruit ? groundY - 5 : rawY,
+                onGround: isGroundFruit,
+                vineTopY: 4 + (i % 3) * 3,
                 phase: Math.random() * Math.PI * 2,
                 life: 300,
                 claimedBy: null
@@ -177,9 +181,34 @@ export function drawHabitatStimuli() {
 
         if (s.type === 'tropical_fruit') {
             s.phase += 0.08 * frameScale;
-            const fx = Math.round(s.x + Math.sin(s.phase * 0.7) * 0.8);
-            const fy = Math.round(s.baseY + Math.sin(s.phase) * 1.6);
+            const groundY = getGroundY(s.x, 'rainforest', pw, ph);
+            const onGround = Boolean(s.onGround) || s.baseY >= groundY - 18;
+            const sway = onGround ? 0 : Math.sin(s.phase * 0.7) * 1.2;
+            const fx = Math.round(s.x + sway);
+            const fy = onGround
+                ? groundY - 5
+                : Math.round(s.baseY + Math.sin(s.phase) * 1.1);
             s.y = fy;
+
+            if (onGround) {
+                pRect(fx - 6, groundY - 1, 13, 2, 'rgba(2, 10, 10, 0.45)');
+                pRect(fx - 6, groundY - 2, 13, 2, '#14532d');
+                pRect(fx - 5, groundY - 3, 11, 1, '#16a34a');
+            } else {
+                const startY = s.vineTopY !== undefined ? s.vineTopY : 5;
+                pRect(Math.round(s.x) - 1, startY - 1, 3, 2, '#321e17');
+                const vineLen = Math.max(4, (fy - 4) - startY);
+                for (let vy = 0; vy <= vineLen; vy += 2) {
+                    const prog = vy / vineLen;
+                    const vx = Math.round(s.x + sway * Math.pow(prog, 1.2));
+                    const py = startY + vy;
+                    pRect(vx, py, 1, 2, '#15803d');
+                    if (vy > 6 && vy % 12 === 0 && vy < vineLen - 4) {
+                        const lSide = (vy % 24 === 0) ? -1 : 1;
+                        pRect(vx + lSide, py, 3 * lSide, 2, '#22c55e');
+                    }
+                }
+            }
 
             const sparkX = fx + Math.round(Math.cos(s.phase * 1.4) * 6);
             const sparkY = fy + Math.round(Math.sin(s.phase * 1.4) * 4);
@@ -434,7 +463,7 @@ export function drawHabitatStimuli() {
             if (s.ripple < 15) {
                 const alpha = ((1 - s.ripple / 15) * 0.35).toFixed(2);
                 for (let a = 0; a < Math.PI * 2; a += 0.55) {
-                    pRect(px + Math.cos(a) * s.ripple, py + Math.sin(a) * (s.ripple * 0.65), 1, 1, `rgba(224, 242, 254, ${alpha})`);
+                    pRect(px + Math.cos(a) * s.ripple, py + Math.sin(a) * (s.ripple * 0.65), 1, 1, `rgba(254, 242, 254, ${alpha})`);
                 }
             }
 
