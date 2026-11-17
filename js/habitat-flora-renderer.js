@@ -82,31 +82,39 @@ export function drawHabitatFlora(time, hab) {
             for (let y = 0; y < f.len; y += 2) {
                 const prog = y / f.len;
                 const sway = Math.sin(time * 0.0015 + f.phase + y * 0.07) * (1.0 + prog * 3.0);
-                const px = f.x + sway;
+                const px = Math.round(f.x + sway);
                 const py = f.branchY + y;
-                pRect(px, py, 1, 2, '#451a03');
+                pRect(px, py, 1, 2, '#3b1806');
                 if (y > 2 && y % 4 === 0) {
-                    const span = Math.max(1, Math.round((1 - prog * 0.5) * 3));
-                    pRect(px - span, py, span * 2 + 1, 2, f.col);
-                    pRect(px, py - 1, 1, 1, '#fca5a5');
+                    const span = Math.max(1, Math.round((1 - prog * 0.45) * 3));
+                    pRect(px - span, py, span * 2 + 1, 1, f.col);
+                    pRect(px - span + 1, py - 1, Math.max(1, span * 2 - 1), 3, f.col);
+                    pRect(px, py - 1, 1, 1, '#fde047');
+                    pRect(px - 1, py, 1, 1, '#fca5a5');
                 }
             }
 
         } else if (f.type === 'bamboo_stalk') {
+            const culmDark = isLightMode ? '#14532d' : '#063726';
             const culmCol = isLightMode ? '#15803d' : '#0d593d';
             const nodeCol = isLightMode ? '#86efac' : '#34d399';
             const leafCol = isLightMode ? '#22c55e' : '#10b981';
+
+            pRect(f.x - 1, baseGroundY - 1, 4, 2, culmDark);
             for (let y = 0; y < f.h; y += 2) {
                 const prog = y / f.h;
                 const sway = Math.sin(time * 0.0012 + f.phase) * prog * 3.2 + f.lean * y;
-                const px = f.x + sway;
+                const px = Math.round(f.x + sway);
                 const py = baseGroundY - y;
                 pRect(px, py, 2, 2, culmCol);
+                pRect(px + 1, py, 1, 2, culmDark);
                 if (y > 6 && y % 12 === 0) {
                     pRect(px - 1, py, 4, 1, nodeCol);
                     const side = (y % 24 === 0) ? -1 : 1;
-                    pRect(px + side * 2, py - 1, 4 * side, 1, leafCol);
-                    pRect(px + side * 3, py - 2, 3 * side, 1, nodeCol);
+                    const leafStartX = side > 0 ? px + 2 : px - 1;
+                    pRect(leafStartX, py - 1, 4 * side, 1, leafCol);
+                    pRect(leafStartX + side, py - 2, 4 * side, 1, nodeCol);
+                    pRect(leafStartX + side * 2, py, 3 * side, 1, culmCol);
                 }
             }
 
