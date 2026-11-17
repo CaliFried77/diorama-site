@@ -411,30 +411,66 @@ if (hab.sceneProfile === 'wetland') {
     if (hab.sceneProfile === 'reef') {
         for (let c = 0; c < 12; c++) {
             const cx = Math.round(((c * 61 + Math.sin(time * 0.001 + c) * 18) % (pw * 0.56)) + pw * 0.22);
-            const cy = 3 + (c % 3) * 3;
-            pRect(cx, cy, 10 + (c % 4) * 4, 1, isLightMode ? 'rgba(224, 242, 254, 0.55)' : 'rgba(103, 232, 249, 0.24)');
+            const cy = 2 + (c % 3) * 3;
+            pRect(cx, cy, 10 + (c % 4) * 4, 1, isLightMode ? 'rgba(224, 242, 254, 0.58)' : 'rgba(103, 232, 249, 0.26)');
         }
 
         const clamX = Math.floor(pw * 0.72);
-        const clamY = getGroundY(clamX, 'reef', pw, ph) - 1;
-        const openJaw = Math.round(2 + Math.sin(time * 0.0022) * 1.3);
-        pRect(clamX - 8, clamY, 17, 4, '#1e1b4b');
-        pRect(clamX - 7, clamY - 2, 15, 2, '#a21caf');
-        pRect(clamX - 6, clamY - openJaw - 4, 13, 3, '#311042');
-        pRect(clamX - 5, clamY - openJaw - 2, 11, 1, '#e879f9');
-        pRect(clamX - 2, clamY - 4, 4, 4, '#fef9c3');
-        pRect(clamX - 1, clamY - 3, 2, 2, '#ffffff');
-        pRect(clamX - 4, clamY - 6, 8, 7, 'rgba(240, 171, 252, 0.28)');
+        const clamNx = clamX / Math.max(1, pw);
+        const clamMound = clamNx > 0.74 ? Math.pow((clamNx - 0.74) / 0.26, 1.5) * 34 : 0;
+        const clamY = Math.round(getGroundY(clamX, 'reef', pw, ph) - clamMound) - 1;
+        const openJaw = Math.round(2 + Math.sin(time * 0.0022) * 1.2);
 
+        // Kaya kaide ve temas gölgesi
+        pRect(clamX - 11, clamY + 2, 23, 3, 'rgba(5, 4, 23, 0.55)');
+        pRect(clamX - 10, clamY, 21, 3, '#1e1b4b');
+
+        // Alt kabuk, oluklu kabuk sırtları ve menteşe bağlantısı
+        pRect(clamX - 9, clamY - 3, 19, 4, '#312e81');
+        for (let rx = -7; rx <= 7; rx += 3) {
+            pRect(clamX + rx, clamY - 3, 2, 3, '#4338ca');
+        }
+        pRect(clamX - 9, clamY - openJaw - 4, 3, openJaw + 3, '#1e1b4b');
+
+        // Alt ve üst kabuğu birbirine fiziksel olarak bağlayan biyolüminesan manto dokusu
+        const mantleH = openJaw + 3;
+        pRect(clamX - 7, clamY - 2 - mantleH, 15, mantleH, '#701a75');
+        pRect(clamX - 8, clamY - 2, 17, 2, '#a21caf');
+        pRect(clamX - 6, clamY - 1 - mantleH, 13, 2, '#d946ef');
+        for (let mx = -5; mx <= 5; mx += 2) {
+            pRect(clamX + mx, clamY - 2, 1, 1, '#38bdf8');
+            pRect(clamX + mx, clamY - 1 - mantleH, 1, 1, '#f0abfc');
+        }
+
+        // İnci ve parıltı halesi (manto yatağının içinde oturur)
+        pRect(clamX - 4, clamY - 7, 9, 7, 'rgba(240, 171, 252, 0.24)');
+        pRect(clamX - 2, clamY - 5, 5, 4, '#fef08a');
+        pRect(clamX - 1, clamY - 5, 3, 3, '#fef9c3');
+        pRect(clamX - 1, clamY - 4, 2, 2, '#ffffff');
+
+        // Üst kabuk ve oluklu kenarları
+        pRect(clamX - 8, clamY - openJaw - 5, 16, 3, '#311042');
+        pRect(clamX - 7, clamY - openJaw - 6, 14, 2, '#4c1d95');
+        for (let rx = -6; rx <= 6; rx += 3) {
+            pRect(clamX + rx, clamY - openJaw - 6, 2, 1, '#818cf8');
+        }
+        pRect(clamX - 6, clamY - openJaw - 3, 13, 1, '#e879f9');
+
+        // Resif tabanındaki belirli yarıklardan yükselen mikro kabarcık sütunları
+        const ventPositions = [0.18, 0.34, 0.48, 0.63, 0.82];
         for (let i = 0; i < 14; i++) {
-            const rise = (time * (0.0045 + (i % 3) * 0.0012) + i * 21) % Math.max(40, ph * 0.84);
-            const bx = 24 + ((i * 43) % Math.max(24, pw - 48)) + Math.sin(time * 0.0015 + i) * 2;
-            const by = ph - rise - 10;
+            const vPos = ventPositions[i % ventPositions.length];
+            const baseBx = Math.round(pw * vPos + ((i * 7) % 9) - 4);
+            const floorY = getGroundY(baseBx, 'reef', pw, ph);
+            const maxRise = Math.max(40, floorY - 8);
+            const rise = (time * (0.0045 + (i % 3) * 0.0012) + i * 21) % maxRise;
+            const bx = baseBx + Math.sin(time * 0.0015 + i) * 2;
+            const by = floorY - 4 - rise;
             pRect(bx, by, 2, 2, 'rgba(103, 232, 249, 0.35)');
             pRect(bx, by, 1, 1, i % 3 === 0 ? '#f0abfc' : '#cffafe');
         }
     }
-
+    
     if (hab.sceneProfile === 'koi-pond') {
         for (let s = 0; s < 14; s++) {
             const wy = 32 + s * Math.floor((ph - 44) / 14);
