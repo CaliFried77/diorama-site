@@ -72,16 +72,19 @@ canvas.addEventListener('pointerdown', (e) => {
         }
     } else if (interactionProfile === 'midge') {
         for (let i = 0; i < 3; i++) {
-            const bx = px + (Math.random() - 0.5) * 18;
-            const by = py + (Math.random() - 0.5) * 12;
+            const bx = Math.max(16, Math.min(pw - 16, px + (i - 1) * 8 + (Math.random() - 0.5) * 5));
+            const by = Math.max(20, Math.min(ph - 22, py + (Math.random() - 0.5) * 10));
+            const waterSurfaceY = Math.max(ph - 48, Math.min(ph - 10, by + 10));
             stimuli.push({
                 type: 'midge',
                 x: bx,
                 y: by,
                 baseX: bx,
                 baseY: by,
+                emergeY: waterSurfaceY,
+                ripple: i === 1 ? 1 : 0,
                 phase: Math.random() * Math.PI * 2,
-                life: 240,
+                life: 250,
                 claimedBy: null
             });
         }
@@ -354,11 +357,27 @@ export function drawHabitatStimuli() {
             }
 
         } else if (s.type === 'midge') {
-            s.phase += 0.25 * frameScale;
-            s.x = s.baseX + Math.sin(s.phase) * 4;
-            s.y = s.baseY + Math.cos(s.phase * 1.3) * 2.5;
-            pRect(s.x, s.y, 1, 1, '#fde047');
-            pRect(s.x - 1, s.y - 1, 3, 1, 'rgba(255, 255, 255, 0.65)');
+            s.phase += 0.24 * frameScale;
+            s.x = s.baseX + Math.sin(s.phase) * 3.8;
+            s.y = s.baseY + Math.sin(s.phase * 2) * 1.8;
+            const mx = Math.round(s.x);
+            const my = Math.round(s.y);
+            const wingFlutter = Math.sin(s.phase * 3.5) > 0 ? -1 : 0;
+
+            if (s.ripple > 0 && s.ripple < 12) {
+                s.ripple += 0.18 * frameScale;
+                const r = Math.round(s.ripple);
+                const rAlpha = ((1 - s.ripple / 12) * 0.35).toFixed(2);
+                const ry = s.emergeY || Math.min(ph - 8, Math.round(s.baseY + 10));
+                pRect(Math.round(s.baseX) - r, ry, 2, 1, `rgba(186, 230, 253, ${rAlpha})`);
+                pRect(Math.round(s.baseX) + r - 1, ry, 2, 1, `rgba(186, 230, 253, ${rAlpha})`);
+            }
+
+            pRect(mx - 2, my - 1 + wingFlutter, 2, 1, 'rgba(224, 242, 254, 0.82)');
+            pRect(mx + 1, my - 1 + wingFlutter, 2, 1, 'rgba(224, 242, 254, 0.82)');
+            pRect(mx - 1, my, 3, 1, '#3f6212');
+            pRect(mx, my, 1, 1, '#fde047');
+            pRect(mx, my + 1, 1, 1, 'rgba(254, 240, 138, 0.65)');
 
         } else if (s.type === 'plankton_swarm') {
             s.phase += 0.07 * frameScale;
