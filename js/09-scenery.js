@@ -363,25 +363,42 @@ if (hab.sceneProfile === 'wetland') {
         const reach = Math.min(155, Math.round(pw * 0.30));
         [Math.round(reach * 0.48), Math.round(pw - reach * 0.48)].forEach((lx, idx) => {
             const t = 0.48;
-            const branchY = Math.round(5 + Math.pow(t, 1.2) * 15);
+            const branchY = Math.round(5 + Math.pow(t, 1.2) * 15 + Math.sin(lx * 0.09) * 1.5);
             const sway = Math.round(Math.sin(time * 0.002 + idx * 2) * 1);
-            pRect(lx, branchY + 1, 1, 6, '#475569');
+
+            pRect(lx - 1, branchY, 3, 2, '#334155');
+            for (let cy = 1; cy <= 6; cy++) {
+                const cx = lx + (cy > 3 ? sway : 0);
+                pRect(cx, branchY + cy, 1, 1, '#64748b');
+            }
+            pRect(lx - 1 + sway, branchY + 6, 3, 1, '#475569');
             pRect(lx - 2 + sway, branchY + 7, 5, 1, '#334155');
             pRect(lx - 2 + sway, branchY + 8, 5, 5, 'rgba(253, 224, 71, 0.88)');
             pRect(lx - 1 + sway, branchY + 9, 3, 3, '#ffffff');
-            pRect(lx - 4 + sway, branchY + 6, 9, 9, 'rgba(253, 224, 71, 0.18)');
+            pRect(lx - 5 + sway, branchY + 5, 11, 11, 'rgba(253, 224, 71, 0.16)');
             pRect(lx - 2 + sway, branchY + 13, 5, 1, '#334155');
+            pRect(lx - 1 + sway, branchY + 14, 3, 1, '#1e293b');
         });
 
         const fx = Math.round(pw * 0.18);
         const fy = getGroundY(fx, 'botanical', pw, ph) + 1;
+        const plumeH = 3 + Math.round(Math.sin(time * 0.008) * 1);
+        pRect(fx, fy - 31 - plumeH, 1, plumeH, '#e0f2fe');
+        pRect(fx - 1, fy - 31 - plumeH, 3, 1, '#ffffff');
+
         const dropPhase = (time * 0.015) % 6;
         [-1, 1].forEach(side => {
             const dx = fx + side * Math.round(2 + dropPhase * 1.4);
             const dy = fy - 29 + Math.round(dropPhase * 1.1);
             pRect(dx, dy, 1, 2, '#bae6fd');
+            const cascadeX = fx + side * 11;
+            const cascadeY = fy - 21 + Math.floor((time * 0.02 + (side > 0 ? 3 : 0)) % 14);
+            pRect(cascadeX, fy - 21, 1, 16, 'rgba(186, 230, 253, 0.30)');
+            pRect(cascadeX, cascadeY, 1, 3, '#e0f2fe');
+            pRect(cascadeX - 1, fy - 5, 3, 1, '#ffffff');
         });
         pRect(fx - 8 + Math.sin(time * 0.005) * 4, fy - 23, 4, 1, '#ffffff');
+        pRect(fx - 9 - Math.cos(time * 0.004) * 4, fy - 5, 4, 1, '#bae6fd');
 
         for (let i = 0; i < 8; i++) {
             const fxPos = (i * 73 + Math.sin(time * 0.001 + i) * 12) % pw;
@@ -390,7 +407,7 @@ if (hab.sceneProfile === 'wetland') {
             pRect(fxPos, fyPos, 2, 2, i % 3 === 0 ? `rgba(232, 121, 249, ${glow.toFixed(2)})` : `rgba(253, 224, 71, ${glow.toFixed(2)})`);
         }
     }
-
+    
     if (hab.sceneProfile === 'reef') {
         for (let c = 0; c < 12; c++) {
             const cx = Math.round(((c * 61 + Math.sin(time * 0.001 + c) * 18) % (pw * 0.56)) + pw * 0.22);
