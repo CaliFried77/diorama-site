@@ -281,7 +281,7 @@ if (hab.sceneProfile === 'meadow') {
 
         // BÖLÜM SONU: SULAK ALAN BAŞLANGIÇ FLORASI
         
-    } else if (hab.sceneProfile === 'botanical') {
+   } else if (hab.sceneProfile === 'botanical') {
         // BÖLÜM BAŞI: BOTANİK BAHÇE BAŞLANGIÇ FLORASI
         const reach = Math.min(155, Math.round(pw * 0.30));
         const boughZones = [
@@ -304,14 +304,20 @@ if (hab.sceneProfile === 'meadow') {
             }
         });
 
+        const fountainX = Math.round(pw * 0.18);
+        const archLeftPillarX = pw - 65;
+        const archRightPillarX = pw - 37;
+
         for (let x = 10; x < pw - 10; x += 7 + Math.floor(Math.random() * 5)) {
             const nx = x / Math.max(1, pw);
-            if (Math.abs(nx - 0.5) < 0.06 && Math.random() < 0.65) continue;
+            if (Math.abs(nx - 0.5) < 0.06 && Math.random() < 0.72) continue;
+            if (Math.abs(x - fountainX) < 16) continue;
+            if (Math.abs(x - archLeftPillarX) < 5 || Math.abs(x - archRightPillarX) < 5) continue;
 
-            const baseY = getGroundY(x, 'botanical', pw, ph) + Math.round((Math.random() - 0.5) * 3);
+            const baseY = getGroundY(x, 'botanical', pw, ph) + Math.round((Math.random() - 0.5) * 2);
             const r = Math.random();
 
-            if (r < 0.24 && (nx < 0.42 || nx > 0.58)) {
+            if (r < 0.25 && (nx < 0.42 || nx > 0.58)) {
                 flora.push({
                     type: 'buddleia',
                     x,
@@ -321,7 +327,7 @@ if (hab.sceneProfile === 'meadow') {
                     tilt: (nx < 0.5 ? 1 : -1) * (0.12 + Math.random() * 0.14),
                     phase: Math.random() * Math.PI * 2
                 });
-            } else if (r < 0.42 && (nx < 0.36 || nx > 0.64)) {
+            } else if (r < 0.44 && (nx < 0.36 || nx > 0.64)) {
                 flora.push({
                     type: 'hydrangea',
                     x,
@@ -330,7 +336,7 @@ if (hab.sceneProfile === 'meadow') {
                     hue: ['#60a5fa', '#c084fc', '#f472b6'][Math.floor(Math.random() * 3)],
                     phase: Math.random() * Math.PI * 2
                 });
-            } else if (r < 0.60) {
+            } else if (r < 0.62) {
                 flora.push({
                     type: 'fern',
                     x,
@@ -339,7 +345,7 @@ if (hab.sceneProfile === 'meadow') {
                     dir: Math.random() < 0.5 ? 1 : -1,
                     phase: Math.random() * Math.PI * 2
                 });
-            } else if (r < 0.76) {
+            } else if (r < 0.78) {
                 flora.push({
                     type: 'glow_mushroom',
                     x,
@@ -372,6 +378,7 @@ if (hab.sceneProfile === 'meadow') {
         }
 
         // BÖLÜM SONU: BOTANİK BAHÇE BAŞLANGIÇ FLORASI
+        
     } else if (hab.sceneProfile === 'reef') {
         // BÖLÜM BAŞI: MERCAN RESİFİ BAŞLANGIÇ FLORASI
         for (let x = 10; x < pw - 10; x += 9 + Math.floor(Math.random() * 6)) {
