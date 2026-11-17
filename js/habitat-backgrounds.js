@@ -28,67 +28,140 @@ export function buildStaticEnvironmentLayer(hab) {
         const trunkDark = isLightMode ? '#451a03' : '#181014';
         const trunkMid = isLightMode ? '#78350f' : '#291b22';
         const trunkHi = isLightMode ? '#92400e' : '#3d2832';
+        const leafShadow = isLightMode ? '#0c3b20' : '#051613';
         const leafDark = isLightMode ? '#14532d' : '#08221d';
         const leafMid = isLightMode ? '#15803d' : '#10382e';
         const leafHi = isLightMode ? '#22c55e' : '#1b5442';
+        const leafRim = isLightMode ? '#4ade80' : '#2dd4bf';
 
         const drawLeafCluster = (cx, cy, rx, ry, blossoms = false, blossomCol = '#fda4af') => {
             for (let dy = -ry; dy <= ry; dy++) {
                 const ratio = 1 - (dy * dy) / (ry * ry);
                 if (ratio <= 0) continue;
-                const scallop = Math.sin(dy * 0.65 + cx * 0.14) * 2.2;
+                const scallop = Math.sin(dy * 0.65 + cx * 0.14) * 2.2 + Math.cos(dy * 1.1) * 1.1;
                 const span = Math.max(1, Math.round(rx * Math.sqrt(ratio) + scallop));
-                const col = dy < -ry * 0.26 ? leafHi : (dy > ry * 0.34 ? leafDark : leafMid);
+                let col = leafMid;
+                if (dy < -ry * 0.45) col = leafRim;
+                else if (dy < -ry * 0.15) col = leafHi;
+                else if (dy > ry * 0.55) col = leafShadow;
+                else if (dy > ry * 0.22) col = leafDark;
                 sRect(cx - span, cy + dy, span * 2, 1, col);
+
+                if (dy > -ry * 0.4 && dy < ry * 0.3 && dy % 3 === 0 && span > 5) {
+                    const texShift = ((dy + cx) % 5) - 2;
+                    sRect(cx - Math.floor(span * 0.6) + texShift, cy + dy, Math.max(2, Math.floor(span * 0.5)), 1, dy < 0 ? leafHi : leafDark);
+                }
             }
             if (blossoms) {
-                [[-0.45, -0.25], [0.35, -0.30], [-0.15, 0.20], [0.42, 0.18], [0.05, -0.42]].forEach(([bx, by]) => {
+                [[-0.52, -0.22], [0.38, -0.32], [-0.18, 0.22], [0.46, 0.16], [0.04, -0.46], [-0.34, 0.04], [0.22, -0.06]].forEach(([bx, by], bIdx) => {
                     const px = Math.round(cx + bx * rx);
                     const py = Math.round(cy + by * ry);
-                    sRect(px, py, 2, 2, blossomCol);
-                    sRect(px, py, 1, 1, '#fff1f2');
+                    sRect(px, py + 1, 1, 1, trunkDark);
+                    sRect(px - 1, py, 3, 1, blossomCol);
+                    sRect(px, py - 1, 1, 3, blossomCol);
+                    sRect(px, py, 1, 1, bIdx % 2 === 0 ? '#fef08a' : '#fff1f2');
                 });
+            }
+        };
+
+        const drawBranchSegment = (x0, y0, x1, y1, startThick, endThick) => {
+            const steps = Math.max(1, Math.round(Math.hypot(x1 - x0, y1 - y0)));
+            for (let s = 0; s <= steps; s++) {
+                const t = s / steps;
+                const bx = Math.round(x0 + (x1 - x0) * t);
+                const by = Math.round(y0 + (y1 - y0) * t - Math.sin(t * Math.PI) * 2.5);
+                const thick = Math.max(1, Math.round(startThick + (endThick - startThick) * t));
+                sRect(bx, by, 1, thick, trunkDark);
+                if (thick >= 2) sRect(bx, by, 1, 1, trunkHi);
             }
         };
 
         const drawOrchardTree = (baseX, baseY, height, baseWidth, leanDir, blossoms, blossomCol) => {
             const topY = baseY - height;
+            sRect(baseX - baseWidth - 6, baseY - 1, (baseWidth + 6) * 2, 3, 'rgba(2, 10, 14, 0.35)');
+
             for (let y = topY; y < baseY; y++) {
                 const prog = (y - topY) / height;
                 const curve = Math.sin(prog * Math.PI * 0.9) * 3.5 * leanDir;
-                const flare = prog > 0.72 ? Math.pow((prog - 0.72) / 0.28, 2) * (baseWidth * 1.1) : 0;
-                const w = Math.round(baseWidth * (0.45 + prog * 0.55) + flare);
+                const flare = prog > 0.70 ? Math.pow((prog - 0.70) / 0.30, 2) * (baseWidth * 1.25) : 0;
+                const w = Math.round(baseWidth * (0.42 + prog * 0.58) + flare);
                 const left = Math.round(baseX + curve - w * 0.5);
                 sRect(left, y, w, 1, trunkDark);
-                sRect(left + Math.floor(w * 0.35), y, Math.max(1, Math.floor(w * 0.35)), 1, trunkMid);
+                sRect(left + Math.floor(w * 0.28), y, Math.max(1, Math.floor(w * 0.42)), 1, trunkMid);
                 sRect(left + (leanDir >= 0 ? w - 2 : 1), y, 1, 1, trunkHi);
+                if (prog > 0.78 && y % 2 === 0) {
+                    sRect(left + (leanDir >= 0 ? 0 : w - 2), y, 2, 1, leafDark);
+                }
             }
-            [-1, 1].forEach(dir => {
-                const reach = Math.round(height * (dir === leanDir ? 0.34 : 0.25));
-                for (let s = 0; s < reach; s++) {
-                    const t = s / reach;
-                    const bx = baseX + dir * s;
-                    const by = topY + Math.round(height * 0.18 - Math.sin(t * Math.PI * 0.65) * 10);
-                    const thick = Math.max(2, Math.round((baseWidth * 0.45) * (1 - t * 0.7)));
-                    sRect(bx, by, 1, thick, trunkDark);
-                    sRect(bx, by, 1, 1, trunkHi);
+
+            [-1, 1].forEach(rDir => {
+                for (let r = 0; r < 6; r++) {
+                    const rx = baseX + rDir * (Math.floor(baseWidth * 0.7) + r);
+                    const ry = baseY - 2 + Math.floor(r * 0.4);
+                    sRect(rx, ry, 2, 2, trunkDark);
+                    sRect(rx, ry, 1, 1, r < 3 ? trunkMid : leafDark);
                 }
             });
 
             const rx = Math.round(height * 0.34);
             const ry = Math.round(height * 0.20);
-            drawLeafCluster(baseX - Math.round(rx * 0.65), topY + 8, Math.round(rx * 0.82), Math.round(ry * 0.82), false);
-            drawLeafCluster(baseX + Math.round(rx * 0.68), topY + 6, Math.round(rx * 0.85), Math.round(ry * 0.84), blossoms, blossomCol);
+            const forkY = topY + Math.round(height * 0.22);
+            const forkX = Math.round(baseX + Math.sin(0.22 * Math.PI * 0.9) * 3.5 * leanDir);
+
+            const leftClusterX = baseX - Math.round(rx * 0.65);
+            const leftClusterY = topY + 8;
+            const rightClusterX = baseX + Math.round(rx * 0.68);
+            const rightClusterY = topY + 6;
+            const topClusterX = baseX + leanDir * 8;
+            const topClusterY = topY - 10;
+
+            drawLeafCluster(leftClusterX, leftClusterY, Math.round(rx * 0.84), Math.round(ry * 0.84), false);
+            drawLeafCluster(rightClusterX, rightClusterY, Math.round(rx * 0.86), Math.round(ry * 0.86), blossoms, blossomCol);
+
+            drawBranchSegment(forkX, forkY, leftClusterX + 4, leftClusterY + 2, Math.max(2, Math.round(baseWidth * 0.45)), 2);
+            drawBranchSegment(forkX, forkY - 2, rightClusterX - 4, rightClusterY + 2, Math.max(2, Math.round(baseWidth * 0.45)), 2);
+            drawBranchSegment(forkX, topY + 6, topClusterX, topClusterY + 4, Math.max(2, Math.round(baseWidth * 0.35)), 2);
+
             drawLeafCluster(baseX, topY - 4, rx, ry, blossoms, blossomCol);
-            drawLeafCluster(baseX + leanDir * 8, topY - 10, Math.round(rx * 0.75), Math.round(ry * 0.72), blossoms, blossomCol);
+            drawLeafCluster(topClusterX, topClusterY, Math.round(rx * 0.76), Math.round(ry * 0.74), blossoms, blossomCol);
         };
 
-        const hillCol = isLightMode ? 'rgba(22, 101, 52, 0.18)' : 'rgba(13, 56, 44, 0.42)';
+        const farHillCol = isLightMode ? 'rgba(20, 83, 45, 0.14)' : 'rgba(10, 38, 34, 0.34)';
+        const midHillCol = isLightMode ? 'rgba(21, 101, 52, 0.22)' : 'rgba(12, 48, 40, 0.48)';
+        const hillCol = isLightMode ? 'rgba(22, 101, 52, 0.32)' : 'rgba(15, 62, 48, 0.62)';
+        const hedgerowCol = isLightMode ? 'rgba(20, 83, 45, 0.38)' : 'rgba(8, 36, 29, 0.72)';
+
         for (let x = 0; x < pw; x++) {
             const nx = x / Math.max(1, pw);
-            const h = Math.round(14 + Math.sin(nx * Math.PI * 2.5) * 8 + Math.cos(x * 0.04) * 3);
             const gy = getGroundY(x, 'meadow', pw, ph);
+
+            const farH = Math.round(26 + Math.sin(nx * Math.PI * 1.8 + 0.4) * 10 + Math.cos(x * 0.025) * 4);
+            sRect(x, gy - farH, 1, farH, farHillCol);
+
+            const midH = Math.round(19 + Math.cos(nx * Math.PI * 2.2 - 0.5) * 8 + Math.sin(x * 0.035) * 3);
+            sRect(x, gy - midH, 1, midH, midHillCol);
+
+            if ((x % 18 < 9) && nx > 0.22 && nx < 0.76) {
+                const bushH = 3 + Math.round(Math.sin(x * 0.35) * 1.5);
+                sRect(x, gy - midH - bushH, 1, bushH + 1, hedgerowCol);
+            }
+
+            const h = Math.round(12 + Math.sin(nx * Math.PI * 2.5) * 6 + Math.cos(x * 0.04) * 2.5);
             sRect(x, gy - h, 1, h, hillCol);
+        }
+
+        const fenceStart = Math.round(pw * 0.24);
+        const fenceEnd = Math.round(pw * 0.75);
+        const fenceDark = isLightMode ? '#5c3a21' : '#1f161b';
+        const fenceHi = isLightMode ? '#92400e' : '#3b2830';
+        for (let fx = fenceStart; fx <= fenceEnd; fx++) {
+            const fgy = getGroundY(fx, 'meadow', pw, ph) - Math.round(9 + Math.sin((fx / Math.max(1, pw)) * Math.PI * 2.5) * 4);
+            if ((fx - fenceStart) % 16 === 0) {
+                sRect(fx, fgy - 7, 2, 9, fenceDark);
+                sRect(fx, fgy - 7, 1, 8, fenceHi);
+            }
+            sRect(fx, fgy - 5, 1, 1, fenceDark);
+            sRect(fx, fgy - 2, 1, 1, fenceDark);
         }
 
         const leftTree1X = 24;
@@ -99,27 +172,52 @@ export function buildStaticEnvironmentLayer(hab) {
         const rightTreeX = pw - 20;
         drawOrchardTree(rightTreeX, getGroundY(rightTreeX, 'meadow', pw, ph) + 3, 102, 11, -1, true, '#fda4af');
 
+        const turfHighlight = isLightMode ? '#4ade80' : '#1f6f54';
         const turfTop = isLightMode ? '#16a34a' : '#0f392b';
+        const turfMid = isLightMode ? '#15803d' : '#0b2b21';
         const turfDeep = isLightMode ? '#14532d' : '#071f18';
+        const soilLoam = isLightMode ? '#3f2e21' : '#051410';
+
         for (let x = 0; x < pw; x++) {
             const gy = getGroundY(x, 'meadow', pw, ph);
             sRect(x, gy, 1, ph - gy, turfDeep);
+            sRect(x, gy + 5, 1, Math.max(1, ph - gy - 5), soilLoam);
+            sRect(x, gy + 2, 1, 3, turfMid);
             sRect(x, gy, 1, 2, turfTop);
+            if (x % 3 === 0) {
+                sRect(x, gy - 1, 1, 1, (x % 9 === 0) ? turfHighlight : turfTop);
+            }
         }
 
         const hx = Math.round(pw * 0.84);
         const hgy = getGroundY(hx, 'meadow', pw, ph) + 1;
 
-        drawLeafCluster(hx - 20, hgy - 11, 14, 10, true, '#c084fc');
-        drawLeafCluster(hx + 19, hgy - 13, 16, 11, true, '#fb7185');
+        [
+            { bx: hx - 20, rx: 14, ry: 10, col: '#c084fc', dir: -1 },
+            { bx: hx + 19, rx: 16, ry: 11, col: '#fb7185', dir: 1 }
+        ].forEach(bush => {
+            const bGroundY = getGroundY(bush.bx, 'meadow', pw, ph) + 1;
+            const bCenterY = hgy - (bush.dir < 0 ? 11 : 13);
+            sRect(bush.bx - bush.rx + 2, bGroundY - 1, (bush.rx - 2) * 2, 3, 'rgba(2, 10, 14, 0.38)');
+            [-4, 0, 4].forEach(stemOff => {
+                drawBranchSegment(bush.bx + stemOff * 0.5, bGroundY, bush.bx + stemOff, bCenterY + 2, 2, 1);
+            });
+            drawLeafCluster(bush.bx, bCenterY, bush.rx, bush.ry, true, bush.col);
+        });
 
         const stoneDark = isLightMode ? '#475569' : '#1e293b';
+        const stoneMid = isLightMode ? '#64748b' : '#334155';
         const stoneHi = isLightMode ? '#94a3b8' : '#475569';
-        sRect(hx - 19, hgy, 38, 3, 'rgba(2, 10, 14, 0.45)');
-        sRect(hx - 17, hgy - 5, 34, 6, stoneDark);
-        for (let sx = hx - 15; sx <= hx + 11; sx += 6) {
-            sRect(sx, hgy - 4, 4, 3, stoneHi);
+        sRect(hx - 21, hgy, 42, 3, 'rgba(2, 10, 14, 0.48)');
+        sRect(hx - 18, hgy - 5, 36, 6, stoneDark);
+        for (let sx = hx - 16; sx <= hx + 12; sx += 6) {
+            sRect(sx, hgy - 4, 5, 2, stoneMid);
+            sRect(sx, hgy - 4, 4, 1, stoneHi);
+            sRect(sx + 1, hgy - 2, 4, 2, stoneMid);
         }
+        sRect(hx - 16, hgy - 5, 5, 1, leafMid);
+        sRect(hx + 11, hgy - 5, 4, 1, leafMid);
+
         sRect(hx - 16, hgy - 7, 32, 2, trunkDark);
         sRect(hx - 15, hgy - 7, 30, 1, trunkHi);
 
@@ -130,14 +228,21 @@ export function buildStaticEnvironmentLayer(hab) {
         const bodyH = 30;
 
         sRect(hx - 13, bodyTop, 26, bodyH, boxLight);
-        sRect(hx + 7, bodyTop, 6, bodyH, boxMid);
+        sRect(hx + 6, bodyTop, 7, bodyH, boxMid);
         sRect(hx - 13, bodyTop, 2, bodyH, trunkMid);
         sRect(hx + 11, bodyTop, 2, bodyH, trunkDark);
 
+        for (let dy = 2; dy < bodyH; dy += 4) {
+            sRect(hx - 11, bodyTop + dy, 1, 2, boxShadow);
+            sRect(hx + 10, bodyTop + dy, 1, 2, trunkMid);
+        }
+
         [hgy - 17, hgy - 27].forEach(seamY => {
-            sRect(hx - 13, seamY, 26, 2, trunkDark);
-            sRect(hx - 12, seamY, 24, 1, trunkHi);
-            sRect(hx - 4, seamY + 4, 6, 1, boxShadow);
+            sRect(hx - 14, seamY, 28, 2, trunkDark);
+            sRect(hx - 13, seamY, 26, 1, trunkHi);
+            sRect(hx - 13, seamY + 2, 26, 1, boxShadow);
+            sRect(hx - 4, seamY + 4, 7, 2, trunkMid);
+            sRect(hx - 4, seamY + 4, 7, 1, trunkHi);
         });
 
         sRect(hx - 5, hgy - 24, 8, 5, trunkDark);
@@ -145,20 +250,36 @@ export function buildStaticEnvironmentLayer(hab) {
         sRect(hx - 3, hgy - 22, 4, 1, '#fef08a');
 
         sRect(hx - 6, hgy - 10, 10, 3, '#181014');
-        sRect(hx - 5, hgy - 11, 8, 1, trunkMid);
+        sRect(hx - 8, hgy - 8, 14, 2, trunkMid);
+        sRect(hx - 7, hgy - 8, 12, 1, trunkHi);
         sRect(hx - 4, hgy - 8, 6, 1, '#fef08a');
 
-        for (let r = 0; r <= 11; r++) {
-            const halfW = 18 - Math.floor(r * 1.45);
+        sRect(hx - 15, bodyTop, 30, 1, 'rgba(2, 10, 14, 0.35)');
+        for (let r = 0; r <= 12; r++) {
+            const halfW = 18 - Math.floor(r * 1.4);
             const ry = bodyTop - 1 - r;
             const roofCol = r % 3 === 0 ? trunkDark : (r % 2 === 0 ? trunkHi : trunkMid);
             sRect(hx - halfW, ry, halfW * 2, 1, roofCol);
+            if (r > 0 && r < 10 && r % 2 === 0) {
+                for (let sx = -halfW + 2; sx < halfW - 2; sx += 4) {
+                    sRect(hx + sx, ry, 1, 1, trunkDark);
+                }
+            }
         }
-        sRect(hx - 1, bodyTop - 15, 2, 4, trunkDark);
-        sRect(hx, bodyTop - 15, 1, 3, '#fbbf24');
+        sRect(hx - 1, bodyTop - 16, 2, 4, trunkDark);
+        sRect(hx, bodyTop - 16, 1, 3, '#fbbf24');
 
         sRect(hx - 19, bodyTop + 2, 7, 2, trunkDark);
         sRect(hx - 19, bodyTop + 2, 6, 1, trunkHi);
+        for (let b = 0; b < 4; b++) {
+            sRect(hx - 14 - b, bodyTop + 4 + (3 - b), 1, 1, trunkMid);
+        }
+
+        const potX = hx + 14;
+        const potY = hgy - 7;
+        sRect(potX - 2, potY - 3, 5, 4, '#b45309');
+        sRect(potX - 3, potY - 4, 7, 1, '#d97706');
+        sRect(potX - 2, potY - 5, 5, 1, '#fbbf24');
         // BÖLÜM SONU: ÇAYIR STATİK ÇEVRESİ
     }
 
