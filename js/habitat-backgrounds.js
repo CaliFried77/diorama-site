@@ -1355,17 +1355,37 @@ export function buildStaticEnvironmentLayer(hab) {
         // BÖLÜM SONU: KUTUP TUNDURASI STATİK ÇEVRESİ
     }
 
-    else if (hab.sceneProfile === 'rainforest') {
+   else if (hab.sceneProfile === 'rainforest') {
         // BÖLÜM BAŞI: YAĞMUR ORMANI STATİK ÇEVRESİ
         const canopyShades = isLightMode
             ? ['#0b3d2e', '#115e40', '#16784d', '#22995e']
             : ['#041f1a', '#073026', '#0c4432', '#135e42'];
 
+        const farJungleCol = isLightMode ? 'rgba(11, 61, 46, 0.22)' : 'rgba(4, 22, 19, 0.45)';
+        const midJungleCol = isLightMode ? 'rgba(13, 74, 56, 0.36)' : 'rgba(5, 32, 27, 0.65)';
         for (let x = 0; x < pw; x += 2) {
             const nx = x / Math.max(1, pw);
             const valleyDip = 0.45 + Math.pow(Math.abs(nx - 0.5) * 1.9, 1.4) * 0.85;
+            const farH = Math.round((48 + Math.sin(x * 0.018 + 0.6) * 12 + Math.cos(x * 0.045) * 6) * valleyDip);
+            sRect(x, ph - farH, 2, farH, farJungleCol);
             const h = Math.round((34 + Math.sin(x * 0.025) * 10 + Math.cos(x * 0.07) * 6) * valleyDip);
-            sRect(x, ph - h, 2, h, isLightMode ? 'rgba(13, 74, 56, 0.32)' : 'rgba(4, 28, 24, 0.55)');
+            sRect(x, ph - h, 2, h, midJungleCol);
+        }
+
+        const wfX = Math.round(pw * 0.50);
+        const wfGroundY = getGroundY(wfX, 'rainforest', pw, ph);
+        const wfTopY = wfGroundY - 38;
+        const cliffDark = isLightMode ? 'rgba(30, 41, 59, 0.42)' : 'rgba(9, 18, 24, 0.68)';
+        const cliffMoss = isLightMode ? 'rgba(21, 128, 61, 0.45)' : 'rgba(13, 74, 56, 0.55)';
+        for (let y = wfTopY; y < wfGroundY; y++) {
+            const prog = (y - wfTopY) / 38;
+            const span = Math.round(8 + prog * 6 + Math.sin(y * 0.3) * 1.5);
+            sRect(wfX - span, y, span * 2, 1, cliffDark);
+            if (y % 3 === 0) {
+                sRect(wfX - span, y, 3, 1, cliffMoss);
+                sRect(wfX + span - 3, y, 3, 1, cliffMoss);
+            }
+            sRect(wfX - 2, y, 4, 1, isLightMode ? 'rgba(186, 230, 253, 0.45)' : 'rgba(56, 189, 248, 0.22)');
         }
 
         const drawFoliageDome = (cx, cy, rx, ry, shadeIdx) => {
@@ -1375,10 +1395,13 @@ export function buildStaticEnvironmentLayer(hab) {
             for (let dy = -ry; dy <= ry; dy++) {
                 const ratio = 1 - (dy * dy) / (ry * ry);
                 if (ratio <= 0) continue;
-                const scallop = Math.sin(dy * 0.65 + cx * 0.1) * 2;
+                const scallop = Math.sin(dy * 0.65 + cx * 0.1) * 2.2;
                 const span = Math.max(1, Math.round(rx * Math.sqrt(ratio) + scallop));
                 const col = dy < -ry * 0.28 ? hiCol : (dy > ry * 0.35 ? shadowCol : baseCol);
                 sRect(cx - span, cy + dy, span * 2, 1, col);
+                if (dy < -ry * 0.1 && dy % 3 === 0 && span > 6) {
+                    sRect(cx - Math.floor(span * 0.55), cy + dy, Math.floor(span * 0.5), 1, hiCol);
+                }
             }
         };
 
@@ -1398,6 +1421,7 @@ export function buildStaticEnvironmentLayer(hab) {
             const barkCol = isFarTree
                 ? (isLightMode ? 'rgba(74, 55, 45, 0.55)' : 'rgba(28, 48, 43, 0.62)')
                 : (isLightMode ? '#4a372d' : '#1c302b');
+            const mossCol = isLightMode ? '#15803d' : '#0d593d';
             const groundBase = ph;
 
             for (let y = tree.top; y < groundBase; y++) {
@@ -1407,21 +1431,27 @@ export function buildStaticEnvironmentLayer(hab) {
                 const w = Math.round(5 + prog * 6 + rootFlare);
                 const tx = Math.round(tree.x + curve - w * 0.5);
                 sRect(tx, y, w, 1, trunkCol);
-                sRect(tx + 1, y, Math.max(1, Math.floor(w * 0.35)), 1, barkCol);
+                sRect(tx + 1, y, Math.max(1, Math.floor(w * 0.38)), 1, barkCol);
+                if (!isFarTree && y % 9 === 0 && prog > 0.25 && prog < 0.85) {
+                    sRect(tx + w - 2, y, 2, 1, mossCol);
+                }
             }
 
             [-1, 1].forEach(dir => {
                 for (let s = 0; s < 24; s++) {
                     const bx = tree.x + dir * s;
                     const by = tree.top + 10 - Math.round(Math.sin((s / 24) * Math.PI * 0.7) * 8);
-                    sRect(bx, by, 2, Math.max(1, 4 - Math.floor(s / 7)), trunkCol);
+                    const thick = Math.max(1, 4 - Math.floor(s / 7));
+                    sRect(bx, by, 2, thick, trunkCol);
+                    if (s < 14 && s % 3 === 0) {
+                        sRect(bx, by - 1, 2, 1, mossCol);
+                    }
                 }
             });
 
             drawFoliageDome(tree.x - 14, tree.top + 6, tree.rx * 0.75, tree.ry * 0.75, 1);
             drawFoliageDome(tree.x + 14, tree.top + 8, tree.rx * 0.75, tree.ry * 0.75, 1);
             drawFoliageDome(tree.x, tree.top, tree.rx, tree.ry, isFarTree ? 1 : 2);
-
         });
 
         const edgeGiants = [
@@ -1432,6 +1462,7 @@ export function buildStaticEnvironmentLayer(hab) {
             const trunkDark = isLightMode ? '#321e17' : '#141115';
             const trunkMid = isLightMode ? '#523225' : '#241c22';
             const trunkHi = isLightMode ? '#734834' : '#382b31';
+            const mossCol = isLightMode ? '#15803d' : '#0d593d';
 
             for (let y = 0; y < ph; y++) {
                 const prog = y / ph;
@@ -1442,10 +1473,21 @@ export function buildStaticEnvironmentLayer(hab) {
                 sRect(left + (giant.side === 1 ? w - 6 : 2), y, 4, 1, trunkMid);
                 sRect(left + (giant.side === 1 ? w - 2 : 0), y, 2, 1, trunkHi);
 
-                if (y % 24 === 0 && y > 30 && y < ph - 25) {
-                    const mx = giant.side === 1 ? w - 3 : pw - w - 1;
-                    sRect(mx, y, 4, 2, isLightMode ? '#15803d' : '#0d593d');
+                if (y % 18 === 0 && y > 24 && y < ph - 20) {
+                    const mx = giant.side === 1 ? w - 4 : pw - w;
+                    sRect(mx, y, 4, 2, mossCol);
                 }
+            }
+
+            const boughReach = Math.min(130, Math.round(pw * 0.28));
+            for (let s = 0; s <= boughReach; s++) {
+                const t = s / Math.max(1, boughReach);
+                const bx = giant.side === 1 ? s : (pw - 1 - s);
+                const by = Math.round(10 + Math.pow(t, 1.15) * 12 + Math.sin(s * 0.08) * 1.5);
+                const thick = Math.max(2, Math.round(10 * (1 - t * 0.72)));
+                sRect(bx, by - Math.floor(thick * 0.5), 1, thick, trunkDark);
+                sRect(bx, by - Math.floor(thick * 0.5), 1, 1, mossCol);
+                sRect(bx, by + Math.ceil(thick * 0.5) - 1, 1, 1, trunkHi);
             }
         });
 
@@ -1462,7 +1504,6 @@ export function buildStaticEnvironmentLayer(hab) {
         ];
         canopyDomes.forEach(d => drawFoliageDome(Math.round(d.cx), d.cy, d.rx, d.ry, d.s));
 
-        // Small broken highlights give the canopy a layered, leafy silhouette instead of one flat band.
         for (let i = 0; i < 52; i++) {
             const x = (i * 47 + 19) % pw;
             const y = 5 + ((i * 17) % 25);
@@ -1470,28 +1511,49 @@ export function buildStaticEnvironmentLayer(hab) {
             sRect(x, y, 2 + (i % 3), 1 + (i % 2), shade);
         }
 
+        const floorDeep = isLightMode ? '#0b3b2b' : '#041713';
+        const floorLoam = isLightMode ? '#291d16' : '#081110';
+        const floorMoss = isLightMode ? '#15803d' : '#0c4a37';
+        const floorHi = isLightMode ? '#22c55e' : '#10b981';
+
         for (let x = 0; x < pw; x++) {
             const gy = getGroundY(x, 'rainforest', pw, ph);
-            sRect(x, gy, 1, ph - gy, isLightMode ? '#0b3b2b' : '#041713');
-            sRect(x, gy, 1, 2, isLightMode ? '#15803d' : '#0c4a37');
+            sRect(x, gy, 1, ph - gy, floorDeep);
+            sRect(x, gy + 3, 1, Math.max(1, ph - gy - 3), floorLoam);
+            sRect(x, gy, 1, 2, floorMoss);
+            if (x % 4 === 0) {
+                sRect(x, gy - 1, 1, 1, floorHi);
+            }
         }
 
-        // Buttress roots sit above the forest floor so they remain visible after ground fill.
+        // Buttress roots sit firmly anchored into the forest floor with solid woody flares and moss.
         midgroundTrees.filter(tree => tree.depth !== 'far').forEach(tree => {
             const groundY = getGroundY(tree.x, 'rainforest', pw, ph);
             const rootCol = isLightMode ? '#2c221e' : '#101c1a';
+            const rootHi = isLightMode ? '#4a372d' : '#1c302b';
+            sRect(tree.x - 16, groundY + 1, 32, 3, 'rgba(2, 10, 10, 0.42)');
             [-1, 1].forEach(dir => {
-                for (let step = 0; step <= 18; step += 2) {
+                for (let step = 0; step <= 16; step++) {
+                    const t = step / 16;
                     const x = tree.x + dir * step;
-                    const y = groundY + Math.round(step * 0.34);
-                    sRect(x, y, 2, 2, rootCol);
-                    if (step > 8) sRect(x + dir, y + 2, 2, 1, rootCol);
+                    const topY = groundY - Math.round((1 - t) * 10);
+                    const botY = groundY + Math.round(t * 4) + 2;
+                    sRect(x, topY, 2, Math.max(2, botY - topY), rootCol);
+                    sRect(x, topY, 1, 1, step < 7 ? floorMoss : rootHi);
                 }
             });
         });
+
+        const logX = Math.round(pw * 0.36);
+        const logY = getGroundY(logX, 'rainforest', pw, ph);
+        sRect(logX - 12, logY + 1, 24, 2, 'rgba(2, 10, 10, 0.45)');
+        sRect(logX - 11, logY - 3, 22, 4, isLightMode ? '#3b2316' : '#141115');
+        sRect(logX - 10, logY - 4, 20, 1, isLightMode ? '#5c3724' : '#241c22');
+        sRect(logX - 8, logY - 5, 14, 2, floorMoss);
+        sRect(logX - 6, logY - 5, 10, 1, floorHi);
         // BÖLÜM SONU: YAĞMUR ORMANI STATİK ÇEVRESİ
     }
-
+    
     return off;
 }
 
