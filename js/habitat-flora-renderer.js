@@ -245,27 +245,86 @@ export function drawHabitatFlora(time, hab) {
 
             // BÖLÜM SONU: AĞAÇ, SARMAŞIK VE ORMAN FLORASI
         } else if (f.type === 'sunflower') {
+            } else if (f.type === 'meadow_stone') {
             // BÖLÜM BAŞI: ÇAYIR VE ÇİÇEKLİ BİTKİLER
+            const stoneDark = isLightMode ? '#475569' : '#1e293b';
+            const stoneMid = isLightMode ? '#64748b' : '#334155';
+            const stoneHi = isLightMode ? '#94a3b8' : '#475569';
+            pRect(f.x - f.rx, baseGroundY, f.rx * 2, 2, 'rgba(2, 10, 14, 0.38)');
+            for (let dy = -f.ry; dy <= 0; dy++) {
+                const span = Math.max(1, Math.round(f.rx * Math.sqrt(Math.max(0, 1 - (dy * dy) / ((f.ry + 1) * (f.ry + 1))))));
+                pRect(f.x - span, baseGroundY + dy, span * 2, 1, dy === 0 ? stoneDark : stoneMid);
+                if (dy === -f.ry) {
+                    pRect(f.x - span + 1, baseGroundY + dy, Math.max(1, span * 2 - 2), 1, stoneHi);
+                    if (f.hasMoss) {
+                        pRect(f.x - Math.floor(span * 0.6), baseGroundY + dy, Math.max(2, Math.floor(span * 1.1)), 1, isLightMode ? '#16a34a' : '#15803d');
+                    }
+                }
+            }
+
+        } else if (f.type === 'meadow_tuft') {
+            const bladeDark = isLightMode ? '#15803d' : '#0d3b2e';
+            const bladeLight = isLightMode ? '#22c55e' : '#155e46';
+            const sway = Math.sin(time * 0.0017 + f.phase) * 1.2;
+            [-2, -1, 0, 1, 2].forEach((b, bIdx) => {
+                const bh = Math.max(3, f.h - Math.abs(b));
+                for (let y = 0; y < bh; y++) {
+                    const prog = y / bh;
+                    const bx = f.x + b + (b * 0.6 + sway) * prog;
+                    pRect(bx, baseGroundY - y, 1, 1, bIdx % 2 === 0 ? bladeLight : bladeDark);
+                }
+            });
+            if (f.hasClover) {
+                const cx = Math.round(f.x + sway * 0.6);
+                const cy = baseGroundY - Math.max(2, Math.floor(f.h * 0.55));
+                pRect(cx - 1, cy, 3, 1, '#16a34a');
+                pRect(cx - 1, cy - 1, 3, 1, f.cloverCol);
+                pRect(cx, cy - 2, 1, 1, '#ffffff');
+            }
+
+        } else if (f.type === 'sunflower') {
             const stemShade = isLightMode ? '#15803d' : '#14532d';
+            const stemHi = isLightMode ? '#22c55e' : '#1b5e3a';
+            const leafCol = isLightMode ? '#16a34a' : '#15803d';
+            const leafHi = isLightMode ? '#4ade80' : '#22c55e';
             let topX = f.x;
             const topY = baseGroundY - Math.floor(f.h);
+
+            pRect(f.x - 2, baseGroundY - 1, 5, 2, stemShade);
+            pRect(f.x - 3, baseGroundY - 2, 2, 1, leafCol);
+            pRect(f.x + 2, baseGroundY - 2, 2, 1, leafCol);
+
             for (let y = 0; y < f.h; y++) {
                 const sway = Math.sin(time * 0.0016 + f.phase + y * 0.05) * (y / f.h) * 3.0;
                 const px = f.x + sway;
                 const py = baseGroundY - y;
                 if (y === Math.floor(f.h) - 1) topX = px;
                 pRect(px, py, 2, 1, stemShade);
-                if (y === Math.floor(f.h * 0.45) || y === Math.floor(f.h * 0.68)) {
-                    const side = y % 2 === 0 ? 1 : -1;
-                    pRect(px + side * 2, py, 3, 2, '#16a34a');
+                pRect(px, py, 1, 1, stemHi);
+
+                if (y === Math.floor(f.h * 0.32) || y === Math.floor(f.h * 0.54) || y === Math.floor(f.h * 0.74)) {
+                    const side = (y === Math.floor(f.h * 0.54)) ? -1 : 1;
+                    const petioleX = px + (side > 0 ? 2 : -1);
+                    pRect(petioleX, py, 1, 1, stemShade);
+                    pRect(petioleX + side, py - 1, 3, 2, leafCol);
+                    pRect(petioleX + side * 2, py, 3, 2, leafCol);
+                    pRect(petioleX + side, py - 1, 2, 1, leafHi);
                 }
             }
             const hr = f.headR || 4;
-            for (let dy = -hr; dy <= hr; dy++) {
-                for (let dx = -hr; dx <= hr; dx++) {
+            pRect(topX - 2, topY + 1, 5, 2, stemShade);
+            for (let dy = -hr - 1; dy <= hr + 1; dy++) {
+                for (let dx = -hr - 1; dx <= hr + 1; dx++) {
                     const d2 = dx * dx + dy * dy;
-                    if (d2 <= 4) pRect(topX + dx, topY + dy, 1, 1, '#451a03');
-                    else if (d2 <= hr * hr + 2) pRect(topX + dx, topY + dy, 1, 1, (dx + dy) % 2 === 0 ? '#facc15' : '#f59e0b');
+                    if (d2 <= 3) {
+                        pRect(topX + dx, topY + dy, 1, 1, (dx + dy) % 2 === 0 ? '#451a03' : '#78350f');
+                    } else if (d2 <= 6) {
+                        pRect(topX + dx, topY + dy, 1, 1, '#92400e');
+                    } else if (d2 <= hr * hr + 2) {
+                        const isOuterTip = d2 > (hr - 1) * (hr - 1);
+                        const petalCol = isOuterTip ? '#fde047' : ((dx + dy) % 2 === 0 ? '#facc15' : '#f59e0b');
+                        pRect(topX + dx, topY + dy, 1, 1, petalCol);
+                    }
                 }
             }
             f.tipX = topX;
@@ -273,19 +332,39 @@ export function drawHabitatFlora(time, hab) {
 
         } else if (f.type === 'foxglove' || f.type === 'loosestrife') {
             const stemShade = isLightMode ? '#15803d' : '#115e59';
+            const rosetteCol = isLightMode ? '#16a34a' : '#0f5138';
             let topX = f.x;
+
+            pRect(f.x - 3, baseGroundY - 1, 7, 2, stemShade);
+            pRect(f.x - 4, baseGroundY - 2, 3, 1, rosetteCol);
+            pRect(f.x + 2, baseGroundY - 2, 3, 1, rosetteCol);
+
             for (let y = 0; y < f.h; y++) {
-                const sway = Math.sin(time * 0.0017 + f.phase + y * 0.05) * (y / f.h) * 2.8;
+                const prog = y / f.h;
+                const sway = Math.sin(time * 0.0017 + f.phase + y * 0.05) * prog * 2.8;
                 const px = f.x + sway;
                 const py = baseGroundY - y;
                 topX = px;
                 pRect(px, py, 1, 1, stemShade);
-                if (y > f.h * 0.38 && y % 3 === 0) {
-                    const side = (y % 6 === 0) ? -2 : 1;
-                    pRect(px + side, py, 3, 2, f.hue);
-                    if (y % 6 === 0) pRect(px, py - 1, 1, 1, '#fdf4ff');
+
+                if (y === Math.floor(f.h * 0.22) || y === Math.floor(f.h * 0.34)) {
+                    const lSide = y % 2 === 0 ? -2 : 1;
+                    pRect(px + lSide, py, 2, 1, rosetteCol);
+                }
+
+                if (prog > 0.38 && y % 3 === 0) {
+                    const side = (y % 6 === 0) ? -1 : 1;
+                    pRect(px + side, py, 1, 1, stemShade);
+                    if (prog > 0.86) {
+                        pRect(px + side, py, 2, 1, f.hue);
+                    } else {
+                        const bellX = px + (side < 0 ? -3 : 1);
+                        pRect(bellX, py, 3, 2, f.hue);
+                        pRect(bellX + (side < 0 ? 0 : 2), py + 1, 1, 1, '#fdf4ff');
+                    }
                 }
             }
+            pRect(topX, baseGroundY - f.h - 1, 1, 2, f.hue);
             f.tipX = topX;
             f.tipY = baseGroundY - f.h;
 
@@ -329,33 +408,71 @@ export function drawHabitatFlora(time, hab) {
 
         } else if (f.type === 'meadow') {
             const stemShade = isLightMode ? '#15803d' : '#14332a';
+            const leafAccent = isLightMode ? '#22c55e' : '#1b4d3e';
             let topX = f.x;
-            for (let y = 0; y < f.h; y++) {
-                const sway = Math.sin(time * 0.0018 + f.phase + y * 0.07) * (y / f.h) * 2.8;
+            const maxH = Math.floor(f.h);
+
+            pRect(f.x - 1, baseGroundY - 1, 3, 2, stemShade);
+            pRect(f.x - 2, baseGroundY - 2, 1, 2, leafAccent);
+            pRect(f.x + 2, baseGroundY - 2, 1, 2, leafAccent);
+
+            for (let y = 0; y < maxH; y++) {
+                const prog = y / Math.max(1, maxH);
+                const sway = Math.sin(time * 0.0018 + f.phase + y * 0.07) * prog * 2.8;
                 const px = f.x + sway;
                 const py = baseGroundY - y;
                 topX = px;
                 pRect(px, py, 1, 1, stemShade);
-                if (f.hasBloom && y > f.h - 8) {
-                    if (f.kind === 'lavender' && y % 2 === 0) {
-                        pRect(px - 1, py, 3, 1, '#a855f7');
-                    } else if (f.kind === 'daisy' && y === Math.floor(f.h) - 1) {
-                        pRect(px - 2, py - 1, 5, 3, '#f8fafc');
-                        pRect(px, py, 1, 1, '#facc15');
-                    } else if (f.kind === 'poppy' && y === Math.floor(f.h) - 1) {
-                        pRect(px - 2, py - 1, 5, 3, '#fb7185');
-                        pRect(px, py, 1, 1, '#1e1b4b');
-                    } else if (f.kind === 'buttercup' && y === Math.floor(f.h) - 1) {
-                        pRect(px - 1, py - 1, 3, 3, '#fde047');
-                        pRect(px, py, 1, 1, '#f59e0b');
-                    } else if (f.kind === 'nightbloom' && y === Math.floor(f.h) - 1) {
-                        pRect(px - 2, py - 1, 5, 3, '#38bdf8');
-                        pRect(px, py, 1, 1, '#e0f2fe');
-                    }
+
+                if (y === Math.floor(maxH * 0.42)) {
+                    const side = (f.x % 2 === 0) ? -1 : 1;
+                    pRect(px + side, py, 2 * side, 1, leafAccent);
+                }
+
+                if (f.hasBloom && f.kind === 'lavender' && y > maxH - 9 && y % 2 === 0) {
+                    pRect(px - 1, py, 3, 1, y >= maxH - 3 ? '#c084fc' : '#9333ea');
+                    if (y === maxH - 1) pRect(px, py - 1, 1, 1, '#e9d5ff');
+                }
+            }
+
+            const headY = baseGroundY - maxH;
+            if (f.hasBloom) {
+                if (f.kind === 'daisy') {
+                    pRect(topX - 1, headY + 1, 3, 1, stemShade);
+                    pRect(topX - 3, headY - 1, 7, 2, '#f8fafc');
+                    pRect(topX - 2, headY - 2, 5, 4, '#ffffff');
+                    pRect(topX - 1, headY - 1, 3, 2, '#facc15');
+                    pRect(topX, headY - 1, 1, 1, '#f59e0b');
+                } else if (f.kind === 'poppy') {
+                    pRect(topX - 1, headY + 1, 3, 1, stemShade);
+                    pRect(topX - 3, headY - 2, 7, 3, '#e11d48');
+                    pRect(topX - 2, headY - 3, 5, 3, '#fb7185');
+                    pRect(topX - 3, headY - 3, 2, 1, '#fda4af');
+                    pRect(topX + 2, headY - 3, 2, 1, '#fda4af');
+                    pRect(topX - 1, headY - 1, 3, 2, '#1e1b4b');
+                    pRect(topX, headY - 1, 1, 1, '#fef08a');
+                } else if (f.kind === 'buttercup') {
+                    pRect(topX - 1, headY + 1, 3, 1, stemShade);
+                    pRect(topX - 2, headY - 1, 5, 2, '#f59e0b');
+                    pRect(topX - 2, headY - 2, 5, 2, '#fde047');
+                    pRect(topX - 1, headY - 2, 3, 1, '#fef9c3');
+                    pRect(topX, headY - 1, 1, 1, '#d97706');
+                } else if (f.kind === 'echinacea') {
+                    pRect(topX - 1, headY + 1, 3, 1, stemShade);
+                    pRect(topX - 3, headY, 2, 2, '#f472b6');
+                    pRect(topX + 2, headY, 2, 2, '#f472b6');
+                    pRect(topX - 2, headY - 1, 5, 2, '#ec4899');
+                    pRect(topX - 1, headY - 2, 3, 2, '#b45309');
+                    pRect(topX, headY - 2, 1, 1, '#f59e0b');
+                } else if (f.kind === 'nightbloom') {
+                    pRect(topX - 1, headY + 1, 3, 1, stemShade);
+                    pRect(topX - 2, headY - 1, 5, 3, '#38bdf8');
+                    pRect(topX - 1, headY - 2, 3, 2, '#7dd3fc');
+                    pRect(topX, headY - 1, 1, 1, '#e0f2fe');
                 }
             }
             f.tipX = topX;
-            f.tipY = baseGroundY - f.h;
+            f.tipY = headY;
 
             // BÖLÜM SONU: ÇAYIR VE ÇİÇEKLİ BİTKİLER
         } else if (f.type === 'hornwort') {
