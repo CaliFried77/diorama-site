@@ -95,12 +95,18 @@ canvas.addEventListener('pointerdown', (e) => {
         }
     } else if (interactionProfile === 'plankton') {
         for (let i = 0; i < 2; i++) {
+            const bx = Math.max(18, Math.min(pw - 18, px + (i - 0.5) * 14));
+            const nx = bx / Math.max(1, pw);
+            const sideMound = nx < 0.26 ? Math.pow((0.26 - nx) / 0.26, 1.5) * 34
+                            : (nx > 0.74 ? Math.pow((nx - 0.74) / 0.26, 1.5) * 34 : 0);
+            const maxDepthY = Math.round(getGroundY(bx, 'reef', pw, ph) - sideMound) - 10;
+            const by = Math.max(14, Math.min(maxDepthY, py + (Math.random() - 0.5) * 10));
             stimuli.push({
                 type: 'plankton_swarm',
-                x: px + (i - 0.5) * 14,
-                y: py + (Math.random() - 0.5) * 10,
+                x: bx,
+                y: by,
                 phase: Math.random() * Math.PI * 2,
-                life: 220,
+                life: 240,
                 claimedBy: null
             });
         }
@@ -445,12 +451,25 @@ export function drawHabitatStimuli() {
 
         } else if (s.type === 'plankton_swarm') {
             s.phase += 0.07 * frameScale;
-            for (let k = 0; k < 8; k++) {
-                const r = 2.5 + (k % 3) * 2.5;
-                const px = s.x + Math.cos(s.phase + k) * r;
-                const py = s.y + Math.sin(s.phase * 1.2 + k) * r;
-                pRect(px, py, 1, 1, k % 2 === 0 ? '#f0abfc' : '#67e8f9');
+            s.y = Math.max(12, s.y - 0.015 * frameScale);
+            const cx = Math.round(s.x + Math.sin(s.phase * 0.6) * 1.2);
+            const cy = Math.round(s.y);
+
+            pRect(cx - 5, cy - 4, 11, 9, 'rgba(103, 232, 249, 0.12)');
+            pRect(cx - 3, cy - 2, 7, 5, 'rgba(240, 171, 252, 0.18)');
+
+            for (let k = 0; k < 6; k++) {
+                const r = 2.2 + (k % 3) * 2.1;
+                const ang = s.phase * (k % 2 === 0 ? 1 : -0.8) + k * 1.05;
+                const px = Math.round(cx + Math.cos(ang) * r);
+                const py = Math.round(cy + Math.sin(ang * 1.1) * (r * 0.85));
+                const bodyCol = k % 2 === 0 ? '#f0abfc' : '#67e8f9';
+                pRect(px, py, 2, 1, bodyCol);
+                pRect(px, py, 1, 1, '#ffffff');
+                pRect(px, py + 1, 1, 1, k % 2 === 0 ? 'rgba(217, 70, 239, 0.65)' : 'rgba(6, 182, 212, 0.65)');
             }
+            pRect(cx, cy, 2, 2, '#fef08a');
+            pRect(cx, cy, 1, 1, '#ffffff');
 
         } else if (s.type === 'koi_pellet') {
             s.phase = (s.phase || 0) + 0.09 * frameScale;
@@ -463,7 +482,7 @@ export function drawHabitatStimuli() {
             if (s.ripple < 15) {
                 const alpha = ((1 - s.ripple / 15) * 0.35).toFixed(2);
                 for (let a = 0; a < Math.PI * 2; a += 0.55) {
-                    pRect(px + Math.cos(a) * s.ripple, py + Math.sin(a) * (s.ripple * 0.65), 1, 1, `rgba(254, 242, 254, ${alpha})`);
+                    pRect(px + Math.cos(a) * s.ripple, py + Math.sin(a) * (s.ripple * 0.65), 1, 1, `rgba(224, 242, 254, ${alpha})`);
                 }
             }
 
