@@ -1,5 +1,6 @@
 import { pw, ph, frameScale, frameChance, flora, pRect, frameSmoothing } from './07-habitat-state.js';
 import { findAvailableStimulus } from './creature-utils.js';
+import { getGroundY } from './habitat-geometry.js';
 
 /* PIXELBUTTERFLY — dedicated kelebek behavior and pixel-art rendering. */
 
@@ -25,6 +26,7 @@ export class PixelButterfly {
         this.sipTimer = 0;
         this.eatCooldown = 0;
         this.perchedFlower = null;
+        this.sipSpot = null;
 
         const species = [
             { base: '#0369a1', mid: '#0ea5e9', hi: '#7dd3fc', border: '#090d16', pearl: '#f8fafc', eye: '#38bdf8', rgb: [56, 189, 248] },
@@ -42,20 +44,32 @@ export class PixelButterfly {
         const blossom = findAvailableStimulus(this, 'floating_blossom', Math.max(260, pw * 0.65));
         if (blossom && this.perchedFlower) {
             this.perchedFlower = null;
+            this.sipSpot = null;
             this.sipTimer = 0;
         }
 
         if (this.sipTimer > 0) {
             this.phase += 0.045 * frameScale;
             this.sipTimer = Math.max(0, this.sipTimer - frameScale);
+
+            const restAngle = -Math.PI * 0.5;
+            let diff = restAngle - this.angle;
+            while (diff > Math.PI) diff -= Math.PI * 2;
+            while (diff < -Math.PI) diff += Math.PI * 2;
+            this.angle += diff * frameSmoothing(0.18);
+
             if (this.perchedFlower) {
                 const tx = this.perchedFlower.tipX !== undefined ? this.perchedFlower.tipX : this.perchedFlower.x;
                 const ty = this.perchedFlower.tipY !== undefined ? this.perchedFlower.tipY : ((this.perchedFlower.baseY || ph) - (this.perchedFlower.h || 18));
                 this.x = tx;
                 this.y = ty - 3;
+            } else if (this.sipSpot) {
+                this.x = this.sipSpot.x;
+                this.y = this.sipSpot.y;
             }
             if (this.sipTimer === 0) {
                 this.perchedFlower = null;
+                this.sipSpot = null;
                 this.targetAngle = -Math.PI * 0.5 + (Math.random() - 0.5) * 1.4;
                 this.eatCooldown = 110;
             }
@@ -66,12 +80,13 @@ export class PixelButterfly {
 
         if (blossom) {
             const dx = blossom.x - this.x;
-            const dy = blossom.y - this.y;
+            const dy = (blossom.y - 3) - this.y;
             const dist = Math.hypot(dx, dy);
             this.targetAngle = Math.atan2(dy, dx);
             if (dist < 6) {
+                this.sipSpot = { x: blossom.x, y: blossom.y - 3 };
                 blossom.life = 0;
-                this.sipTimer = 28;
+                this.sipTimer = 30;
                 return;
             }
         } else {
@@ -97,8 +112,9 @@ export class PixelButterfly {
             }
         }
 
+        const safeGroundY = getGroundY(this.x, 'botanical', pw, ph) - (blossom ? 6 : 22);
         if (this.y < 24) this.targetAngle = Math.PI * 0.45;
-        if (this.y > ph - 36) this.targetAngle = -Math.PI * 0.45;
+        if (this.y > safeGroundY) this.targetAngle = -Math.PI * 0.45;
         if (this.x < 24) this.targetAngle = 0;
         if (this.x > pw - 24) this.targetAngle = Math.PI;
 
@@ -118,7 +134,10 @@ export class PixelButterfly {
         const sin = Math.sin(this.angle);
         const perpX = -sin;
         const perpY = cos;
-        const flap = 0.28 + 0.72 * Math.abs(Math.sin(this.phase));
+        const isPerched = this.sipTimer > 0;
+        const flap = isPerched
+            ? (0.36 + 0.34 * Math.abs(Math.sin(this.phase)))
+            : (0.28 + 0.72 * Math.abs(Math.sin(this.phase)));
 
         for (let u = 1; u <= 12; u++) {
             const w = u * flap;
@@ -150,7 +169,7 @@ export class PixelButterfly {
                     col = v === -9 ? this.pal.pearl : this.pal.border;
                 } else if (isOuterMargin) {
                     col = this.pal.border;
-                    if (u >= 9 && (v + 10) % 2 === 0 && flap > 0.55) col = this.pal.pearl;
+                    if (u >= 9 && (v + 10) % 2 === 0 && flap > 0.45) col = this.pal.pearl;
                 } else if (inHindwing && Math.hypot(u - 4.8, v + 4.2) <= 1.5) {
                     col = Math.hypot(u - 4.8, v + 4.2) < 0.8 ? this.pal.eye : this.pal.border;
                 } else if (inForewing && u >= 4 && u <= 8 && v >= 1 && v <= 5) {
@@ -166,8 +185,17 @@ export class PixelButterfly {
             }
         }
 
+        if (isPerched) {
+            const bx = Math.round(this.x);
+            const by = Math.round(this.y);
+            pRect(bx - 1, by + 2, 1, 2, '#1e293b');
+            pRect(bx + 1, by + 2, 1, 2, '#1e293b');
+            pRect(bx, by + 2, 1, 3, '#f59e0b');
+        }
+
         for (let b = -6; b <= 5; b++) {
-            pRect(this.x + cos * b, this.y + sin * b, 1, 1, b === 5 ? '#f8fafc' : '#0f172a');
+            const bodyCol = b === 5 ? '#f8fafc' : (b >= 1 && b <= 3 ? '#1e293b' : '#0f172a');
+            pRect(this.x + cos * b, this.y + sin * b, 1, 1, bodyCol);
         }
 
         for (let a = 1; a <= 4; a++) {
