@@ -1,5 +1,6 @@
 import { stimuli, canvas, PIXEL_SCALE, HABITATS, currentHabitatIdx, pw, ph, frameScale, pRect } from './07-habitat-state.js';
 import { getArcticLandingY } from './arctic-geometry.js';
+import { getGroundY } from './habitat-geometry.js';
 
 /* HABITAT INTERACTIONS — user input that spawns food and stimuli in the active habitat. */
 
@@ -15,19 +16,30 @@ canvas.addEventListener('pointerdown', (e) => {
 
     if (interactionProfile === 'nectar') {
         for (let i = 0; i < 3; i++) {
-            const angle = (i / 3) * Math.PI * 2 + Math.random();
-            const dist = i === 0 ? 0 : 7 + Math.random() * 8;
+            const offset = (i - 1) * (8 + Math.random() * 4);
+            const bx = Math.max(14, Math.min(pw - 14, px + offset));
+            const groundY = getGroundY(bx, 'meadow', pw, ph);
+            const naturalTopY = groundY - (14 + i * 6 + Math.floor(Math.random() * 5));
+            const targetY = py >= groundY - 40
+                ? Math.max(groundY - 38, Math.min(groundY - 10, py + (i - 1) * 3))
+                : naturalTopY;
+            const startsInAir = py < targetY - 4;
             stimuli.push({
                 type: 'honey_nectar',
-                x: px + Math.cos(angle) * dist,
-                y: py + Math.sin(angle) * dist,
-                baseY: py + Math.sin(angle) * dist,
+                x: bx,
+                y: startsInAir ? py : targetY,
+                baseY: startsInAir ? py : targetY,
+                targetY,
+                vy: 0.45,
+                landed: !startsInAir,
+                variant: i % 3,
                 phase: Math.random() * Math.PI * 2,
                 ripple: 0,
-                life: 240,
+                life: 260,
                 claimedBy: null
             });
         }
+    }
     } else if (interactionProfile === 'blossom') {
         for (let i = 0; i < 2; i++) {
             stimuli.push({
@@ -204,17 +216,66 @@ export function drawHabitatStimuli() {
             pRect(bx, by - 4, 1, 1, '#fef9c3');
 
         } else if (s.type === 'honey_nectar') {
-            s.phase += 0.12 * frameScale;
-            s.y = s.baseY + Math.sin(s.phase) * 1.6;
-            for (let m = 0; m < 4; m++) {
-                const a = s.phase * 0.8 + (m * Math.PI) / 2;
-                pRect(s.x + Math.cos(a) * 4.5, s.y + Math.sin(a) * 3.5, 1, 1, 'rgba(254, 240, 138, 0.78)');
-            }
-            pRect(s.x - 1, s.y - 1, 3, 3, '#f59e0b');
-            pRect(s.x, s.y - 2, 1, 5, '#fbbf24');
-            pRect(s.x - 2, s.y, 5, 1, '#fbbf24');
-            pRect(s.x, s.y, 1, 1, '#fef9c3');
+            const groundY = getGroundY(s.x, 'meadow', pw, ph);
+            const restY = s.targetY !== undefined
+                ? Math.min(s.targetY, groundY - 10)
+                : Math.min(s.baseY, groundY - 12);
 
+            if (s.landed === false) {
+                s.vy = Math.min(1.8, (s.vy || 0.45) + 0.06 * frameScale);
+                s.baseY += s.vy * frameScale;
+                if (s.baseY >= restY) {
+                    s.baseY = restY;
+                    s.landed = true;
+                }
+                s.y = s.baseY;
+                const dx = Math.round(s.x);
+                const dy = Math.round(s.y);
+                pRect(dx, dy - 3, 1, 1, 'rgba(254, 240, 138, 0.85)');
+                pRect(dx - 1, dy - 1, 3, 3, '#f59e0b');
+                pRect(dx, dy - 2, 1, 4, '#fbbf24');
+                pRect(dx, dy - 1, 1, 2, '#fef9c3');
+                pRect(dx - 1, groundY - 2, 3, 2, '#15803d');
+            } else {
+                s.phase += 0.10 * frameScale;
+                const sway = Math.sin(s.phase * 0.7) * 1.4;
+                const cupX = Math.round(s.x + sway);
+                const cupY = Math.round(restY + Math.sin(s.phase) * 0.5);
+                s.y = cupY;
+
+                pRect(s.x - 2, groundY, 5, 2, 'rgba(2, 10, 14, 0.35)');
+                pRect(s.x - 2, groundY - 1, 5, 2, '#14532d');
+                pRect(s.x - 3, groundY - 2, 2, 1, '#16a34a');
+                pRect(s.x + 2, groundY - 2, 2, 1, '#16a34a');
+
+                const stemH = Math.max(4, groundY - cupY);
+                for (let sy = 1; sy < stemH; sy++) {
+                    const prog = sy / stemH;
+                    const sx = Math.round(s.x + sway * Math.pow(prog, 1.2));
+                    const py = groundY - sy;
+                    pRect(sx, py, 1, 1, '#15803d');
+                    if (sy === Math.floor(stemH * 0.45) || sy === Math.floor(stemH * 0.72)) {
+                        const lDir = sy % 2 === 0 ? -1 : 1;
+                        pRect(sx + lDir, py, 2 * lDir, 1, '#22c55e');
+                    }
+                }
+
+                const petalOuter = s.variant === 1 ? '#fb7185' : '#f59e0b';
+                const petalInner = s.variant === 1 ? '#fda4af' : '#fbbf24';
+                pRect(cupX - 1, cupY + 2, 3, 1, '#15803d');
+                pRect(cupX - 2, cupY + 1, 5, 1, '#22c55e');
+                pRect(cupX - 3, cupY, 7, 1, petalOuter);
+                pRect(cupX - 2, cupY - 1, 5, 2, petalInner);
+                pRect(cupX - 1, cupY - 2, 3, 2, '#fde047');
+                pRect(cupX, cupY - 2, 1, 1, '#ffffff');
+
+                for (let m = 0; m < 3; m++) {
+                    const a = s.phase * 0.9 + (m * Math.PI * 2) / 3;
+                    const mx = cupX + Math.round(Math.cos(a) * 4);
+                    const my = cupY - 2 + Math.round(Math.sin(a) * 2.5);
+                    pRect(mx, my, 1, 1, 'rgba(254, 240, 138, 0.82)');
+                }
+            }
         } else if (s.type === 'floating_blossom') {
             s.phase += 0.08 * frameScale;
             s.x += (s.vx + Math.sin(s.phase) * 0.12) * frameScale;
