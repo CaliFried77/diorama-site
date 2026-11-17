@@ -244,8 +244,7 @@ export function drawHabitatFlora(time, hab) {
             pRect(flowerX, flowerY - 1, 1, 2, '#fef08a');
 
             // BÖLÜM SONU: AĞAÇ, SARMAŞIK VE ORMAN FLORASI
-        } else if (f.type === 'sunflower') {
-            } else if (f.type === 'meadow_stone') {
+        } else if (f.type === 'meadow_stone') {
             // BÖLÜM BAŞI: ÇAYIR VE ÇİÇEKLİ BİTKİLER
             const stoneDark = isLightMode ? '#475569' : '#1e293b';
             const stoneMid = isLightMode ? '#64748b' : '#334155';
