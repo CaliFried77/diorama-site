@@ -56,13 +56,17 @@ canvas.addEventListener('pointerdown', (e) => {
         }
     } else if (interactionProfile === 'bloodworm') {
         for (let i = 0; i < 3; i++) {
+            const bx = Math.max(14, Math.min(pw - 14, px + (i - 1) * 7 + (Math.random() - 0.5) * 4));
+            const by = Math.max(6, Math.min(ph - 16, py + (Math.random() - 0.5) * 6));
             stimuli.push({
                 type: 'bloodworm',
-                x: px + (Math.random() - 0.5) * 14,
-                y: py + (Math.random() - 0.5) * 8,
-                vy: 0.13 + Math.random() * 0.06,
+                x: bx,
+                y: by,
+                vy: 0.14 + Math.random() * 0.05,
+                landed: false,
+                dir: Math.random() < 0.5 ? 1 : -1,
                 phase: Math.random() * Math.PI * 2,
-                life: 260,
+                life: 300,
                 claimedBy: null
             });
         }
@@ -287,15 +291,44 @@ export function drawHabitatStimuli() {
             pRect(s.x + Math.sin(s.phase * 2) * 4, s.y + 3, 1, 1, 'rgba(240, 171, 252, 0.65)');
 
         } else if (s.type === 'bloodworm') {
-            s.phase += 0.22 * frameScale;
-            s.y += s.vy * 0.45 * frameScale;
-            for (let seg = 0; seg < 6; seg++) {
-                const wx = s.x + Math.sin(s.phase + seg * 0.7) * 1.8;
-                const wy = s.y + seg * 0.9;
-                pRect(wx, wy, 1, 1, seg % 2 === 0 ? '#e11d48' : '#9f1239');
-            }
-            if (s.y > ph - 8) s.life = 0;
+            const nx = s.x / Math.max(1, pw);
+            const floorY = Math.abs(nx - 0.50) < 0.085
+                ? ph - 5 - Math.round(Math.cos((nx - 0.50) * 18) * 2)
+                : Math.round(ph - 4 - Math.pow(Math.abs(nx - 0.50) * 1.95, 1.45) * 18 - Math.sin(s.x * 0.04) * 2);
 
+            if (!s.landed) {
+                s.phase += 0.20 * frameScale;
+                s.y += s.vy * 0.48 * frameScale;
+                s.x += Math.sin(s.phase * 0.7) * 0.08 * frameScale;
+                if (s.y >= floorY - 3) {
+                    s.y = floorY - 2;
+                    s.landed = true;
+                }
+                for (let seg = 0; seg < 7; seg++) {
+                    const wave = Math.sin(s.phase + seg * 0.75) * 1.8;
+                    const wx = Math.round(s.x + wave);
+                    const wy = Math.round(s.y + seg * 0.85 - 2);
+                    const col = seg === 0 ? '#4c0519' : (seg % 2 === 0 ? '#e11d48' : '#9f1239');
+                    pRect(wx, wy, 2, 1, col);
+                    if (seg === 2 || seg === 4) {
+                        pRect(wx, wy, 1, 1, '#fda4af');
+                    }
+                }
+            } else {
+                s.phase += 0.10 * frameScale;
+                s.y = floorY - 2;
+                const dir = s.dir || 1;
+                pRect(s.x - 3, floorY, 7, 1, 'rgba(2, 8, 16, 0.42)');
+                for (let seg = 0; seg < 7; seg++) {
+                    const sx = Math.round(s.x + (seg - 3) * dir);
+                    const arch = Math.round(Math.sin(s.phase + seg * 0.8) * 0.8);
+                    const sy = Math.round(floorY - 2 + arch);
+                    const col = seg === 0 ? '#4c0519' : (seg % 2 === 0 ? '#e11d48' : '#9f1239');
+                    pRect(sx, sy, 1, 2, col);
+                    if (seg === 3) pRect(sx, sy, 1, 1, '#fda4af');
+                }
+            }
+            
         } else if (s.type === 'midge') {
             s.phase += 0.25 * frameScale;
             s.x = s.baseX + Math.sin(s.phase) * 4;
