@@ -68,14 +68,14 @@ export class PixelParrot {
 
     pickPerchSpot() {
         const spots = [
-            { x: Math.round(pw * 0.14 - 12), y: Math.round(ph * 0.24 + 6) },
-            { x: Math.round(pw * 0.14 + 14), y: Math.round(ph * 0.24 + 8) },
-            { x: Math.round(pw * 0.27 + 10), y: Math.round(ph * 0.36 + 6) },
-            { x: Math.round(pw * 0.42), y: Math.round(ph * 0.32 + 7) },
-            { x: Math.round(pw * 0.58), y: Math.round(ph * 0.30 + 7) },
-            { x: Math.round(pw * 0.75 - 10), y: Math.round(ph * 0.34 + 6) },
-            { x: Math.round(pw * 0.86 - 14), y: Math.round(ph * 0.22 + 6) },
-            { x: Math.round(pw * 0.86 + 12), y: Math.round(ph * 0.22 + 8) }
+            { x: Math.round(pw * 0.14 - 12), y: Math.round(ph * 0.24 - 3) },
+            { x: Math.round(pw * 0.14 + 12), y: Math.round(ph * 0.24 - 3) },
+            { x: Math.round(pw * 0.27 + 10), y: Math.round(ph * 0.36 - 3) },
+            { x: Math.round(pw * 0.42 - 9), y: Math.round(ph * 0.32 - 3) },
+            { x: Math.round(pw * 0.58 + 9), y: Math.round(ph * 0.30 - 3) },
+            { x: Math.round(pw * 0.75 - 10), y: Math.round(ph * 0.34 - 3) },
+            { x: Math.round(pw * 0.86 - 12), y: Math.round(ph * 0.22 - 3) },
+            { x: Math.round(pw * 0.86 + 12), y: Math.round(ph * 0.22 - 3) }
         ];
         return spots[Math.floor(Math.random() * spots.length)];
     }
@@ -97,8 +97,8 @@ export class PixelParrot {
             this.beakOpen = Math.sin(this.phase * 1.5) > 0 ? 1 : 0;
 
             if (this.targetFruit && this.targetFruit.life > 0) {
-                const targetX = this.targetFruit.x - this.dir * 10;
-                const targetY = this.targetFruit.y - 2;
+                const targetX = this.targetFruit.x - this.dir * 11;
+                const targetY = Math.min(ph - 16, this.targetFruit.y - 2);
                 this.x += (targetX - this.x) * frameSmoothing(0.18);
                 this.y += (targetY - this.y) * frameSmoothing(0.18);
                 if (this.stateTimer <= 8) {
@@ -255,42 +255,59 @@ export class PixelParrot {
         if (this.state === 'perched') {
             const breath = Math.sin(this.phase) > 0.3 ? -1 : 0;
             const lookDir = this.headLook === -1 ? -1 : 1;
+            const tailSway = Math.round(Math.sin(this.phase * 0.6) * 0.6);
 
-            for (let t = 0; t < 16; t++) {
-                const tx = -4 - Math.floor(t * 0.35);
+            // Tüneme dalı boğumu ve yosun dokusu (pençelerin tam altında fiziksel dayanak)
+            px(-6, 5, 12, 2, '#2c221e');
+            px(-5, 5, 9, 1, '#4a372d');
+            px(-4, 4, 3, 1, '#15803d');
+            px(3, 5, 2, 1, '#16a34a');
+
+            // Uzun kademeli Ara papağanı kuyruğu
+            for (let t = 0; t < 17; t++) {
+                const tx = -4 - Math.floor(t * 0.35) + (t > 8 ? tailSway : 0);
                 const ty = 4 + t;
-                px(tx, ty, 2, 1, t < 11 ? p.tailCenter : p.tailOuter);
-                if (t < 10) px(tx + 2, ty, 1, 1, p.tailMid);
+                px(tx, ty, 2, 1, t < 12 ? p.tailCenter : p.tailOuter);
+                if (t < 11) px(tx + 2, ty, 1, 1, p.tailMid);
             }
 
-            px(-2, 3, 2, 2, '#1e293b');
-            px(1, 3, 2, 2, '#1e293b');
-            px(-3, 5, 3, 1, '#92400e');
-            px(1, 5, 3, 1, '#92400e');
-            px(-4, 4, 1, 2, '#78350f');
-            px(3, 4, 1, 2, '#78350f');
+            // İncik tüyleri ve dalı kavrayan zygodactyl pençeler
+            px(-2, 3, 2, 2, p.bodyShade);
+            px(1, 3, 2, 2, p.bodyShade);
+            px(-3, 4, 2, 2, '#334155');
+            px(1, 4, 2, 2, '#334155');
+            px(-4, 5, 1, 1, '#0f172a');
+            px(3, 5, 1, 1, '#0f172a');
 
-            px(-4, -5 + breath, 7, 4, p.body);
+            // Göğüs, karın ve sırt hacmi
+            px(-4, -5 + breath, 7, 5, p.body);
             px(-3, -1 + breath, 6, 4, p.belly);
             px(-4, -4 + breath, 2, 6, p.bodyShade);
-            px(1, -5 + breath, 2, 5, p.bodyHi);
+            px(1, -5 + breath, 2, 6, p.bodyHi);
+            px(2, -3 + breath, 1, 4, p.bodyHi);
 
+            // Katlanmış çok katmanlı kanat telekleri
             px(-3, -4 + breath, 4, 3, p.wingShoulder);
             px(-4, -1 + breath, 4, 3, p.wingCovert);
+            px(-2, 0 + breath, 2, 1, p.wingShoulder);
             px(-4, 2 + breath, 3, 2, p.wingGreen);
             px(-5, 4 + breath, 3, 3, p.wingPrimary);
             px(-5, 7 + breath, 2, 2, p.wingTip);
 
+            // Baş, tepe tüyleri ve yüz/gaga
             const hy = -9 + breath;
             px(-2, hy, 6, 4, p.body);
-            px(-1, hy - 1, 4, 1, p.bodyHi);
+            px(-1, hy - 1, 5, 1, p.bodyHi);
+            px(-2, hy - 1, 2, 1, p.body);
 
             if (lookDir === 1) {
                 px(1, hy + 1, 3, 3, p.face);
                 px(2, hy + 1, 1, 1, p.eye);
+                px(2, hy + 1, 1, 1, '#0f172a');
                 px(1, hy + 3, 2, 1, p.faceLine);
                 px(0, hy + 2, 1, 2, p.faceLine);
                 px(2, hy + 4, 2, 1, p.faceLine);
+                px(4, hy, 1, 1, p.face);
                 px(4, hy + 1, 3, 2, p.beakUpper);
                 px(6, hy + 2, 2, 2, p.beakTip);
                 px(5, hy + 3, 2, 2, p.beakTip);
@@ -313,13 +330,16 @@ export class PixelParrot {
         const pitch = isHovering ? -1 : Math.max(-2, Math.min(2, Math.round(this.vy * 6)));
         const liftY = Math.round(-wingSin * 1.1);
 
+        // Uzak (arka) kanat ve kanat altı (wingUnder) tonlaması
         if (isHovering) {
-            px(1, -8 + liftY, 5, 3, p.wingPrimary);
-            px(0, -5 + liftY, 5, 3, p.wingCovert);
+            px(1, -9 + liftY, 5, 3, p.wingTip);
+            px(0, -6 + liftY, 5, 3, p.wingPrimary);
+            px(0, -3 + liftY, 4, 2, p.wingUnder);
         } else if (wingSin > 0.1) {
             const farH = Math.round(wingSin * 5);
-            px(0, -4 - farH + liftY, 5, 2, p.wingTip);
-            px(-1, -2 - farH + liftY, 6, 3, p.wingPrimary);
+            px(0, -5 - farH + liftY, 5, 2, p.wingTip);
+            px(-1, -3 - farH + liftY, 6, 3, p.wingPrimary);
+            px(0, -1 - Math.floor(farH * 0.6) + liftY, 4, 2, p.wingUnder);
         }
 
         const tailLen = 23;
@@ -334,9 +354,9 @@ export class PixelParrot {
                 px(tx, ty - 1, 1, 1, p.tailMid);
             }
             const fanSpread = isHovering ? 2 : 1;
-            if (t >= 2 && t < 13) {
+            if (t >= 2 && t < 14) {
                 px(tx, ty + fanSpread, 1, 1, p.tailOuter);
-                if (isHovering && t < 9) {
+                if (isHovering && t < 10) {
                     px(tx, ty - 1 - fanSpread, 1, 1, p.tailOuter);
                 }
             }
@@ -345,6 +365,7 @@ export class PixelParrot {
         const headPitch = pitch;
         const rearPitch = -Math.sign(pitch);
 
+        // Aerodinamik gövde, göğüs parıltısı ve alt gölge
         px(-6, -2 + rearPitch + liftY, 6, 2, p.body);
         px(0, -2 + liftY, 6, 2, p.bodyHi);
         px(-7, 0 + rearPitch + liftY, 14, 3, p.body);
@@ -355,6 +376,7 @@ export class PixelParrot {
         if (isHovering) {
             px(-2, 4 + liftY, 2, 2, '#1e293b');
             px(1, 4 + liftY, 2, 2, '#1e293b');
+            px(2, 5 + liftY, 1, 1, '#0f172a');
         } else {
             px(-4, 4 + rearPitch + liftY, 3, 1, '#1e293b');
         }
@@ -380,9 +402,16 @@ export class PixelParrot {
         px(hx + 9, hy + 4, 1, 1, p.beakTip);
         px(hx + 6, hy + 3 + this.beakOpen, 3, 1, p.beakLower);
 
+        if (this.state === 'eating' && this.beakOpen) {
+            px(hx + 10, hy + 3, 1, 1, '#facc15');
+            px(hx + 9, hy + 5, 1, 1, '#fb7185');
+        }
+
+        // Yakın (ön) kanat ve birincil telek uçları
         if (isHovering) {
             px(-2, -3 + liftY, 5, 3, p.wingShoulder);
             px(-4, -6 + liftY, 6, 3, p.wingCovert);
+            px(-5, -7 + liftY, 5, 2, p.wingGreen);
             px(-6, -9 + liftY, 6, 3, p.wingPrimary);
             px(-8, -11 + liftY, 3, 2, p.wingTip);
             px(-5, -12 + liftY, 3, 2, p.wingTip);
@@ -393,6 +422,7 @@ export class PixelParrot {
             px(-9, -4 + liftY, 6, 2, p.wingGreen);
             px(-13, -5 + liftY, 6, 2, p.wingPrimary);
             px(-15, -6 + liftY, 4, 2, p.wingTip);
+            px(-16, -5 + liftY, 2, 1, p.wingTip);
         } else if (wingSin > 0.28 && wingSin <= 0.72) {
             px(-2, -3 + liftY, 5, 3, p.wingShoulder);
             px(-5, -6 + liftY, 6, 3, p.wingCovert);
