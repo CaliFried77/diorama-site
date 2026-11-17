@@ -537,7 +537,7 @@ if (hab.sceneProfile === 'meadow') {
                 flora.push({
                     type: 'tropical_leaf',
                     x,
-                    h: (34 + Math.random() * 40) * scaleM,
+                    h: (32 + Math.random() * 34) * scaleM,
                     dir: Math.random() < 0.5 ? -1 : 1,
                     hue: Math.random() < 0.5 ? '#0f766e' : '#15803d',
                     phase: Math.random() * Math.PI * 2
@@ -546,7 +546,7 @@ if (hab.sceneProfile === 'meadow') {
                 flora.push({
                     type: 'jungle_fern',
                     x,
-                    h: (24 + Math.random() * 24) * scaleM,
+                    h: (22 + Math.random() * 22) * scaleM,
                     dir: Math.random() < 0.5 ? -1 : 1,
                     phase: Math.random() * Math.PI * 2
                 });
@@ -554,7 +554,7 @@ if (hab.sceneProfile === 'meadow') {
                 flora.push({
                     type: 'bromeliad',
                     x,
-                    h: (20 + Math.random() * 20) * scaleM,
+                    h: (18 + Math.random() * 18) * scaleM,
                     hue: Math.random() < 0.5 ? '#e11d48' : '#f97316',
                     phase: Math.random() * Math.PI * 2
                 });
@@ -562,7 +562,8 @@ if (hab.sceneProfile === 'meadow') {
                 flora.push({
                     type: 'heliconia',
                     x,
-                    h: (32 + Math.random() * 32) * scaleM,
+                    h: (28 + Math.random() * 26) * scaleM,
+                    dir: Math.random() < 0.5 ? -1 : 1,
                     hue: ['#e11d48', '#f97316', '#facc15'][Math.floor(Math.random() * 3)],
                     phase: Math.random() * Math.PI * 2
                 });
@@ -570,31 +571,21 @@ if (hab.sceneProfile === 'meadow') {
                 flora.push({
                     type: 'orchid',
                     x,
-                    h: (24 + Math.random() * 26) * scaleM,
+                    h: (22 + Math.random() * 22) * scaleM,
                     hue: Math.random() < 0.5 ? '#e879f9' : '#f9a8d4',
                     phase: Math.random() * Math.PI * 2
                 });
             }
         }
 
-        const treeSpecs = [
-            { baseX: Math.floor(pw * 0.14), top: Math.floor(ph * 0.24), idx: 0, prog: 0.42 },
-            { baseX: Math.floor(pw * 0.27), top: Math.floor(ph * 0.36), idx: 1, prog: 0.46 },
-            { baseX: Math.floor(pw * 0.42), top: Math.floor(ph * 0.32), idx: 2, prog: 0.44 },
-            { baseX: Math.floor(pw * 0.58), top: Math.floor(ph * 0.30), idx: 3, prog: 0.43 },
-            { baseX: Math.floor(pw * 0.75), top: Math.floor(ph * 0.34), idx: 4, prog: 0.40 },
-            { baseX: Math.floor(pw * 0.86), top: Math.floor(ph * 0.22), idx: 5, prog: 0.48 }
+        // Epifitler çıplak gövde ortasında değil, yan dalların gövdeyle birleştiği gerçek dal çatallarında yetişir
+        const branchForkSpecs = [
+            { x: Math.floor(pw * 0.14) + 6, y: Math.floor(ph * 0.24) + 21 },
+            { x: Math.floor(pw * 0.27) + 6, y: Math.floor(ph * 0.36) + 21 },
+            { x: Math.floor(pw * 0.75) - 6, y: Math.floor(ph * 0.34) + 21 },
+            { x: Math.floor(pw * 0.86) - 6, y: Math.floor(ph * 0.22) + 21 }
         ];
-        const epiphyteAnchors = [
-            { x: 16, y: Math.round(ph * 0.45) },
-            ...treeSpecs.map(t => {
-                const y = Math.round(t.top + t.prog * (ph - t.top));
-                const curve = Math.sin(t.prog * Math.PI * 1.2 + t.idx) * 2.5;
-                return { x: Math.round(t.baseX + curve), y };
-            }),
-            { x: pw - 18, y: Math.round(ph * 0.52) }
-        ];
-        epiphyteAnchors.forEach((pt, i) => {
+        branchForkSpecs.forEach((pt, i) => {
             flora.push({
                 type: 'epiphyte',
                 x: pt.x,
@@ -604,16 +595,17 @@ if (hab.sceneProfile === 'meadow') {
             });
         });
 
+        // Tüm kanopi sarmaşıkları doğrudan üstteki taç kubbelerinin içinden (startY: 6..12) sarkar; gökyüzünde havada başlamaz
         const vineXPositions = [
-            pw * 0.05, pw * 0.13, pw * 0.22, pw * 0.33, pw * 0.42,
-            pw * 0.58, pw * 0.67, pw * 0.78, pw * 0.87, pw * 0.95
+            pw * 0.06, pw * 0.16, pw * 0.28, pw * 0.40, pw * 0.50,
+            pw * 0.60, pw * 0.72, pw * 0.84, pw * 0.94
         ];
         vineXPositions.forEach((vx, i) => {
             flora.push({
                 type: 'canopy_vine',
                 x: Math.round(vx),
-                startY: 5 + (i % 4) * 7,
-                len: 42 + (i % 3) * 16 + (i % 4 === 0 ? 22 : 0),
+                startY: 6 + (i % 3) * 3,
+                len: 36 + (i % 3) * 14 + (i % 4 === 0 ? 18 : 0),
                 phase: i * 0.9,
                 hue: i % 3 === 0 ? '#22a65a' : (i % 2 === 0 ? '#15803d' : '#0f766e')
             });
@@ -621,15 +613,15 @@ if (hab.sceneProfile === 'meadow') {
 
         const monsteraAnchors = [
             { x: 0.06, h: 48, dir: 1 },
-            { x: 0.27, h: 58, dir: -1 },
-            { x: 0.73, h: 54, dir: 1 },
+            { x: 0.27, h: 56, dir: -1 },
+            { x: 0.73, h: 52, dir: 1 },
             { x: 0.94, h: 46, dir: -1 }
         ];
         monsteraAnchors.forEach((plant, i) => {
             flora.push({
                 type: 'monstera',
                 x: Math.round(pw * plant.x),
-                h: plant.h + Math.random() * 10,
+                h: plant.h + Math.random() * 8,
                 dir: plant.dir,
                 hue: i % 2 === 0 ? '#16804a' : '#0f6b40',
                 phase: i * 1.3
@@ -637,6 +629,7 @@ if (hab.sceneProfile === 'meadow') {
         });
 
         // BÖLÜM SONU: YAĞMUR ORMANI BAŞLANGIÇ FLORASI
+        
     } else if (hab.sceneProfile === 'arctic-tundra') {
         // BÖLÜM BAŞI: KUTUP TUNDURASI BAŞLANGIÇ FLORASI
         const ledges = getArcticLedges(pw, ph);
