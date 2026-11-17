@@ -80,42 +80,76 @@ if (hab.sceneProfile === 'meadow') {
         }
 
         // BÖLÜM SONU: ÇAYIR BAŞLANGIÇ FLORASI
-    } else if (hab.sceneProfile === 'betta-aquarium') {
+   } else if (hab.sceneProfile === 'betta-aquarium') {
         // BÖLÜM BAŞI: BETTA AKVARYUMU BAŞLANGIÇ FLORASI
+        const soilY = (x) => {
+            const nx = x / Math.max(1, pw);
+            if (Math.abs(nx - 0.50) < 0.085) {
+                return ph - 5 - Math.round(Math.cos((nx - 0.50) * 18) * 2);
+            }
+            const mound = Math.pow(Math.abs(nx - 0.50) * 1.95, 1.45) * 18;
+            return Math.round(ph - 4 - mound - Math.sin(x * 0.04) * 2);
+        };
+
+        for (let cx = 10; cx < pw - 10; cx += 6 + Math.floor(Math.random() * 4)) {
+            const cnx = cx / Math.max(1, pw);
+            if (Math.abs(cnx - 0.50) < 0.095) continue;
+            flora.push({
+                type: 'carpet_tuft',
+                x: cx,
+                baseY: soilY(cx) + 1,
+                w: 3 + Math.floor(Math.random() * 3),
+                h: 3 + Math.floor(Math.random() * 3),
+                phase: Math.random() * Math.PI * 2
+            });
+        }
+
         for (let x = 10; x < pw - 10; x += 8 + Math.floor(Math.random() * 5)) {
             const nx = x / Math.max(1, pw);
-            const inCenterPath = nx > 0.42 && nx < 0.58;
-            if (inCenterPath && Math.random() < 0.72) continue;
+            const inCenterPath = nx > 0.41 && nx < 0.59;
+            if (inCenterPath) continue;
 
-            const moundScale = inCenterPath ? 0.48 : (0.75 + Math.pow(Math.abs(nx - 0.5) * 1.9, 1.2) * 0.55);
+            const baseY = soilY(x) + 1;
+            const moundScale = 0.72 + Math.pow(Math.abs(nx - 0.5) * 1.9, 1.2) * 0.52;
             const kindRoll = Math.random();
 
-            if (kindRoll < 0.42) {
+            if (kindRoll < 0.34) {
                 flora.push({
                     type: 'hornwort',
                     x,
-                    h: (44 + Math.random() * 58) * moundScale,
+                    baseY,
+                    h: (42 + Math.random() * 52) * moundScale,
                     whorlSpan: 4 + Math.floor(Math.random() * 3),
                     glowCol: Math.random() < 0.5 ? '#34d399' : '#2dd4bf',
                     phase: Math.random() * Math.PI * 2
                 });
-            } else if (kindRoll < 0.74) {
+            } else if (kindRoll < 0.62) {
                 flora.push({
                     type: 'ludwigia',
                     x,
-                    h: (34 + Math.random() * 48) * moundScale,
+                    baseY,
+                    h: (32 + Math.random() * 44) * moundScale,
+                    phase: Math.random() * Math.PI * 2
+                });
+            } else if (kindRoll < 0.84) {
+                flora.push({
+                    type: 'val',
+                    x,
+                    baseY,
+                    h: (36 + Math.random() * 48) * moundScale,
                     phase: Math.random() * Math.PI * 2
                 });
             } else {
                 flora.push({
-                    type: 'val',
+                    type: 'amazon_sword',
                     x,
-                    h: (38 + Math.random() * 52) * moundScale,
+                    baseY,
+                    h: (28 + Math.random() * 30) * moundScale,
                     phase: Math.random() * Math.PI * 2
                 });
             }
         }
-        for (let fx = 14; fx < pw - 14; fx += 18 + Math.floor(Math.random() * 14)) {
+        for (let fx = 44; fx < pw - 14; fx += 18 + Math.floor(Math.random() * 14)) {
             flora.push({
                 type: 'pistia',
                 x: fx,
@@ -124,13 +158,14 @@ if (hab.sceneProfile === 'meadow') {
             });
         }
         for (let i = 0; i < 48; i++) {
-            const px = Math.random() * pw;
+            const px = 8 + Math.random() * (pw - 16);
             const nx = px / Math.max(1, pw);
-            const inSand = nx > 0.43 && nx < 0.57;
+            const inSand = Math.abs(nx - 0.50) < 0.085;
+            const py = soilY(px) + Math.floor(Math.random() * 3);
             flora.push({
                 type: 'pebble',
                 x: px,
-                y: ph - 2 - Math.random() * (inSand ? 4 : 9),
+                y: py,
                 w: 2 + Math.floor(Math.random() * 4),
                 h: 1 + Math.floor(Math.random() * 2),
                 shade: inSand ? ['#94a3b8', '#64748b'][i % 2] : ['#0f293a', '#16384c', '#1e4959', '#091d2b'][i % 4]
@@ -138,6 +173,7 @@ if (hab.sceneProfile === 'meadow') {
         }
 
         // BÖLÜM SONU: BETTA AKVARYUMU BAŞLANGIÇ FLORASI
+        
     } else if (hab.sceneProfile === 'wetland') {
         // BÖLÜM BAŞI: SULAK ALAN BAŞLANGIÇ FLORASI
         const reach = Math.min(145, Math.round(pw * 0.26));
