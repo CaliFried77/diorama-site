@@ -151,15 +151,17 @@ export function drawHabitatFlora(time, hab) {
             const stemCol = isLightMode ? '#15803d' : '#0b4635';
             const leafCol = isLightMode ? '#22c55e' : '#10b981';
             const tipCol = isLightMode ? '#86efac' : '#34d399';
+            pRect(f.x - 1, f.startY - 1, 3, 2, '#3b281e');
             for (let y = 0; y < f.len; y += 2) {
                 const prog = y / f.len;
                 const sway = Math.sin(time * 0.0014 + f.phase + y * 0.05) * (1.2 + prog * 4.5);
-                const px = f.x + sway;
+                const px = Math.round(f.x + sway);
                 const py = f.startY + y;
                 pRect(px, py, 1, 2, stemCol);
-                if (y > 4 && y % 6 === 0) {
-                    const side = (y % 12 === 0) ? -1 : 1;
-                    pRect(px + side, py, 2, 1, prog > 0.75 ? tipCol : leafCol);
+                if (y > 3 && y % 4 === 0) {
+                    const side = (y % 8 === 0) ? -1 : 1;
+                    pRect(px + side, py, 2, 1, prog > 0.72 ? tipCol : leafCol);
+                    pRect(px + side * 2, py + 1, 1, 1, prog > 0.60 ? tipCol : leafCol);
                 }
             }
 
@@ -634,33 +636,49 @@ export function drawHabitatFlora(time, hab) {
             }
 
         } else if (f.type === 'iris') {
+            const sheathCol = isLightMode ? '#14532d' : '#063729';
             const bladeCol = isLightMode ? '#15803d' : '#0d5946';
+            const bladeHi = isLightMode ? '#22c55e' : '#10b981';
+            pRect(f.x - 2, baseGroundY - 1, 5, 2, sheathCol);
             for (let blade = -1; blade <= 1; blade++) {
-                const bh = f.h * (blade === 0 ? 1 : 0.76);
+                const bh = f.h * (blade === 0 ? 1 : 0.78);
                 for (let y = 0; y < bh; y += 2) {
-                    const sway = Math.sin(time * 0.0015 + f.phase + y * 0.05) * (y / bh) * 2.4 + blade * (y * 0.14);
-                    pRect(f.x + sway, baseGroundY - y, blade === 0 ? 2 : 1, 2, bladeCol);
+                    const prog = y / bh;
+                    const sway = Math.sin(time * 0.0015 + f.phase + y * 0.05) * prog * 2.4 + blade * (y * 0.15);
+                    pRect(f.x + sway, baseGroundY - y, blade === 0 ? 2 : 1, 2, blade === 0 ? bladeCol : bladeHi);
                 }
             }
-            const topX = f.x + Math.sin(time * 0.0015 + f.phase + f.h * 0.05) * 2.4;
-            const topY = baseGroundY - f.h;
-            pRect(topX - 3, topY - 1, 7, 2, f.col);
-            pRect(topX - 1, topY - 3, 3, 3, f.col);
+            const topX = Math.round(f.x + Math.sin(time * 0.0015 + f.phase + f.h * 0.05) * 2.4);
+            const topY = Math.round(baseGroundY - f.h);
+            pRect(topX - 1, topY + 1, 3, 1, bladeCol);
+            pRect(topX - 3, topY - 1, 2, 2, f.col);
+            pRect(topX + 2, topY - 1, 2, 2, f.col);
+            pRect(topX - 2, topY - 2, 5, 2, f.col);
+            pRect(topX - 1, topY - 4, 3, 3, f.col);
             pRect(topX, topY - 2, 1, 2, '#fef9c3');
 
         } else if (f.type === 'papyrus') {
+            const stemDark = isLightMode ? '#14532d' : '#063729';
+            const stemCol = isLightMode ? '#166534' : '#0c4a38';
+            const rayCol = isLightMode ? '#22c55e' : '#10b981';
             let topX = f.x;
-            const topY = baseGroundY - Math.floor(f.h);
+            const topY = Math.round(baseGroundY - f.h);
+            pRect(f.x - 2, baseGroundY - 1, 5, 2, stemDark);
             for (let y = 0; y < f.h; y += 2) {
                 const sway = Math.sin(time * 0.0014 + f.phase + y * 0.05) * (y / f.h) * 3;
-                topX = f.x + sway;
-                pRect(topX, baseGroundY - y, 2, 2, isLightMode ? '#166534' : '#0c4a38');
+                topX = Math.round(f.x + sway);
+                pRect(topX, baseGroundY - y, 2, 2, stemCol);
             }
+            pRect(topX - 1, topY, 4, 2, '#78350f');
             for (let r = -5; r <= 5; r++) {
-                pRect(topX + r, topY - 2 - (Math.abs(r) < 3 ? 1 : 0), 1, 2, isLightMode ? '#22c55e' : '#10b981');
+                const arch = Math.abs(r) < 3 ? 2 : 1;
+                pRect(topX + r, topY - arch, 1, 2, rayCol);
+                if (Math.abs(r) % 2 === 1) {
+                    pRect(topX + r, topY - arch - 1, 1, 1, '#fde68a');
+                }
             }
 
-       } else if (f.type === 'val' || f.type === 'ludwigia') {
+        } else if (f.type === 'val' || f.type === 'ludwigia') {
             pRect(f.x - 1, baseGroundY - 1, 3, 2, f.type === 'ludwigia' ? '#4c0519' : '#064e3b');
             if (f.type === 'val') {
                 [-1, 0, 1].forEach(ribbon => {
@@ -692,10 +710,14 @@ export function drawHabitatFlora(time, hab) {
                     }
                 }
             }
+
         } else if (f.type === 'reed') {
             const stemCol = isLightMode ? '#166534' : '#0d4a3a';
             const bladeCol = isLightMode ? '#15803d' : '#115e49';
+            const bladeHi = isLightMode ? '#22c55e' : '#10b981';
             let tipX = f.x;
+            pRect(f.x - 2, baseGroundY - 1, 5, 2, stemCol);
+
             for (let y = 0; y < f.h; y++) {
                 const prog = y / f.h;
                 const sway = Math.sin(time * 0.0015 + f.phase + y * 0.045) * prog * 3.5 + (f.tilt || 0) * y;
@@ -704,23 +726,27 @@ export function drawHabitatFlora(time, hab) {
                 tipX = px;
                 pRect(px, py, 1, 1, stemCol);
 
-                if (y < f.h * 0.65 && y % 2 === 0) {
-                    const bladeSpread = Math.sin(prog * Math.PI) * 3.5;
+                if (y > 4 && y < f.h * 0.68 && y % 2 === 0) {
+                    const bladeSpread = Math.sin(prog * Math.PI) * 3.8;
                     pRect(px - bladeSpread, py, 1, 2, bladeCol);
-                    pRect(px + bladeSpread, py + 1, 1, 2, bladeCol);
+                    pRect(px + bladeSpread, py + 1, 1, 2, bladeHi);
                 }
 
                 if (f.hasCat && y > f.h - 17 && y < f.h - 5) {
-                    pRect(px - 1, py, 3, 1, '#451a03');
+                    pRect(px - 1, py, 3, 1, '#3b1806');
+                    pRect(px - 1, py, 2, 1, '#5c2d16');
                     pRect(px, py, 1, 1, '#78350f');
                     if (y === Math.floor(f.h - 6)) {
                         pRect(px - 1, py - 1, 2, 1, '#fef3c7');
                     }
                 }
+                if (f.hasCat && y >= f.h - 5) {
+                    pRect(px, py, 1, 1, '#d97706');
+                }
             }
             f.tipX = tipX;
             f.tipY = baseGroundY - f.h;
-
+            
         } else if (f.type === 'lily') {
             const padCol1 = isLightMode ? '#15803d' : '#0f4c3a';
             const padCol2 = isLightMode ? '#16a34a' : '#14634b';
