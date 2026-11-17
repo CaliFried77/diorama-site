@@ -131,22 +131,33 @@ export function drawHabitatFlora(time, hab) {
             }
 
         } else if (f.type === 'staghorn_coral') {
-            const mainCol = `hsla(${f.hue}, 82%, 46%, 0.9)`;
+            const baseCol = `hsla(${f.hue}, 70%, 28%, 0.95)`;
+            const mainCol = `hsla(${f.hue}, 85%, 52%, 0.92)`;
+            const hiCol = `hsla(${f.hue}, 95%, 68%, 0.95)`;
             const tipCol = '#fef08a';
+
+            pRect(f.x - 3, baseGroundY - 1, 7, 3, baseCol);
+            pRect(f.x - 2, baseGroundY - 2, 5, 2, mainCol);
+
             for (let b = -1; b <= 1; b++) {
-                const bh = Math.round(f.h * (b === 0 ? 1 : 0.75));
+                const bh = Math.round(f.h * (b === 0 ? 1 : 0.78));
                 for (let y = 0; y < bh; y++) {
                     const prog = y / bh;
                     const sway = Math.sin(time * 0.001 + f.phase) * prog * 0.8;
-                    const px = f.x + b * prog * 6.5 + sway;
+                    const px = Math.round(f.x + b * Math.pow(prog, 1.15) * 6.5 + sway);
                     const py = baseGroundY - y;
-                    pRect(px, py, 2, 1, y >= bh - 2 ? tipCol : mainCol);
-                    if (b !== 0 && y === Math.floor(bh * 0.55)) {
-                        pRect(px + b * 2, py - 1, 2, 2, tipCol);
+                    const col = y >= bh - 2 ? tipCol : (y < 4 ? baseCol : (y % 2 === 0 ? hiCol : mainCol));
+                    pRect(px, py, 2, 1, col);
+
+                    if (b !== 0 && y >= Math.floor(bh * 0.50) && y <= Math.floor(bh * 0.50) + 4) {
+                        const subStep = y - Math.floor(bh * 0.50);
+                        const sx = px + b * (1 + Math.floor(subStep * 0.6));
+                        const sy = py - subStep;
+                        pRect(sx, sy, 2, 1, subStep >= 3 ? tipCol : hiCol);
                     }
                 }
             }
-
+            
         } else if (f.type === 'willow_frond') {
             const stemCol = isLightMode ? '#15803d' : '#0b4635';
             const leafCol = isLightMode ? '#22c55e' : '#10b981';
@@ -870,58 +881,114 @@ export function drawHabitatFlora(time, hab) {
 
             // BÖLÜM SONU: SULAK ALAN VE AKVARYUM BİTKİLERİ
             
-        } else if (f.type === 'brain_coral') {
+       } else if (f.type === 'brain_coral') {
             // BÖLÜM BAŞI: RESİF VE DENİZ CANLILARI
+            pRect(f.x - f.r - 1, baseGroundY, (f.r + 1) * 2, 2, 'rgba(5, 4, 23, 0.48)');
+            pRect(f.x - f.r, baseGroundY - 1, f.r * 2, 2, '#1e1b4b');
             for (let dy = -f.r; dy <= 0; dy++) {
-                for (let dx = -f.r; dx <= f.r; dx++) {
-                    if (dx * dx + dy * dy <= f.r * f.r) {
-                        const groove = Math.sin(dx * 1.4 + dy * 1.2) > 0.2;
-                        const col = groove ? `hsla(${f.hue}, 95%, 68%, 0.88)` : `hsla(${f.hue}, 75%, 28%, 0.88)`;
-                        pRect(f.x + dx, baseGroundY + dy, 1, 1, col);
-                    }
+                const span = Math.round(f.r * Math.sqrt(Math.max(0, 1 - (dy * dy) / (f.r * f.r))));
+                for (let dx = -span; dx <= span; dx++) {
+                    const groove = Math.sin(dx * 1.35 + Math.cos(dy * 1.2) * 1.5) > 0.15;
+                    const isRim = dy < -f.r * 0.6 && Math.abs(dx) < span * 0.6;
+                    const lightness = groove ? (isRim ? 74 : 64) : 26;
+                    const col = `hsla(${f.hue}, 90%, ${lightness}%, 0.92)`;
+                    pRect(f.x + dx, baseGroundY + dy, 1, 1, col);
                 }
             }
 
         } else if (f.type === 'tube_sponge') {
+            const baseShade = `hsla(${f.hue}, 75%, 24%, 0.92)`;
+            pRect(f.x - 5, baseGroundY, 11, 2, 'rgba(5, 4, 23, 0.45)');
+            pRect(f.x - 5, baseGroundY - 2, 11, 3, baseShade);
+
             [-3, 0, 3].forEach((ox, idx) => {
-                const th = Math.round(f.h * (idx === 1 ? 1 : 0.72));
+                const th = Math.round(f.h * (idx === 1 ? 1 : (idx === 0 ? 0.76 : 0.84)));
                 for (let y = 0; y < th; y++) {
-                    const col = y >= th - 2 ? '#fef08a' : `hsla(${f.hue}, 85%, ${35 + (y / th) * 25}%, 0.85)`;
-                    pRect(f.x + ox, baseGroundY - y, 2, 1, col);
+                    const prog = y / th;
+                    const sway = Math.sin(time * 0.0012 + f.phase + idx) * prog * 0.8;
+                    const tx = Math.round(f.x + ox + sway);
+                    const ty = baseGroundY - y;
+                    const isTop = y >= th - 2;
+                    const lum = Math.round(32 + prog * 28);
+                    const wallCol = isTop ? '#fef08a' : `hsla(${f.hue}, 88%, ${lum}%, 0.90)`;
+                    const shadeCol = `hsla(${f.hue}, 78%, ${Math.max(20, lum - 12)}%, 0.90)`;
+                    pRect(tx - 1, ty, 3, 1, shadeCol);
+                    pRect(tx - 1, ty, 2, 1, wallCol);
+                    if (y === th - 1) {
+                        pRect(tx, ty, 1, 1, '#1e1b4b');
+                    }
                 }
             });
 
         } else if (f.type === 'sea_fan') {
-            for (let y = 0; y < f.h; y++) {
-                const sway = Math.sin(time * 0.0014 + f.phase + y * 0.08) * (y / f.h) * 2.5;
-                const spread = Math.round(Math.sin((y / f.h) * Math.PI) * 6);
-                const px = f.x + sway;
+            const stalkCol = '#311042';
+            const veinCol = `hsla(${f.hue}, 85%, 45%, 0.90)`;
+            const meshCol = `hsla(${f.hue}, 92%, 64%, 0.78)`;
+            const polypCol = '#fef08a';
+
+            pRect(f.x - 2, baseGroundY - 1, 5, 2, stalkCol);
+            pRect(f.x - 1, baseGroundY - 4, 3, 4, stalkCol);
+
+            for (let y = 3; y < f.h; y++) {
+                const prog = y / f.h;
+                const sway = Math.sin(time * 0.0014 + f.phase + y * 0.08) * prog * 2.5;
+                const spread = Math.round(Math.sin(prog * Math.PI * 0.92) * 7);
+                const px = Math.round(f.x + sway);
                 const py = baseGroundY - y;
-                for (let dx = -spread; dx <= spread; dx += 2) {
-                    if ((dx + y) % 2 === 0) {
-                        pRect(px + dx, py, 1, 1, `hsla(${f.hue}, 90%, 62%, 0.72)`);
+
+                pRect(px, py, 1, 1, y < f.h * 0.45 ? stalkCol : veinCol);
+                for (let dx = -spread; dx <= spread; dx++) {
+                    const isEdge = Math.abs(dx) === spread;
+                    const isMainVein = Math.abs(dx) === Math.round(spread * 0.5);
+                    if (isEdge) {
+                        pRect(px + dx, py, 1, 1, (y % 3 === 0) ? polypCol : meshCol);
+                    } else if (isMainVein || (dx + y) % 2 === 0) {
+                        pRect(px + dx, py, 1, 1, isMainVein ? veinCol : meshCol);
                     }
                 }
             }
 
         } else if (f.type === 'kelp') {
+            const holdfastCol = '#134e4a';
+            const stipeCol = '#0f766e';
+            const bladeDark = '#0d9488';
+            const bladeLight = '#2dd4bf';
+
+            pRect(f.x - 2, baseGroundY - 1, 5, 2, holdfastCol);
             for (let y = 0; y < f.h; y++) {
-                const sway = Math.sin(time * 0.0015 + f.phase + y * 0.07) * (y / f.h) * 5;
-                const px = f.x + sway;
+                const prog = y / f.h;
+                const sway = Math.sin(time * 0.0015 + f.phase + y * 0.07) * prog * 5;
+                const px = Math.round(f.x + sway);
                 const py = baseGroundY - y;
-                pRect(px, py, 1, 1, '#0d9488');
-                if (y % 5 === 0 && y > 6) {
-                    const side = (y % 10 === 0) ? -3 : 1;
-                    pRect(px + side, py, 3, 2, '#2dd4bf');
+                pRect(px, py, 1, 1, stipeCol);
+
+                if (y > 5 && y % 5 === 0) {
+                    const isLeft = (y % 10 === 0);
+                    const bladeLen = Math.max(2, Math.round((1 - prog * 0.35) * 4));
+                    pRect(px + (isLeft ? -1 : 1), py, 1, 1, '#5eead4');
+                    for (let b = 1; b <= bladeLen; b++) {
+                        const bx = px + (isLeft ? -b : b);
+                        const by = py + Math.floor(b * 0.4);
+                        pRect(bx, by, 1, 2, b === bladeLen ? bladeLight : bladeDark);
+                    }
                 }
             }
 
         } else if (f.type === 'anemone') {
-            pRect(f.x - 3, baseGroundY - 3, 7, 4, '#3b0764');
+            pRect(f.x - 4, baseGroundY, 9, 2, 'rgba(5, 4, 23, 0.45)');
+            pRect(f.x - 4, baseGroundY - 2, 9, 2, '#3b0764');
+            pRect(f.x - 3, baseGroundY - 4, 7, 3, '#581c87');
+            pRect(f.x - 4, baseGroundY - 5, 9, 2, '#701a75');
+
             for (let t = -3; t <= 3; t++) {
-                const sway = Math.sin(time * 0.003 + f.phase + t) * 1.8;
-                for (let y = 3; y <= 12; y++) {
-                    pRect(f.x + t * 1.4 + sway * (y / 12), baseGroundY - y, 1, 1, y === 12 ? '#fef08a' : `hsla(${f.hue}, 90%, 65%, 0.82)`);
+                const tLen = Math.round(f.h * (1 - Math.abs(t) * 0.06));
+                const sway = Math.sin(time * 0.003 + f.phase + t * 0.7) * 1.8;
+                for (let y = 5; y <= tLen; y++) {
+                    const prog = (y - 5) / Math.max(1, tLen - 5);
+                    const tx = Math.round(f.x + t * (1.1 + prog * 0.5) + sway * prog);
+                    const ty = baseGroundY - y;
+                    const col = y >= tLen - 1 ? '#fef08a' : `hsla(${f.hue}, 92%, ${56 + Math.round(prog * 16)}%, 0.88)`;
+                    pRect(tx, ty, 1, 1, col);
                 }
             }
             // BÖLÜM SONU: RESİF VE DENİZ CANLILARI
