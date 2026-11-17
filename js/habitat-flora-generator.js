@@ -80,8 +80,6 @@ if (hab.sceneProfile === 'meadow') {
         }
 
         // BÖLÜM SONU: ÇAYIR BAŞLANGIÇ FLORASI
-    }
-    
     } else if (hab.sceneProfile === 'betta-aquarium') {
         // BÖLÜM BAŞI: BETTA AKVARYUMU BAŞLANGIÇ FLORASI
         for (let x = 10; x < pw - 10; x += 8 + Math.floor(Math.random() * 5)) {
