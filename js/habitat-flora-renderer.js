@@ -17,27 +17,64 @@ export function drawHabitatFlora(time, hab) {
             // BÖLÜM BAŞI: ZEMİN VE KUTUP DETAYLARI
             pRect(f.x, f.y, f.w, f.h, isLightMode ? 'rgba(15, 55, 65, 0.35)' : f.shade);
 
-        } else if (f.type === 'cotton_grass') {
-            const sway = Math.sin(time * 0.0016 + f.phase) * 1.8;
-            for (let y = 0; y < f.h; y += 2) {
-                pRect(f.x + sway * (y / f.h), baseGroundY - y, 1, 2, '#0f766e');
-            }
-            const tx = f.x + sway;
-            const ty = baseGroundY - f.h;
-            pRect(tx - 2, ty - 1, 5, 3, '#ffffff');
-            pRect(tx - 1, ty - 2, 3, 4, '#f8fafc');
+} else if (f.type === 'cotton_grass') {
+            const sway = Math.sin(time * 0.0016 + f.phase) * 1.6;
+            const culmCol = isLightMode ? '#115e59' : '#0f766e';
+            const bractCol = '#78350f';
+            pRect(f.x - 2, baseGroundY - 1, 5, 2, '#134e4a');
+            [-1, 1, 0].forEach((offset, idx) => {
+                const ch = Math.max(6, Math.round(f.h * (offset === 0 ? 1 : 0.78)));
+                const tipX = Math.round(f.x + offset * 2 + sway * (offset === 0 ? 1 : 0.75));
+                const tipY = baseGroundY - ch;
+                for (let y = 0; y < ch; y++) {
+                    const prog = y / ch;
+                    const sx = f.x + offset + (tipX - (f.x + offset)) * prog;
+                    pRect(sx, baseGroundY - y, 1, 1, culmCol);
+                }
+                pRect(tipX - 1, tipY, 3, 1, bractCol);
+                pRect(tipX - 2, tipY - 2, 5, 2, '#f8fafc');
+                pRect(tipX - 1, tipY - 3, 3, 3, '#ffffff');
+                if (idx === 2) pRect(tipX, tipY - 4, 1, 1, '#e0f2fe');
+            });
 
         } else if (f.type === 'arctic_crystal') {
-            pRect(f.x - 2, baseGroundY - Math.floor(f.h * 0.7), 2, Math.floor(f.h * 0.7), '#0284c7');
-            pRect(f.x, baseGroundY - f.h, 2, f.h, f.col);
-            pRect(f.x + 2, baseGroundY - Math.floor(f.h * 0.6), 2, Math.floor(f.h * 0.6), '#38bdf8');
-            pRect(f.x, baseGroundY - f.h, 1, 2, '#ffffff');
+            const rockDark = isLightMode ? '#334155' : '#0f172a';
+            const rockMid = isLightMode ? '#475569' : '#1e293b';
+            const rockHi = isLightMode ? '#64748b' : '#334155';
+            const lichenCol = f.col === '#38bdf8' ? '#f97316' : '#84cc16';
+
+            pRect(f.x - 4, baseGroundY, 9, 2, 'rgba(7, 13, 25, 0.38)');
+            pRect(f.x - 4, baseGroundY - 3, 8, 3, rockDark);
+            pRect(f.x - 3, baseGroundY - 5, 6, 3, rockMid);
+            pRect(f.x - 2, baseGroundY - 6, 4, 2, rockHi);
+            pRect(f.x - 2, baseGroundY - 6, 3, 1, '#f8fafc');
+            pRect(f.x - 1, baseGroundY - 4, 2, 1, lichenCol);
+            pRect(f.x + 1, baseGroundY - 3, 2, 1, lichenCol);
+
+            const twigH = Math.max(5, Math.round(f.h * 0.65));
+            for (let y = 0; y < twigH; y++) {
+                const bx = f.x + 2 + Math.round((y / twigH) * 2);
+                const by = baseGroundY - 2 - y;
+                pRect(bx, by, 1, 1, '#451a03');
+                if (y % 2 === 1) {
+                    pRect(bx + 1, by, 1, 1, '#bae6fd');
+                }
+            }
 
         } else if (f.type === 'arctic_berry_bush') {
-            pRect(f.x - f.r, baseGroundY - 4, f.r * 2, 4, '#115e59');
-            pRect(f.x - f.r + 1, baseGroundY - 5, f.r * 2 - 2, 2, '#e0f2fe');
-            pRect(f.x - 2, baseGroundY - 3, 2, 2, '#ef4444');
-            pRect(f.x + 2, baseGroundY - 2, 2, 2, '#f97316');
+            const sway = Math.sin(time * 0.0014 + f.phase) * 0.6;
+            const leafDark = isLightMode ? '#134e4a' : '#062e2b';
+            const leafMid = isLightMode ? '#0f766e' : '#115e59';
+            pRect(f.x - f.r, baseGroundY, f.r * 2, 2, 'rgba(7, 13, 25, 0.35)');
+            pRect(f.x - 1, baseGroundY - 2, 3, 2, '#451a03');
+            for (let dy = -4; dy <= -1; dy++) {
+                const span = Math.max(2, f.r - Math.abs(dy + 2));
+                pRect(f.x - span + sway, baseGroundY + dy, span * 2, 1, dy < -2 ? leafMid : leafDark);
+            }
+            pRect(f.x - f.r + 2 + sway, baseGroundY - 5, Math.max(2, f.r * 2 - 4), 1, '#e0f2fe');
+            pRect(f.x - 2 + sway, baseGroundY - 3, 2, 2, '#f97316');
+            pRect(f.x - 2 + sway, baseGroundY - 3, 1, 1, '#fde047');
+            pRect(f.x + 1 + sway, baseGroundY - 2, 2, 2, '#ef4444');
 
             // BÖLÜM SONU: ZEMİN VE KUTUP DETAYLARI
         } else if (f.type === 'maple_bough') {
