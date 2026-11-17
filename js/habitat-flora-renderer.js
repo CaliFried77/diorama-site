@@ -724,23 +724,33 @@ export function drawHabitatFlora(time, hab) {
         } else if (f.type === 'lily') {
             const padCol1 = isLightMode ? '#15803d' : '#0f4c3a';
             const padCol2 = isLightMode ? '#16a34a' : '#14634b';
-            const driftX = f.x + Math.sin(time * 0.001 + (f.phase || 0)) * 1.2;
-            pRect(driftX - f.r + 1, f.y + 2, f.r * 2 - 2, 2, 'rgba(2, 10, 18, 0.35)');
-            for (let dy = -Math.ceil(f.r * 0.55); dy <= Math.ceil(f.r * 0.55); dy++) {
+            const padRim = isLightMode ? '#4ade80' : '#2dd4bf';
+            const driftX = Math.round(f.x + Math.sin(time * 0.001 + (f.phase || 0)) * 1.2);
+            const ry = Math.max(2, Math.ceil(f.r * 0.55));
+
+            pRect(driftX - f.r + 1, f.y + 2, f.r * 2 - 2, 2, 'rgba(2, 10, 18, 0.38)');
+            for (let dy = -ry; dy <= ry; dy++) {
                 for (let dx = -f.r; dx <= f.r; dx++) {
-                    if ((dx * dx) / (f.r * f.r) + (dy * dy) / ((f.r * 0.55) * (f.r * 0.55)) <= 1) {
-                        if (dx > 0 && Math.abs(dy) <= 0) continue;
-                        pRect(driftX + dx, f.y + dy, 1, 1, (dx + dy) % 2 === 0 ? padCol1 : padCol2);
+                    const normDist = (dx * dx) / (f.r * f.r) + (dy * dy) / (ry * ry);
+                    if (normDist <= 1) {
+                        if (dx > 1 && Math.abs(dy) <= Math.floor((dx - 1) * 0.35)) continue;
+                        const isRim = normDist > 0.72 && dy < 0;
+                        const col = isRim ? padRim : ((dx + dy) % 2 === 0 ? padCol1 : padCol2);
+                        pRect(driftX + dx, f.y + dy, 1, 1, col);
                     }
                 }
             }
             if (f.flower) {
-                pRect(driftX - 2, f.y - 2, 5, 2, f.flowerCol || '#f472b6');
-                pRect(driftX - 1, f.y - 3, 3, 3, f.flowerCol || '#f472b6');
+                const flCol = f.flowerCol || '#f472b6';
+                pRect(driftX - 3, f.y - 1, 7, 1, padCol1);
+                pRect(driftX - 3, f.y - 2, 7, 2, flCol);
+                pRect(driftX - 2, f.y - 3, 5, 3, flCol);
+                pRect(driftX - 1, f.y - 4, 3, 2, '#ffffff');
                 pRect(driftX, f.y - 2, 1, 1, '#fef08a');
             }
 
             // BÖLÜM SONU: SULAK ALAN VE AKVARYUM BİTKİLERİ
+            
         } else if (f.type === 'brain_coral') {
             // BÖLÜM BAŞI: RESİF VE DENİZ CANLILARI
             for (let dy = -f.r; dy <= 0; dy++) {
