@@ -633,14 +633,26 @@ export function buildStaticEnvironmentLayer(hab) {
         // BÖLÜM SONU: BETTA AKVARYUMU STATİK ÇEVRESİ
     }
 
-    else if (hab.sceneProfile === 'botanical') {
+   else if (hab.sceneProfile === 'botanical') {
         // BÖLÜM BAŞI: BOTANİK BAHÇE STATİK ÇEVRESİ
         const reach = Math.min(155, Math.round(pw * 0.30));
 
-        const glassFrameCol = isLightMode ? 'rgba(30, 58, 95, 0.22)' : 'rgba(30, 27, 75, 0.52)';
-        const glassPaneCol = isLightMode ? 'rgba(224, 242, 254, 0.18)' : 'rgba(129, 140, 248, 0.06)';
+        const farHedgeCol = isLightMode ? 'rgba(20, 83, 45, 0.20)' : 'rgba(15, 23, 52, 0.48)';
+        const midHedgeCol = isLightMode ? 'rgba(21, 101, 52, 0.28)' : 'rgba(13, 42, 40, 0.62)';
+        for (let x = 0; x < pw; x++) {
+            const nx = x / Math.max(1, pw);
+            const gy = getGroundY(x, 'botanical', pw, ph);
+            const farH = Math.round(18 + Math.sin(nx * Math.PI * 3 + 0.4) * 6 + Math.cos(x * 0.05) * 2);
+            sRect(x, gy - farH, 1, farH, farHedgeCol);
+            const midH = Math.round(10 + Math.cos(nx * Math.PI * 4) * 3 + Math.sin(x * 0.08) * 1.5);
+            sRect(x, gy - midH, 1, midH, midHedgeCol);
+        }
+
+        const glassFrameCol = isLightMode ? 'rgba(30, 58, 95, 0.28)' : 'rgba(49, 46, 129, 0.58)';
+        const glassHiCol = isLightMode ? 'rgba(255, 255, 255, 0.38)' : 'rgba(165, 180, 252, 0.20)';
+        const glassPaneCol = isLightMode ? 'rgba(224, 242, 254, 0.20)' : 'rgba(129, 140, 248, 0.07)';
         const domeCx = Math.round(pw * 0.50);
-        const domeBaseY = getGroundY(domeCx, 'botanical', pw, ph) - 2;
+        const domeBaseY = getGroundY(domeCx, 'botanical', pw, ph) - 1;
         const domeRx = Math.min(76, Math.round(pw * 0.16));
         const domeRy = 42;
 
@@ -651,16 +663,39 @@ export function buildStaticEnvironmentLayer(hab) {
             sRect(domeCx + span - 1, domeBaseY - 18 + dy, 1, 1, glassFrameCol);
             if (dy % 10 === 0) {
                 sRect(domeCx - span, domeBaseY - 18 + dy, span * 2, 1, glassFrameCol);
+            } else if (dy % 10 === -1 && span > 6) {
+                sRect(domeCx - span + 2, domeBaseY - 18 + dy, Math.max(2, Math.floor(span * 0.5)), 1, glassHiCol);
             }
         }
+        sRect(domeCx - domeRx, domeBaseY - 18, domeRx * 2, 18, glassPaneCol);
+
+        const indoorFoliage = isLightMode ? 'rgba(22, 101, 52, 0.18)' : 'rgba(16, 185, 129, 0.10)';
+        [-0.55, -0.28, 0.28, 0.55].forEach((pos, idx) => {
+            const px = Math.round(domeCx + pos * domeRx);
+            const phIn = 12 + (idx % 2) * 5;
+            for (let y = 0; y < phIn; y++) {
+                const w = Math.max(1, Math.round((1 - y / phIn) * 6));
+                sRect(px - w, domeBaseY - 4 - y, w * 2, 1, indoorFoliage);
+            }
+        });
+
         [-0.6, -0.3, 0, 0.3, 0.6].forEach(rib => {
             const rx = Math.round(domeCx + rib * domeRx);
             const rh = Math.round(domeRy * Math.sqrt(Math.max(0, 1 - rib * rib)));
             sRect(rx, domeBaseY - 18 - rh, 1, rh + 18, glassFrameCol);
         });
-        sRect(domeCx - domeRx, domeBaseY - 18, domeRx * 2, 18, glassPaneCol);
         sRect(domeCx - domeRx, domeBaseY - 18, domeRx * 2, 1, glassFrameCol);
-        sRect(domeCx - 1, domeBaseY - 18 - domeRy - 6, 2, 6, glassFrameCol);
+        sRect(domeCx - domeRx - 1, domeBaseY - 4, domeRx * 2 + 2, 4, isLightMode ? '#475569' : '#1e1b4b');
+        sRect(domeCx - domeRx, domeBaseY - 4, domeRx * 2, 1, glassHiCol);
+
+        for (let dy = -12; dy <= 0; dy++) {
+            const dw = dy < -8 ? Math.round(6 * Math.sqrt(Math.max(0, 1 - ((dy + 8) * (dy + 8)) / 16))) : 6;
+            sRect(domeCx - dw, domeBaseY + dy, dw * 2, 1, isLightMode ? 'rgba(254, 249, 195, 0.28)' : 'rgba(253, 224, 71, 0.12)');
+            sRect(domeCx - dw, domeBaseY + dy, 1, 1, glassFrameCol);
+            sRect(domeCx + dw - 1, domeBaseY + dy, 1, 1, glassFrameCol);
+        }
+        sRect(domeCx - 1, domeBaseY - 18 - domeRy - 7, 2, 7, glassFrameCol);
+        sRect(domeCx - 2, domeBaseY - 18 - domeRy - 5, 4, 1, glassHiCol);
 
         const trunkDark = isLightMode ? '#3b2316' : '#161122';
         const trunkMid = isLightMode ? '#5c3724' : '#261d38';
@@ -686,6 +721,9 @@ export function buildStaticEnvironmentLayer(hab) {
                 sRect(tx, y, tw, 1, trunkDark);
                 sRect(tx + (tree.isLeft ? tw - 5 : 2), y, 3, 1, trunkMid);
                 sRect(tx + (tree.isLeft ? tw - 2 : 0), y, 2, 1, trunkHi);
+                if (prog > 0.76 && y % 2 === 0) {
+                    sRect(tx + (tree.isLeft ? 1 : tw - 3), y, 2, 1, leafMid);
+                }
             }
 
             [0.06, 0.28, 0.50, 0.72, 0.90].forEach((tNode, idx) => {
@@ -697,7 +735,8 @@ export function buildStaticEnvironmentLayer(hab) {
                 for (let y = 0; y <= bottomY; y++) {
                     const normY = (y - branchY * 0.5) / Math.max(1, bottomY - branchY * 0.5);
                     const ellipse = Math.max(0, 1 - normY * normY);
-                    const span = Math.round(rx * (y < branchY * 0.5 ? 1 : Math.sqrt(ellipse)));
+                    const scallop = Math.sin(y * 0.8 + idx) * 1.6;
+                    const span = Math.round(rx * (y < branchY * 0.5 ? 1 : Math.sqrt(ellipse)) + scallop);
                     let col = y < branchY * 0.35 ? leafHi : (y > branchY ? leafDark : leafMid);
                     if ((y + idx) % 5 === 0 && y > branchY * 0.4) col = blossomCrown;
                     sRect(cx - span, y, span * 2, 1, col);
@@ -723,15 +762,20 @@ export function buildStaticEnvironmentLayer(hab) {
         const stoneHi = isLightMode ? '#94a3b8' : '#384366';
 
         [gx, gx + 28].forEach(px => {
-            sRect(px - 1, archBaseY - 4, 8, 5, stoneDark);
-            sRect(px, archTopY, 6, pillarH, stoneMid);
-            sRect(px, archTopY, 2, pillarH, stoneHi);
-            sRect(px + 4, archTopY, 2, pillarH, stoneDark);
+            const pGroundY = getGroundY(px + 3, 'botanical', pw, ph) + 2;
+            sRect(px - 2, pGroundY - 1, 10, 3, 'rgba(2, 8, 16, 0.42)');
+            sRect(px - 1, pGroundY - 4, 8, 5, stoneDark);
+            sRect(px, archTopY, 6, pGroundY - archTopY, stoneMid);
+            sRect(px, archTopY, 2, pGroundY - archTopY, stoneHi);
+            sRect(px + 4, archTopY, 2, pGroundY - archTopY, stoneDark);
+            for (let sy = archTopY + 6; sy < pGroundY - 5; sy += 7) {
+                sRect(px, sy, 6, 1, stoneDark);
+            }
             sRect(px - 1, archTopY - 2, 8, 2, stoneHi);
         });
 
         const archCx = gx + 17;
-        for (let a = 0; a <= 180; a += 3) {
+        for (let a = 0; a <= 180; a += 2) {
             const rad = (a * Math.PI) / 180;
             for (let r = 12; r <= 17; r++) {
                 const ax = Math.round(archCx + Math.cos(rad) * r);
@@ -739,35 +783,65 @@ export function buildStaticEnvironmentLayer(hab) {
                 sRect(ax, ay, 2, 2, r >= 16 ? stoneHi : (r <= 13 ? stoneDark : stoneMid));
             }
         }
+        sRect(archCx - 1, archTopY - 16, 3, 4, stoneHi);
 
-        for (let vy = archTopY - 8; vy < archBaseY - 6; vy += 4) {
-            const sideX = (vy % 8 === 0) ? gx + 1 : gx + 29;
-            const vx = sideX + Math.round(Math.sin(vy * 0.25) * 2);
-            sRect(vx, vy, 4, 2, '#15803d');
-            if (vy % 8 === 0) {
-                sRect(vx + 1, vy - 1, 2, 2, '#f472b6');
-                sRect(vx + 2, vy, 1, 1, '#fef08a');
+        [gx + 2, gx + 30].forEach((stemBaseX, sIdx) => {
+            const pGroundY = getGroundY(stemBaseX, 'botanical', pw, ph) + 1;
+            for (let vy = pGroundY; vy >= archTopY - 2; vy--) {
+                const vx = stemBaseX + Math.round(Math.sin(vy * 0.22 + sIdx * 2) * 1.6);
+                sRect(vx, vy, 1, 1, '#14532d');
+                if (vy % 4 === 0) {
+                    const lSide = (vy % 8 === 0) ? -2 : 1;
+                    sRect(vx + lSide, vy, 3, 2, '#15803d');
+                    sRect(vx + lSide, vy, 2, 1, '#22c55e');
+                }
+                if (vy % 7 === 0 && vy < pGroundY - 4) {
+                    const rSide = (vy % 14 === 0) ? 1 : -2;
+                    sRect(vx + rSide, vy - 1, 2, 2, sIdx === 0 ? '#f472b6' : '#c084fc');
+                    sRect(vx + rSide, vy - 1, 1, 1, '#fef08a');
+                }
+            }
+        });
+        for (let a = 25; a <= 155; a += 8) {
+            const rad = (a * Math.PI) / 180;
+            const vx = Math.round(archCx + Math.cos(rad) * 15);
+            const vy = Math.round(archTopY - Math.sin(rad) * 12.5);
+            sRect(vx - 1, vy, 3, 2, '#15803d');
+            if (a % 24 === 1) {
+                sRect(vx, vy - 1, 2, 2, '#f472b6');
+                sRect(vx, vy - 1, 1, 1, '#fef08a');
             }
         }
 
         const fx = Math.round(pw * 0.18);
         const fy = getGroundY(fx, 'botanical', pw, ph) + 1;
-        sRect(fx - 9, fy - 2, 19, 3, stoneDark);
-        sRect(fx - 6, fy - 4, 13, 2, stoneMid);
-        sRect(fx - 3, fy - 18, 7, 14, stoneMid);
-        sRect(fx - 2, fy - 18, 2, 14, stoneHi);
+        sRect(fx - 16, fy, 33, 3, 'rgba(2, 8, 16, 0.45)');
+        sRect(fx - 15, fy - 4, 31, 4, stoneDark);
+        sRect(fx - 16, fy - 5, 33, 2, stoneHi);
+        sRect(fx - 13, fy - 5, 27, 1, isLightMode ? '#38bdf8' : '#0284c7');
+        sRect(fx - 6, fy - 6, 13, 2, stoneMid);
+        sRect(fx - 3, fy - 18, 7, 12, stoneMid);
+        sRect(fx - 2, fy - 18, 2, 12, stoneHi);
+        sRect(fx + 2, fy - 18, 2, 12, stoneDark);
         sRect(fx - 13, fy - 21, 27, 3, stoneMid);
         sRect(fx - 15, fy - 23, 31, 2, stoneHi);
         sRect(fx - 12, fy - 23, 25, 1, isLightMode ? '#38bdf8' : '#7dd3fc');
         sRect(fx - 2, fy - 28, 5, 5, stoneMid);
-        sRect(fx - 1, fy - 30, 3, 2, stoneHi);
+        sRect(fx - 1, fy - 28, 2, 5, stoneHi);
+        sRect(fx - 4, fy - 29, 9, 1, stoneHi);
+        sRect(fx - 1, fy - 31, 3, 2, stoneHi);
 
         const mossTop = isLightMode ? '#16a34a' : '#0f3d32';
+        const mossMid = isLightMode ? '#15803d' : '#0a2922';
         const mossDeep = isLightMode ? '#14532d' : '#061a17';
         for (let x = 0; x < pw; x++) {
             const gy = getGroundY(x, 'botanical', pw, ph);
             sRect(x, gy, 1, ph - gy, mossDeep);
+            sRect(x, gy + 2, 1, 3, mossMid);
             sRect(x, gy, 1, 2, mossTop);
+            if (x % 4 === 0) {
+                sRect(x, gy - 1, 1, 1, isLightMode ? '#4ade80' : '#10b981');
+            }
         }
 
         for (let i = 0; i < 16; i++) {
@@ -775,12 +849,13 @@ export function buildStaticEnvironmentLayer(hab) {
             const pathX = Math.round(pw * 0.5 + Math.sin(i * 0.45) * (14 + progress * 10));
             const pathY = ph - 2 - Math.round((1 - progress) * 9);
             const stoneW = 3 + (i % 3) * 2;
+            sRect(pathX - stoneW - 1, pathY + 1, (stoneW + 1) * 2, 2, 'rgba(2, 8, 16, 0.35)');
             sRect(pathX - stoneW, pathY, stoneW * 2, 2, stoneDark);
             sRect(pathX - stoneW + 1, pathY, stoneW * 2 - 2, 1, stoneHi);
         }
         // BÖLÜM SONU: BOTANİK BAHÇE STATİK ÇEVRESİ
     }
-
+       
     else if (hab.sceneProfile === 'reef') {
         // BÖLÜM BAŞI: MERCAN RESİFİ STATİK ÇEVRESİ
         const rockDark = isLightMode ? '#0f2942' : '#090d24';
