@@ -41,16 +41,21 @@ canvas.addEventListener('pointerdown', (e) => {
         }
     } else if (interactionProfile === 'blossom') {
         for (let i = 0; i < 2; i++) {
+            const bx = Math.max(14, Math.min(pw - 14, px + (i - 0.5) * 12));
+            const groundY = getGroundY(bx, 'botanical', pw, ph);
+            const by = Math.max(12, Math.min(groundY - 2, py + (Math.random() - 0.5) * 8));
             stimuli.push({
                 type: 'floating_blossom',
-                x: px + (i - 0.5) * 12,
-                y: py + (Math.random() - 0.5) * 8,
+                x: bx,
+                y: by,
                 vx: (Math.random() - 0.5) * 0.08,
-                vy: -0.03 + Math.random() * 0.06,
+                vy: 0.14 + Math.random() * 0.06,
+                landed: by >= groundY - 3,
                 phase: Math.random() * Math.PI * 2,
                 color: i === 0 ? '#f0abfc' : '#7dd3fc',
+                petalShade: i === 0 ? '#c084fc' : '#38bdf8',
                 core: '#fef08a',
-                life: 250,
+                life: 280,
                 claimedBy: null
             });
         }
@@ -308,14 +313,44 @@ export function drawHabitatStimuli() {
 
         } else if (s.type === 'floating_blossom') {
             s.phase += 0.08 * frameScale;
-            s.x += (s.vx + Math.sin(s.phase) * 0.12) * frameScale;
-            s.y += (s.vy + Math.cos(s.phase * 0.7) * 0.08) * frameScale;
-            for (let p = 0; p < 5; p++) {
-                const ang = s.phase * 0.3 + (p * Math.PI * 2) / 5;
-                pRect(s.x + Math.cos(ang) * 2.6, s.y + Math.sin(ang) * 2.2, 2, 2, s.color);
+            const groundY = getGroundY(s.x, 'botanical', pw, ph);
+
+            if (!s.landed) {
+                s.x += (s.vx + Math.sin(s.phase) * 0.16) * frameScale;
+                s.x = Math.max(10, Math.min(pw - 10, s.x));
+                s.y += (Math.max(0.10, s.vy) + Math.cos(s.phase * 0.7) * 0.04) * frameScale;
+                if (s.y >= groundY - 2) {
+                    s.y = groundY - 2;
+                    s.landed = true;
+                }
+            } else {
+                s.y = groundY - 2;
             }
-            pRect(s.x, s.y, 2, 2, s.core);
-            pRect(s.x + Math.sin(s.phase * 2) * 4, s.y + 3, 1, 1, 'rgba(240, 171, 252, 0.65)');
+
+            const bx = Math.round(s.x);
+            const by = Math.round(s.y);
+            const shade = s.petalShade || '#c084fc';
+
+            if (s.landed) {
+                pRect(bx - 4, groundY, 9, 2, 'rgba(2, 8, 16, 0.38)');
+                pRect(bx - 3, by + 1, 7, 1, '#15803d');
+                pRect(bx - 4, by, 2, 1, '#22c55e');
+                pRect(bx + 3, by, 2, 1, '#22c55e');
+            } else {
+                pRect(bx, by + 2, 1, 2, '#15803d');
+                pRect(bx - 2, by + 2, 2, 1, '#22c55e');
+            }
+
+            for (let p = 0; p < 5; p++) {
+                const ang = (s.landed ? 0.2 : s.phase * 0.35) + (p * Math.PI * 2) / 5;
+                const px = Math.round(bx + Math.cos(ang) * 2.6);
+                const py = Math.round(by + Math.sin(ang) * (s.landed ? 1.6 : 2.2));
+                pRect(px, py, 2, 2, p % 2 === 0 ? s.color : shade);
+            }
+            pRect(bx - 1, by - 1, 3, 2, s.color);
+            pRect(bx, by - 1, 2, 2, s.core);
+            pRect(bx, by - 1, 1, 1, '#ffffff');
+            pRect(bx + Math.sin(s.phase * 1.8) * 3.5, by - 3, 1, 1, 'rgba(254, 240, 138, 0.75)');
 
         } else if (s.type === 'bloodworm') {
             const nx = s.x / Math.max(1, pw);
