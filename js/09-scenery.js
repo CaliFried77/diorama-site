@@ -520,12 +520,25 @@ if (hab.sceneProfile === 'wetland') {
     if (hab.sceneProfile === 'rainforest') {
         for (let ray = 0; ray < 5; ray++) {
             const baseX = (ray * 112 + 34) % pw;
-            for (let segment = 0; segment < 5; segment++) {
-                const y = 26 + segment * 22 + (ray % 3) * 6;
-                const x = baseX + Math.round(y * 0.14) + Math.sin(time * 0.0005 + ray + segment) * 2;
-                pRect(x, y, 4, 8, isLightMode ? 'rgba(254, 240, 138, 0.065)' : 'rgba(167, 243, 208, 0.038)');
+            for (let segment = 0; segment < 7; segment++) {
+                const y = 18 + segment * 16 + (ray % 3) * 4;
+                const x = baseX + Math.round(y * 0.16 + Math.sin(time * 0.0005 + ray) * 1.5);
+                pRect(x, y, 5 + (segment % 2), 12, isLightMode ? 'rgba(254, 240, 138, 0.055)' : 'rgba(167, 243, 208, 0.032)');
             }
         }
+
+        const wfX = Math.round(pw * 0.50);
+        const wfGroundY = getGroundY(wfX, 'rainforest', pw, ph);
+        const wfTopY = wfGroundY - 38;
+        for (let d = 0; d < 8; d++) {
+            const dropY = wfTopY + ((Math.floor(time * 0.025) + d * 5) % 37);
+            const dropX = wfX - 1 + (d % 3);
+            pRect(dropX, dropY, 1, 3, isLightMode ? 'rgba(224, 242, 254, 0.72)' : 'rgba(125, 211, 252, 0.45)');
+        }
+        const foamSpread = 4 + Math.round(Math.sin(time * 0.006) * 1.5);
+        pRect(wfX - foamSpread, wfGroundY - 1, foamSpread * 2, 2, isLightMode ? 'rgba(224, 242, 254, 0.65)' : 'rgba(125, 211, 252, 0.35)');
+        pRect(wfX - foamSpread - 3, wfGroundY, (foamSpread + 3) * 2, 1, isLightMode ? 'rgba(186, 230, 253, 0.38)' : 'rgba(45, 212, 191, 0.22)');
+
         for (let wisp = 0; wisp < 10; wisp++) {
             const drift = (time * (0.0018 + (wisp % 3) * 0.0005)) % (pw + 48);
             const x = (wisp * 79 + drift) % pw;
@@ -533,7 +546,15 @@ if (hab.sceneProfile === 'wetland') {
             ctx.fillStyle = isLightMode ? 'rgba(209, 250, 229, 0.045)' : 'rgba(45, 212, 191, 0.032)';
             ctx.fillRect(Math.round(x), Math.round(y), 14 + (wisp % 3) * 5, 2);
         }
+
+        for (let sp = 0; sp < 6; sp++) {
+            const sx = Math.round(((sp * 83 + Math.sin(time * 0.0011 + sp) * 14) % (pw - 32)) + 16);
+            const sy = Math.round(ph * 0.48 + (sp * 17) % Math.floor(ph * 0.38) + Math.cos(time * 0.0016 + sp) * 6);
+            const alpha = (0.28 + 0.35 * (0.5 + 0.5 * Math.sin(time * 0.004 + sp * 1.7))).toFixed(2);
+            pRect(sx, sy, 1, 1, sp % 2 === 0 ? `rgba(110, 231, 183, ${alpha})` : `rgba(253, 224, 71, ${alpha})`);
+        }
     }
+    
 
     drawHabitatFlora(time, hab);
 
