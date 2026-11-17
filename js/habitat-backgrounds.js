@@ -283,20 +283,30 @@ export function buildStaticEnvironmentLayer(hab) {
         // BÖLÜM SONU: ÇAYIR STATİK ÇEVRESİ
     }
 
-    else if (hab.sceneProfile === 'wetland') {
+   else if (hab.sceneProfile === 'wetland') {
         // BÖLÜM BAŞI: SULAK ALAN STATİK ÇEVRESİ
         const waterHorizonY = ph - 52;
-        const farReedCol = isLightMode ? 'rgba(20, 83, 45, 0.28)' : 'rgba(6, 46, 38, 0.52)';
-        const farTreeCol = isLightMode ? 'rgba(15, 62, 52, 0.22)' : 'rgba(4, 32, 30, 0.45)';
+        const distantHillCol = isLightMode ? 'rgba(15, 62, 52, 0.16)' : 'rgba(4, 24, 24, 0.38)';
+        const farTreeCol = isLightMode ? 'rgba(15, 62, 52, 0.25)' : 'rgba(4, 32, 30, 0.52)';
+        const farReedCol = isLightMode ? 'rgba(20, 83, 45, 0.34)' : 'rgba(6, 46, 38, 0.62)';
+
+        for (let x = 0; x < pw; x++) {
+            const nx = x / Math.max(1, pw);
+            const hillH = Math.round(16 + Math.sin(nx * Math.PI * 2.1 + 0.5) * 7 + Math.cos(x * 0.03) * 3);
+            sRect(x, waterHorizonY - hillH, 1, hillH, distantHillCol);
+        }
+
         for (let x = 0; x < pw; x += 2) {
             const nx = x / Math.max(1, pw);
-            const shoreMask = Math.abs(nx - 0.5) > 0.16 ? 1.0 : 0.45;
+            const shoreMask = Math.abs(nx - 0.5) > 0.16 ? 1.0 : 0.42;
             const rh = Math.round((10 + Math.sin(x * 0.09) * 5 + Math.cos(x * 0.23) * 3) * shoreMask);
             sRect(x, waterHorizonY - rh, 2, rh + 2, farReedCol);
-            if ((x % 14 === 0) && (nx < 0.36 || nx > 0.64)) {
+            if ((x % 12 === 0) && (nx < 0.38 || nx > 0.62)) {
                 const treeH = 18 + (x % 11);
+                sRect(x, waterHorizonY - 6, 2, 6, isLightMode ? '#3b281e' : '#091817');
                 for (let dy = -treeH; dy <= 0; dy++) {
-                    const span = Math.round((8 + (x % 5)) * Math.sqrt(Math.max(0, 1 - (dy * dy) / (treeH * treeH))));
+                    const ratio = 1 - (dy * dy) / (treeH * treeH);
+                    const span = Math.round((8 + (x % 5)) * Math.sqrt(Math.max(0, ratio)));
                     sRect(x - span, waterHorizonY - 6 + dy, span * 2, 1, farTreeCol);
                 }
             }
@@ -313,19 +323,30 @@ export function buildStaticEnvironmentLayer(hab) {
             const col = t < 0.5 ? lerpHex(waterTop, waterMid, t * 2) : lerpHex(waterMid, waterDeep, (t - 0.5) * 2);
             sRect(0, wy, pw, wh, col);
         }
-        sRect(0, waterHorizonY, pw, 1, isLightMode ? 'rgba(186, 230, 253, 0.45)' : 'rgba(45, 212, 191, 0.18)');
+        sRect(0, waterHorizonY, pw, 1, isLightMode ? 'rgba(186, 230, 253, 0.48)' : 'rgba(45, 212, 191, 0.20)');
+        for (let x = 0; x < pw; x += 3) {
+            const nx = x / Math.max(1, pw);
+            if (nx < 0.36 || nx > 0.64) {
+                sRect(x, waterHorizonY + 1, 2, 4, isLightMode ? 'rgba(20, 83, 45, 0.18)' : 'rgba(4, 24, 24, 0.35)');
+            }
+        }
 
         const islands = [
             { cx: Math.round(pw * 0.44), y: ph - 21, rx: 22, ry: 5 },
             { cx: Math.round(pw * 0.58), y: ph - 25, rx: 19, ry: 4 }
         ];
         islands.forEach(isl => {
-            sRect(isl.cx - isl.rx + 2, isl.y + 2, (isl.rx - 2) * 2, 5, 'rgba(2, 12, 18, 0.42)');
-            for (let dy = -isl.ry; dy <= 2; dy++) {
+            sRect(isl.cx - isl.rx + 1, isl.y + 2, (isl.rx - 1) * 2, 5, 'rgba(2, 12, 18, 0.46)');
+            sRect(isl.cx - isl.rx, isl.y + 1, isl.rx * 2, 2, isLightMode ? '#451a03' : '#14141b');
+            for (let dy = -isl.ry; dy <= 1; dy++) {
                 const span = Math.round(isl.rx * Math.sqrt(Math.max(0, 1 - (dy * dy) / ((isl.ry + 2) * (isl.ry + 2)))));
                 const col = dy < -1 ? (isLightMode ? '#16a34a' : '#0f5138') : (isLightMode ? '#14532d' : '#082f24');
                 sRect(isl.cx - span, isl.y + dy, span * 2, 1, col);
+                if (dy === -isl.ry && span > 4) {
+                    sRect(isl.cx - Math.floor(span * 0.6), isl.y + dy, Math.floor(span * 1.2), 1, isLightMode ? '#4ade80' : '#10b981');
+                }
             }
+            sRect(isl.cx - isl.rx + 2, isl.y + 2, (isl.rx - 2) * 2, 1, isLightMode ? 'rgba(186, 230, 253, 0.32)' : 'rgba(45, 212, 191, 0.14)');
         });
 
         const willowDark = isLightMode ? '#3b281e' : '#14141b';
@@ -346,24 +367,28 @@ export function buildStaticEnvironmentLayer(hab) {
             for (let y = 0; y < bankY; y++) {
                 const prog = y / bankY;
                 const lean = Math.sin((1 - prog) * Math.PI * 0.5) * 12 * wTree.dir;
-                const rootFlare = prog > 0.72 ? Math.pow((prog - 0.72) / 0.28, 2) * 16 : 0;
+                const rootFlare = prog > 0.70 ? Math.pow((prog - 0.70) / 0.30, 2) * 18 : 0;
                 const tw = Math.round(13 + prog * 6 + rootFlare);
                 const tx = wTree.isLeft ? Math.max(0, Math.round(lean)) : Math.min(pw - tw, Math.round(pw - tw + lean));
                 sRect(tx, y, tw, 1, willowDark);
-                sRect(tx + (wTree.isLeft ? tw - 4 : 2), y, 3, 1, willowMid);
-                sRect(tx + (wTree.isLeft ? tw - 1 : 0), y, 1, 1, willowHi);
+                sRect(tx + (wTree.isLeft ? tw - 5 : 2), y, 3, 1, willowMid);
+                sRect(tx + (wTree.isLeft ? tw - 2 : 0), y, 1, 1, willowHi);
+                if (prog > 0.74 && y % 2 === 0) {
+                    sRect(tx + (wTree.isLeft ? 1 : tw - 3), y, 2, 1, canopyMid);
+                }
             }
 
             [0.08, 0.30, 0.52, 0.74, 0.92].forEach(tNode => {
                 const cx = Math.round(wTree.isLeft ? (tNode * reach) : (pw - tNode * reach));
                 const branchY = Math.round(6 + Math.pow(tNode, 1.2) * 14);
                 const rx = Math.round(28 * (1 - tNode * 0.32));
-                const bottomY = branchY + Math.round(8 * (1 - tNode * 0.3));
+                const bottomY = branchY + Math.round(9 * (1 - tNode * 0.28));
 
                 for (let y = 0; y <= bottomY; y++) {
                     const normY = (y - branchY * 0.5) / Math.max(1, bottomY - branchY * 0.5);
                     const ellipse = Math.max(0, 1 - normY * normY);
-                    const span = Math.round(rx * (y < branchY * 0.5 ? 1 : Math.sqrt(ellipse)));
+                    const scallop = Math.sin(y * 0.8 + tNode * 10) * 1.5;
+                    const span = Math.round(rx * (y < branchY * 0.5 ? 1 : Math.sqrt(ellipse)) + scallop);
                     const col = y < branchY * 0.35 ? canopyHi : (y > branchY ? canopyDark : canopyMid);
                     sRect(cx - span, y, span * 2, 1, col);
                 }
@@ -379,31 +404,41 @@ export function buildStaticEnvironmentLayer(hab) {
             }
         });
 
+        const bankMud = isLightMode ? '#451a03' : '#091513';
+        const bankDeep = isLightMode ? '#14532d' : '#052019';
+        const bankTop = isLightMode ? '#16a34a' : '#0d4a38';
+        const bankHi = isLightMode ? '#4ade80' : '#10b981';
+
         for (let x = 0; x < pw; x++) {
             const nx = x / Math.max(1, pw);
             if (nx > 0.36 && nx < 0.64) continue;
             const gy = getGroundY(x, 'wetland', pw, ph);
             sRect(x, gy + 3, 1, 4, 'rgba(2, 10, 16, 0.45)');
-            sRect(x, gy, 1, ph - gy, isLightMode ? '#14532d' : '#052019');
-            sRect(x, gy, 1, 2, isLightMode ? '#16a34a' : '#0d4a38');
+            sRect(x, gy, 1, ph - gy, bankDeep);
+            sRect(x, gy + 2, 1, 2, bankMud);
+            sRect(x, gy, 1, 2, bankTop);
+            if (x % 4 === 0) sRect(x, gy - 1, 1, 1, bankHi);
         }
 
         const snagX = Math.round(pw * 0.66);
-        const snagY = ph - 18;
-        sRect(snagX - 18, snagY + 2, 28, 3, 'rgba(2, 10, 16, 0.45)');
-        for (let s = 0; s < 26; s++) {
+        const snagBankY = getGroundY(snagX + 8, 'wetland', pw, ph) + 1;
+        sRect(snagX - 18, snagBankY + 1, 30, 3, 'rgba(2, 10, 16, 0.45)');
+        sRect(snagX - 19, snagBankY + 2, 9, 1, isLightMode ? 'rgba(186, 230, 253, 0.35)' : 'rgba(45, 212, 191, 0.16)');
+        for (let s = 0; s < 28; s++) {
+            const t = s / 27;
             const sx = snagX - 16 + s;
-            const sy = snagY - Math.round(Math.sin((s / 26) * Math.PI * 0.85) * 9);
-            const thick = Math.max(2, 5 - Math.floor(s / 7));
+            const arch = Math.sin(t * Math.PI * 0.92) * 8;
+            const sy = Math.round(snagBankY + 1 - arch - t * 2);
+            const thick = Math.max(2, 6 - Math.floor((1 - t) * 3.5));
             sRect(sx, sy, 1, thick, willowDark);
             sRect(sx, sy, 1, 1, willowHi);
-            if (s > 4 && s < 16 && s % 3 === 0) {
+            if (s > 5 && s < 20 && s % 3 === 0) {
                 sRect(sx, sy - 1, 2, 1, isLightMode ? '#22c55e' : '#10b981');
             }
         }
         // BÖLÜM SONU: SULAK ALAN STATİK ÇEVRESİ
     }
-
+       
     else if (hab.sceneProfile === 'betta-aquarium') {
         // BÖLÜM BAŞI: BETTA AKVARYUMU STATİK ÇEVRESİ
         const soilY = (x) => {
