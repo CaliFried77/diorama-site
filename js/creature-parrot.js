@@ -67,15 +67,14 @@ export class PixelParrot {
     }
 
     pickPerchSpot() {
+        // Orta plan ağaçlarının gövdeden dışarı uzanan gerçek yan dallarının (perch limbs) tam üst koordinatları
         const spots = [
-            { x: Math.round(pw * 0.14 - 12), y: Math.round(ph * 0.24 - 3) },
-            { x: Math.round(pw * 0.14 + 12), y: Math.round(ph * 0.24 - 3) },
-            { x: Math.round(pw * 0.27 + 10), y: Math.round(ph * 0.36 - 3) },
-            { x: Math.round(pw * 0.42 - 9), y: Math.round(ph * 0.32 - 3) },
-            { x: Math.round(pw * 0.58 + 9), y: Math.round(ph * 0.30 - 3) },
-            { x: Math.round(pw * 0.75 - 10), y: Math.round(ph * 0.34 - 3) },
-            { x: Math.round(pw * 0.86 - 12), y: Math.round(ph * 0.22 - 3) },
-            { x: Math.round(pw * 0.86 + 12), y: Math.round(ph * 0.22 - 3) }
+            { x: Math.floor(pw * 0.14) + 15, y: Math.floor(ph * 0.24) + 16 },
+            { x: Math.floor(pw * 0.27) + 15, y: Math.floor(ph * 0.36) + 16 },
+            { x: Math.floor(pw * 0.42) - 15, y: Math.floor(ph * 0.32) + 16 },
+            { x: Math.floor(pw * 0.58) + 15, y: Math.floor(ph * 0.30) + 16 },
+            { x: Math.floor(pw * 0.75) - 15, y: Math.floor(ph * 0.34) + 16 },
+            { x: Math.floor(pw * 0.86) - 15, y: Math.floor(ph * 0.22) + 16 }
         ];
         return spots[Math.floor(Math.random() * spots.length)];
     }
@@ -257,13 +256,7 @@ export class PixelParrot {
             const lookDir = this.headLook === -1 ? -1 : 1;
             const tailSway = Math.round(Math.sin(this.phase * 0.6) * 0.6);
 
-            // Tüneme dalı boğumu ve yosun dokusu (pençelerin tam altında fiziksel dayanak)
-            px(-6, 5, 12, 2, '#2c221e');
-            px(-5, 5, 9, 1, '#4a372d');
-            px(-4, 4, 3, 1, '#15803d');
-            px(3, 5, 2, 1, '#16a34a');
-
-            // Uzun kademeli Ara papağanı kuyruğu
+            // Uzun kademeli Ara papağanı kuyruğu (dalın arkasından doğal sarkar)
             for (let t = 0; t < 17; t++) {
                 const tx = -4 - Math.floor(t * 0.35) + (t > 8 ? tailSway : 0);
                 const ty = 4 + t;
@@ -271,13 +264,13 @@ export class PixelParrot {
                 if (t < 11) px(tx + 2, ty, 1, 1, p.tailMid);
             }
 
-            // İncik tüyleri ve dalı kavrayan zygodactyl pençeler
+            // İncik tüyleri ve gerçek ağaç dalını kavrayan zygodactyl pençeler
             px(-2, 3, 2, 2, p.bodyShade);
             px(1, 3, 2, 2, p.bodyShade);
-            px(-3, 4, 2, 2, '#334155');
-            px(1, 4, 2, 2, '#334155');
-            px(-4, 5, 1, 1, '#0f172a');
-            px(3, 5, 1, 1, '#0f172a');
+            px(-3, 4, 2, 2, '#1e293b');
+            px(1, 4, 2, 2, '#1e293b');
+            px(-3, 5, 1, 1, '#0f172a');
+            px(2, 5, 1, 1, '#0f172a');
 
             // Göğüs, karın ve sırt hacmi
             px(-4, -5 + breath, 7, 5, p.body);
@@ -303,7 +296,6 @@ export class PixelParrot {
             if (lookDir === 1) {
                 px(1, hy + 1, 3, 3, p.face);
                 px(2, hy + 1, 1, 1, p.eye);
-                px(2, hy + 1, 1, 1, '#0f172a');
                 px(1, hy + 3, 2, 1, p.faceLine);
                 px(0, hy + 2, 1, 2, p.faceLine);
                 px(2, hy + 4, 2, 1, p.faceLine);
