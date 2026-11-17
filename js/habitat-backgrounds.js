@@ -945,90 +945,237 @@ export function buildStaticEnvironmentLayer(hab) {
         // BÖLÜM SONU: KOİ GÖLETİ STATİK ÇEVRESİ
     }
 
-    else if (hab.sceneProfile === 'arctic-tundra') {
+   else if (hab.sceneProfile === 'arctic-tundra') {
         // BÖLÜM BAŞI: KUTUP TUNDURASI STATİK ÇEVRESİ
+        const rockDeep = isLightMode ? '#1e293b' : '#070d19';
         const rockDark = isLightMode ? '#334155' : '#0f172a';
         const rockMid = isLightMode ? '#475569' : '#1e293b';
         const rockHi = isLightMode ? '#64748b' : '#334155';
+        const iceVein = isLightMode ? '#bae6fd' : '#164e63';
         const snowTop = isLightMode ? '#ffffff' : '#e0f2fe';
         const snowMid = isLightMode ? '#e2e8f0' : '#bae6fd';
-        const snowShadow = isLightMode ? '#cbd5e1' : '#7dd3fc';
+        const snowShadow = isLightMode ? '#94a3b8' : '#38bdf8';
 
         const drawSnowPine = (cx, baseY, h) => {
-            sRect(cx - 2, baseY - 8, 4, 9, '#271712');
-            const tiers = 5;
+            sRect(cx - Math.round(h * 0.24), baseY - 1, Math.round(h * 0.48), 3, 'rgba(7, 13, 25, 0.42)');
+            sRect(cx - 2, baseY - 9, 4, 10, '#271712');
+            sRect(cx - 1, baseY - 9, 1, 9, '#5c3a21');
+            sRect(cx - 4, baseY - 2, 8, 2, snowMid);
+            sRect(cx - 3, baseY - 3, 6, 1, snowTop);
+
+            const needleDark = isLightMode ? '#0f3d3e' : '#042022';
+            const needleMid = isLightMode ? '#134e4a' : '#083335';
+            const needleHi = isLightMode ? '#0f766e' : '#115e59';
+            const tiers = 6;
+
             for (let t = 0; t < tiers; t++) {
                 const prog = t / tiers;
-                const ty = baseY - 6 - Math.round(prog * (h - 8));
-                const th = Math.round((h / tiers) * 1.45);
-                const maxW = Math.round((4 + (1 - prog) * (h * 0.28)));
+                const ty = baseY - 6 - Math.round(prog * (h - 9));
+                const th = Math.max(4, Math.round((h / tiers) * 1.48));
+                const maxW = Math.round(3 + (1 - prog * 0.82) * (h * 0.28));
+
                 for (let dy = 0; dy < th; dy++) {
-                    const w = Math.max(1, Math.round((dy / th) * maxW));
-                    const isSnowCap = dy < 3 || dy === th - 1;
-                    const col = isSnowCap ? snowTop : (dy < th * 0.5 ? (isLightMode ? '#0f766e' : '#115e59') : (isLightMode ? '#134e4a' : '#062e2b'));
-                    sRect(cx - w, ty - th + dy, w * 2, 1, col);
+                    const ratio = dy / th;
+                    const scallop = Math.sin(dy * 1.2 + t) * 0.8;
+                    const w = Math.max(1, Math.round(ratio * maxW + scallop));
+                    const py = ty - th + dy;
+
+                    if (dy <= 1) {
+                        sRect(cx - w, py, w * 2 + 1, 1, snowTop);
+                    } else if (dy === 2) {
+                        sRect(cx - w, py, w * 2 + 1, 1, snowMid);
+                    } else {
+                        sRect(cx - w, py, w * 2 + 1, 1, dy > th - 2 ? needleDark : needleMid);
+                        sRect(cx - Math.max(1, Math.floor(w * 0.65)), py, Math.max(2, w), 1, needleHi);
+                        if (dy === th - 2 && w > 3) {
+                            sRect(cx - w, py, 2, 1, snowTop);
+                            sRect(cx + w - 1, py, 2, 1, snowMid);
+                        }
+                    }
+                }
+            }
+            sRect(cx, baseY - h - 2, 1, 3, snowTop);
+        };
+
+        const drawCliffMassif = (ledge, tierDepth, attachSide) => {
+            const spanX1 = attachSide === 'left' ? 0 : ledge.x1;
+            const spanX2 = attachSide === 'right' ? pw - 1 : ledge.x2;
+            const darken = tierDepth === 'high' ? rockDeep : rockDark;
+            const midCol = tierDepth === 'high' ? rockDark : rockMid;
+            const hiCol = tierDepth === 'high' ? rockMid : rockHi;
+
+            for (let x = spanX1; x <= spanX2; x++) {
+                const clampedX = Math.max(ledge.x1, Math.min(ledge.x2, x));
+                const ly = ledge.yFn(clampedX);
+                const valleyY = getGroundY(x, 'arctic-tundra', pw, ph);
+                const outerDist = attachSide === 'left' ? (spanX2 - x) : (attachSide === 'right' ? (x - spanX1) : Math.min(x - spanX1, spanX2 - x));
+                const shoulderDrop = outerDist < 7 ? Math.round(Math.pow(7 - outerDist, 1.35) * 0.9) : 0;
+                const topY = ly + shoulderDrop;
+                const cliffH = Math.max(6, valleyY - topY + 3);
+
+                sRect(x, topY, 1, cliffH, darken);
+
+                for (let y = topY + 2; y < topY + cliffH - 2; y += 2) {
+                    const strata = Math.sin(x * 0.14 + y * 0.08) + Math.cos(y * 0.22 - x * 0.05);
+                    if (strata > 0.45) {
+                        sRect(x, y, 1, 2, midCol);
+                    }
+                    if (strata > 1.15 && outerDist > 4) {
+                        sRect(x, y, 1, 1, hiCol);
+                    }
+                }
+
+                if ((x + ledge.id * 5) % 17 === 0 && outerDist > 6 && cliffH > 18) {
+                    const creviceH = Math.min(cliffH - 8, 10 + (x % 9));
+                    sRect(x, topY + 5, 1, creviceH, rockDeep);
+                    sRect(x + 1, topY + 6, 1, Math.max(2, creviceH - 3), iceVein);
+                }
+
+                sRect(x, topY + cliffH - 3, 1, 3, snowMid);
+                sRect(x, topY + cliffH - 4, 1, 1, snowShadow);
+
+                if (x >= ledge.x1 && x <= ledge.x2) {
+                    const overhang = 2 + (x % 3 === 0 ? 1 : 0);
+                    sRect(x, ly + 1, 1, overhang, snowShadow);
+                    sRect(x, ly - 1, 1, 2, snowMid);
+                    sRect(x, ly - 2, 1, 2, snowTop);
+
+                    if (x % 9 === 0 && outerDist > 5) {
+                        const icicleLen = 3 + ((x * 3) % 5);
+                        sRect(x, ly + overhang + 1, 1, icicleLen, '#7dd3fc');
+                        sRect(x, ly + overhang + 1, 1, Math.max(1, icicleLen - 2), '#e0f2fe');
+                    }
                 }
             }
         };
 
+        const drawNordicCabin = (cabX, cabY) => {
+            sRect(cabX - 15, cabY - 1, 30, 3, 'rgba(7, 13, 25, 0.48)');
+            sRect(cabX - 13, cabY - 3, 26, 3, rockDark);
+            for (let sx = cabX - 12; sx <= cabX + 8; sx += 5) {
+                sRect(sx, cabY - 3, 3, 2, rockHi);
+            }
+
+            const chX = cabX + 5;
+            sRect(chX, cabY - 23, 5, 12, rockDark);
+            sRect(chX + 1, cabY - 23, 3, 11, rockMid);
+            sRect(chX, cabY - 24, 5, 1, rockHi);
+            sRect(chX + 1, cabY - 25, 3, 1, snowTop);
+
+            const logDark = '#3b1806';
+            const logMid = '#6b2f0e';
+            const logHi = '#92400e';
+            sRect(cabX - 12, cabY - 14, 24, 11, logDark);
+            for (let ly = cabY - 13; ly < cabY - 3; ly += 2) {
+                sRect(cabX - 11, ly, 22, 1, logMid);
+                sRect(cabX - 10, ly, 14, 1, logHi);
+                sRect(cabX - 13, ly, 2, 1, '#b45309');
+                sRect(cabX + 11, ly, 2, 1, '#78350f');
+            }
+
+            for (let g = 1; g <= 7; g++) {
+                const gw = Math.max(1, 12 - Math.floor(g * 1.5));
+                sRect(cabX - gw, cabY - 14 - g, gw * 2, 1, g % 2 === 0 ? logMid : logDark);
+            }
+
+            sRect(cabX - 8, cabY - 10, 4, 7, '#271105');
+            sRect(cabX - 7, cabY - 9, 2, 5, '#451a03');
+            sRect(cabX - 6, cabY - 6, 1, 1, '#fbbf24');
+
+            sRect(cabX - 2, cabY - 11, 9, 6, '#271105');
+            sRect(cabX - 1, cabY - 10, 7, 4, '#f59e0b');
+            sRect(cabX, cabY - 9, 5, 2, '#fef08a');
+            sRect(cabX + 2, cabY - 10, 1, 4, '#271105');
+            sRect(cabX - 1, cabY - 8, 7, 1, '#271105');
+            sRect(cabX - 2, cabY - 5, 9, 1, snowTop);
+
+            for (let wx = 0; wx < 4; wx++) {
+                sRect(cabX + 8 + wx, cabY - 5 - (wx % 2), 2, 2, '#451a03');
+                sRect(cabX + 8 + wx, cabY - 5 - (wx % 2), 1, 1, '#d97706');
+            }
+
+            for (let r = 0; r <= 9; r++) {
+                const rw = 16 - Math.floor(r * 1.5);
+                const ry = cabY - 14 - r;
+                sRect(cabX - rw, ry, rw * 2, 1, '#1e130c');
+                sRect(cabX - rw - 1, ry - 1, rw * 2 + 2, 1, snowMid);
+                sRect(cabX - rw, ry - 2, rw * 2, 1, snowTop);
+            }
+            sRect(cabX - 16, cabY - 13, 1, 2, '#bae6fd');
+            sRect(cabX + 15, cabY - 13, 1, 3, '#bae6fd');
+
+            sRect(cabX - 14, cabY - 2, 5, 2, snowTop);
+            sRect(cabX + 9, cabY - 2, 6, 2, snowTop);
+        };
+
+        const farMountCol = isLightMode ? 'rgba(100, 116, 139, 0.28)' : 'rgba(15, 28, 52, 0.55)';
+        const midMountCol = isLightMode ? 'rgba(71, 85, 105, 0.42)' : 'rgba(17, 36, 64, 0.78)';
+        const mountSnowCol = isLightMode ? 'rgba(255, 255, 255, 0.75)' : 'rgba(186, 230, 253, 0.32)';
+        const mountShadowSnow = isLightMode ? 'rgba(203, 213, 225, 0.55)' : 'rgba(56, 189, 248, 0.16)';
+
         for (let x = 0; x < pw; x++) {
             const nx = x / Math.max(1, pw);
-            const valleyMask = 0.42 + Math.pow(Math.abs(nx - 0.5) * 1.9, 1.3) * 0.85;
-            const peakH = Math.round((28 + Math.abs(Math.sin(x * 0.022)) * 26 + Math.cos(x * 0.055) * 8) * valleyMask);
             const gy = getGroundY(x, 'arctic-tundra', pw, ph);
-            sRect(x, gy - peakH, 1, peakH, isLightMode ? 'rgba(148, 163, 184, 0.35)' : 'rgba(15, 35, 62, 0.65)');
-            if (peakH > 26) {
-                sRect(x, gy - peakH, 1, 6, isLightMode ? 'rgba(255, 255, 255, 0.65)' : 'rgba(186, 230, 253, 0.25)');
+            const valleyOpen = 0.36 + Math.pow(Math.abs(nx - 0.5) * 1.92, 1.35) * 0.92;
+
+            const farRidge = Math.abs(Math.sin(x * 0.017 + 0.8)) * 34 + Math.abs(Math.cos(x * 0.041)) * 12;
+            const farH = Math.round((24 + farRidge) * valleyOpen);
+            sRect(x, gy - farH, 1, farH, farMountCol);
+            if (farH > 32) {
+                sRect(x, gy - farH, 1, 4, mountShadowSnow);
+            }
+
+            const midRidge = Math.abs(Math.sin(x * 0.024 - 0.3)) * 26 + Math.cos(x * 0.058) * 7;
+            const midH = Math.round((18 + midRidge) * valleyOpen);
+            sRect(x, gy - midH, 1, midH, midMountCol);
+            if (midH > 24) {
+                const snowCapH = 4 + Math.round(Math.max(0, Math.sin(x * 0.024 - 0.3)) * 6);
+                sRect(x, gy - midH, 1, snowCapH, (x % 14 < 7) ? mountSnowCol : mountShadowSnow);
             }
         }
 
         const ledges = getArcticLedges(pw, ph);
-        drawSnowPine(22, ledges[3].yFn(22) + 1, 46);
-        drawSnowPine(Math.round(pw * 0.14), ledges[1].yFn(pw * 0.14) + 1, 52);
-        drawSnowPine(Math.round(pw * 0.29), ledges[2].yFn(pw * 0.29) + 1, 38);
-        drawSnowPine(pw - 24, ledges[6].yFn(pw - 24) + 1, 48);
-        drawSnowPine(Math.round(pw * 0.88), ledges[4].yFn(pw * 0.88) + 1, 54);
 
+        // 1. Üst Teraslar (Ledge 3 ve Ledge 6) + Üst Ağaçlar
+        drawCliffMassif(ledges[3], 'high', 'left');
+        drawCliffMassif(ledges[6], 'high', 'right');
+        drawSnowPine(22, ledges[3].yFn(22) + 1, 46);
+        drawSnowPine(Math.round(pw * 0.12), ledges[3].yFn(Math.round(pw * 0.12)) + 1, 36);
+        drawSnowPine(pw - 24, ledges[6].yFn(pw - 24) + 1, 48);
+        drawSnowPine(Math.round(pw * 0.86), ledges[6].yFn(Math.round(pw * 0.86)) + 1, 38);
+
+        // 2. Orta Teraslar (Ledge 2 ve Ledge 5) + Kuzey Kulübesi ve Orta Ağaçlar
+        drawCliffMassif(ledges[2], 'mid', 'none');
+        drawCliffMassif(ledges[5], 'mid', 'none');
+        drawSnowPine(Math.round(pw * 0.29), ledges[2].yFn(Math.round(pw * 0.29)) + 1, 40);
         const cabX = Math.round(pw * 0.73);
         const cabY = ledges[5].yFn(cabX) + 1;
-        sRect(cabX - 11, cabY - 12, 22, 12, '#451a03');
-        sRect(cabX - 10, cabY - 11, 20, 10, '#78350f');
-        sRect(cabX + 5, cabY - 21, 4, 10, rockMid);
-        for (let r = 0; r <= 9; r++) {
-            const rw = 14 - Math.floor(r * 1.4);
-            sRect(cabX - rw, cabY - 12 - r, rw * 2, 1, r >= 7 ? snowTop : '#271712');
-            sRect(cabX - rw, cabY - 13 - r, 3, 1, snowTop);
-            sRect(cabX + rw - 3, cabY - 13 - r, 3, 1, snowTop);
-        }
-        sRect(cabX - 4, cabY - 8, 8, 5, '#fef08a');
-        sRect(cabX - 3, cabY - 7, 6, 3, '#ffffff');
-        sRect(cabX, cabY - 8, 1, 5, '#451a03');
+        drawNordicCabin(cabX, cabY);
+        drawSnowPine(Math.round(pw * 0.66), ledges[5].yFn(Math.round(pw * 0.66)) + 1, 34);
 
-        for (let i = 1; i < ledges.length; i++) {
-            const l = ledges[i];
-            const rockThickness = 18 + (i % 2) * 6;
-            for (let x = l.x1; x <= l.x2; x++) {
-                const edgeDist = Math.min(x - l.x1, l.x2 - x);
-                const taper = edgeDist < 8 ? Math.round((8 - edgeDist) * 1.4) : 0;
-                const ly = l.yFn(x);
-                const h = Math.max(4, rockThickness - taper);
+        // 3. Alt Teraslar (Ledge 1 ve Ledge 4) + Ön Plan Ağaçları
+        drawCliffMassif(ledges[1], 'low', 'left');
+        drawCliffMassif(ledges[4], 'low', 'right');
+        drawSnowPine(Math.round(pw * 0.14), ledges[1].yFn(Math.round(pw * 0.14)) + 1, 52);
+        drawSnowPine(Math.round(pw * 0.88), ledges[4].yFn(Math.round(pw * 0.88)) + 1, 54);
 
-                sRect(x, ly, 1, h, rockDark);
-                sRect(x, ly + 3, 1, Math.max(1, h - 5), (x % 9 < 5) ? rockMid : rockHi);
-                sRect(x, ly - 1, 1, 3, snowShadow);
-                sRect(x, ly - 2, 1, 2, snowTop);
-                if (x % 11 === 0 && edgeDist > 4) {
-                    const icicleLen = 3 + (x % 4);
-                    sRect(x, ly + h, 1, icicleLen, '#bae6fd');
-                }
-            }
-        }
-
+        // 4. Ana Vadi Kar Tabanı (Ledge 0) ve Buzul Kıyısı
         for (let x = 0; x < pw; x++) {
+            const nx = x / Math.max(1, pw);
             const gy = getGroundY(x, 'arctic-tundra', pw, ph);
-            sRect(x, gy, 1, ph - gy, snowMid);
-            sRect(x, gy, 1, 3, snowTop);
-            sRect(x, gy + 3, 1, 2, snowShadow);
+            const inFrozenCreek = Math.abs(nx - 0.50) < 0.09;
+
+            if (inFrozenCreek) {
+                sRect(x, gy, 1, ph - gy, isLightMode ? '#7dd3fc' : '#0c4a6e');
+                sRect(x, gy, 1, 2, isLightMode ? '#e0f2fe' : '#38bdf8');
+                if ((x + 3) % 7 === 0) {
+                    sRect(x, gy + 2, 2, 1, '#bae6fd');
+                }
+            } else {
+                sRect(x, gy, 1, ph - gy, snowMid);
+                sRect(x, gy, 1, 3, snowTop);
+                sRect(x, gy + 3, 1, 2, snowShadow);
+            }
         }
         // BÖLÜM SONU: KUTUP TUNDURASI STATİK ÇEVRESİ
     }
