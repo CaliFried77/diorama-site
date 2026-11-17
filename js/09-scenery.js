@@ -94,6 +94,15 @@ export function drawHabitatEnvironment(time) {
     }
 
     if (hab.sceneProfile === 'meadow') {
+        for (let ray = 0; ray < 4; ray++) {
+            const rx = 28 + ray * Math.round(pw * 0.22);
+            for (let s = 0; s < 6; s++) {
+                const ry = 18 + s * 18 + (ray % 2) * 5;
+                const shiftX = rx + Math.round(ry * 0.18 + Math.sin(time * 0.0005 + ray) * 2);
+                pRect(shiftX, ry, 5, 7, isLightMode ? 'rgba(254, 240, 138, 0.055)' : 'rgba(251, 191, 36, 0.025)');
+            }
+        }
+
         const hx = Math.round(pw * 0.84);
         const hgy = getGroundY(hx, 'meadow', pw, ph) + 1;
         const bodyTop = hgy - 37;
@@ -101,22 +110,33 @@ export function drawHabitatEnvironment(time) {
         const lx = hx - 18 + sway;
         const ly = bodyTop + 4;
 
-        pRect(hx - 18, bodyTop + 4, 1, 3, '#475569');
+        pRect(hx - 18, bodyTop + 4, 1, 2, '#475569');
+        pRect(lx, bodyTop + 5, 1, 2, '#64748b');
+        pRect(lx - 1, ly + 2, 3, 1, '#78350f');
         pRect(lx - 2, ly + 3, 5, 1, '#451a03');
         pRect(lx - 2, ly + 4, 5, 4, '#fef08a');
         pRect(lx - 1, ly + 5, 3, 2, '#ffffff');
-        pRect(lx - 4, ly + 2, 9, 8, 'rgba(253, 224, 71, 0.22)');
+        pRect(lx - 5, ly + 1, 11, 10, 'rgba(253, 224, 71, 0.14)');
+        pRect(lx - 3, ly + 2, 7, 8, 'rgba(253, 224, 71, 0.24)');
         pRect(lx - 2, ly + 8, 5, 1, '#451a03');
 
         const winPulse = (0.65 + 0.3 * Math.sin(time * 0.003)).toFixed(2);
+        const ambientGlow = (0.14 + 0.06 * Math.sin(time * 0.003)).toFixed(2);
+        pRect(hx - 13, ly + 3, 2, 8, `rgba(253, 224, 71, ${ambientGlow})`);
+        pRect(hx - 18, hgy - 6, 8, 2, `rgba(253, 224, 71, ${ambientGlow})`);
         pRect(hx - 4, hgy - 23, 6, 3, `rgba(254, 240, 138, ${winPulse})`);
+        pRect(hx - 3, hgy - 22, 4, 1, '#ffffff');
 
         for (let d = 0; d < 6; d++) {
             const dx = Math.round(((d * 97 + time * (0.008 + (d % 3) * 0.002)) % (pw + 40)) - 20);
             const dy = Math.round(ph * 0.35 + (d * 19) % Math.floor(ph * 0.45) + Math.sin(time * 0.002 + d) * 8);
-            pRect(dx, dy, 1, 2, '#78350f');
-            pRect(dx - 1, dy - 1, 3, 1, 'rgba(255, 255, 255, 0.85)');
-            pRect(dx, dy - 2, 1, 1, 'rgba(255, 255, 255, 0.95)');
+            const seedTilt = Math.round(Math.sin(time * 0.003 + d) * 1);
+            pRect(dx, dy + 1, 1, 2, '#78350f');
+            pRect(dx + seedTilt, dy, 1, 1, 'rgba(226, 232, 240, 0.75)');
+            pRect(dx - 1 + seedTilt, dy - 1, 3, 1, 'rgba(255, 255, 255, 0.85)');
+            pRect(dx - 2 + seedTilt, dy - 2, 1, 1, 'rgba(255, 255, 255, 0.70)');
+            pRect(dx + seedTilt, dy - 2, 1, 1, 'rgba(255, 255, 255, 0.95)');
+            pRect(dx + 2 + seedTilt, dy - 2, 1, 1, 'rgba(255, 255, 255, 0.70)');
         }
     }
 
