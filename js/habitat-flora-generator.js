@@ -203,31 +203,33 @@ if (hab.sceneProfile === 'meadow') {
             const inMidIsland = (nx > 0.41 && nx < 0.48) || (nx > 0.55 && nx < 0.61);
 
             if (!inLeftBank && !inRightBank && !inMidIsland) continue;
+            if (x > 10 && x < 64) continue;
+            if (Math.abs(x - (pw - 74)) < 16) continue;
 
             const baseY = inMidIsland
-                ? Math.round(ph - 22 + Math.sin(x * 0.2) * 3)
-                : getGroundY(x, 'wetland', pw, ph) + Math.round((Math.random() - 0.5) * 6);
+                ? Math.round(ph - 22 + Math.sin(x * 0.2) * 2)
+                : getGroundY(x, 'wetland', pw, ph) + Math.round((Math.random() - 0.5) * 3);
 
-            const edgeScale = (nx < 0.16 || nx > 0.84) ? 1.25 : (inMidIsland ? 0.78 : 1.0);
+            const edgeScale = (nx < 0.16 || nx > 0.84) ? 1.22 : (inMidIsland ? 0.78 : 1.0);
             const r = Math.random();
 
-            if (r < 0.40) {
-                const h = Math.round((46 + Math.random() * 58) * edgeScale);
+            if (r < 0.42) {
+                const h = Math.round((46 + Math.random() * 56) * edgeScale);
                 flora.push({
                     type: 'reed',
                     x,
                     baseY,
                     h,
-                    hasCat: Math.random() < 0.75,
-                    tilt: (Math.random() - 0.5) * 0.11,
+                    hasCat: Math.random() < 0.78,
+                    tilt: (Math.random() - 0.5) * 0.10,
                     phase: Math.random() * Math.PI * 2
                 });
-            } else if (r < 0.64) {
+            } else if (r < 0.65) {
                 flora.push({
                     type: 'iris',
                     x,
                     baseY,
-                    h: Math.round((30 + Math.random() * 34) * edgeScale),
+                    h: Math.round((30 + Math.random() * 32) * edgeScale),
                     col: Math.random() < 0.6 ? '#facc15' : '#c084fc',
                     phase: Math.random() * Math.PI * 2
                 });
@@ -236,7 +238,7 @@ if (hab.sceneProfile === 'meadow') {
                     type: 'loosestrife',
                     x,
                     baseY,
-                    h: Math.round((34 + Math.random() * 36) * edgeScale),
+                    h: Math.round((32 + Math.random() * 34) * edgeScale),
                     hue: Math.random() < 0.5 ? '#e879f9' : '#f472b6',
                     phase: Math.random() * Math.PI * 2
                 });
@@ -245,20 +247,32 @@ if (hab.sceneProfile === 'meadow') {
                     type: 'papyrus',
                     x,
                     baseY,
-                    h: Math.round((36 + Math.random() * 42) * edgeScale),
+                    h: Math.round((34 + Math.random() * 38) * edgeScale),
                     phase: Math.random() * Math.PI * 2
                 });
             }
         }
 
-        for (let i = 0; i < 18; i++) {
-            const lx = 24 + Math.random() * (pw - 48);
-            const ly = ph - 8 - Math.random() * 36;
+        const waterCorridors = [
+            [0.24, 0.39],
+            [0.49, 0.54],
+            [0.62, 0.74]
+        ];
+        for (let i = 0; i < 16; i++) {
+            const [cStart, cEnd] = waterCorridors[i % waterCorridors.length];
+            const lx = Math.round(pw * (cStart + Math.random() * (cEnd - cStart)));
+            if (lx < 68 || Math.abs(lx - (pw - 74)) < 18) continue;
+            const minWaterY = (lx < pw * 0.36 || lx > pw * 0.64)
+                ? Math.max(ph - 44, getGroundY(lx, 'wetland', pw, ph) + 6)
+                : ph - 44;
+            const maxWaterY = ph - 6;
+            if (minWaterY >= maxWaterY - 2) continue;
+            const ly = Math.round(minWaterY + Math.random() * (maxWaterY - minWaterY));
             flora.push({
                 type: 'lily',
-                x: Math.round(lx),
-                y: Math.round(ly),
-                r: 5 + Math.floor(Math.random() * 5),
+                x: lx,
+                y: ly,
+                r: 5 + Math.floor(Math.random() * 4),
                 flower: i % 2 === 0,
                 flowerCol: ['#fde047', '#f472b6', '#f8fafc'][i % 3],
                 phase: Math.random() * Math.PI * 2
@@ -266,6 +280,7 @@ if (hab.sceneProfile === 'meadow') {
         }
 
         // BÖLÜM SONU: SULAK ALAN BAŞLANGIÇ FLORASI
+        
     } else if (hab.sceneProfile === 'botanical') {
         // BÖLÜM BAŞI: BOTANİK BAHÇE BAŞLANGIÇ FLORASI
         const reach = Math.min(155, Math.round(pw * 0.30));
