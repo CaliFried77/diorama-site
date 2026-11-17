@@ -39,7 +39,6 @@ canvas.addEventListener('pointerdown', (e) => {
                 claimedBy: null
             });
         }
-    }
     } else if (interactionProfile === 'blossom') {
         for (let i = 0; i < 2; i++) {
             stimuli.push({
