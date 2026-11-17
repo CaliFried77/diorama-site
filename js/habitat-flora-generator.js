@@ -10,8 +10,37 @@ import { getGroundY } from './habitat-geometry.js';
 // ============================================================================
 
 export function populateHabitatFlora(hab) {
-    if (hab.sceneProfile === 'meadow') {
+if (hab.sceneProfile === 'meadow') {
         // BÖLÜM BAŞI: ÇAYIR BAŞLANGIÇ FLORASI
+        const stonePositions = [0.11, 0.28, 0.47, 0.63, 0.75, 0.93];
+        stonePositions.forEach((pos, idx) => {
+            const sx = Math.round(pw * pos + (Math.random() - 0.5) * 8);
+            const sgy = getGroundY(sx, 'meadow', pw, ph);
+            flora.push({
+                type: 'meadow_stone',
+                x: sx,
+                baseY: sgy + 1,
+                rx: 4 + (idx % 3) * 2,
+                ry: 2 + (idx % 2),
+                hasMoss: idx % 2 === 0
+            });
+        });
+
+        for (let tx = 8; tx < pw - 8; tx += 5 + Math.floor(Math.random() * 4)) {
+            const tnx = tx / Math.max(1, pw);
+            if (tnx > 0.79 && tnx < 0.89) continue;
+            const tgy = getGroundY(tx, 'meadow', pw, ph);
+            flora.push({
+                type: 'meadow_tuft',
+                x: tx,
+                baseY: tgy + 1,
+                h: 5 + Math.floor(Math.random() * 7),
+                hasClover: Math.random() < 0.35,
+                cloverCol: Math.random() < 0.55 ? '#f8fafc' : '#f9a8d4',
+                phase: Math.random() * Math.PI * 2
+            });
+        }
+
         for (let x = 12; x < pw - 12; x += 6 + Math.floor(Math.random() * 4)) {
             const nx = x / Math.max(1, pw);
             if (nx > 0.78 && nx < 0.90) continue;
@@ -43,14 +72,16 @@ export function populateHabitatFlora(hab) {
                     x,
                     baseY,
                     h: 14 + Math.random() * 20,
-                    hasBloom: Math.random() < 0.78,
-                    kind: ['lavender', 'daisy', 'poppy', 'buttercup'][Math.floor(Math.random() * 4)],
+                    hasBloom: Math.random() < 0.82,
+                    kind: ['lavender', 'daisy', 'poppy', 'buttercup', 'echinacea'][Math.floor(Math.random() * 5)],
                     phase: Math.random() * Math.PI * 2
                 });
             }
         }
 
         // BÖLÜM SONU: ÇAYIR BAŞLANGIÇ FLORASI
+    }
+    
     } else if (hab.sceneProfile === 'betta-aquarium') {
         // BÖLÜM BAŞI: BETTA AKVARYUMU BAŞLANGIÇ FLORASI
         for (let x = 10; x < pw - 10; x += 8 + Math.floor(Math.random() * 5)) {
