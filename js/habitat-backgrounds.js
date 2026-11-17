@@ -861,31 +861,73 @@ export function buildStaticEnvironmentLayer(hab) {
         const rockDark = isLightMode ? '#0f2942' : '#090d24';
         const rockMid = isLightMode ? '#163e5c' : '#13193b';
         const rockHi = isLightMode ? '#1e5678' : '#232d5e';
+        const rockRim = isLightMode ? '#38bdf8' : '#3b4c8a';
 
-        const colShade = isLightMode ? 'rgba(15, 42, 68, 0.38)' : 'rgba(17, 14, 48, 0.62)';
-        const colHi = isLightMode ? 'rgba(56, 189, 248, 0.24)' : 'rgba(139, 92, 246, 0.22)';
+        const reefFloorY = (x) => {
+            const nx = x / Math.max(1, pw);
+            const sideMound = nx < 0.26 ? Math.pow((0.26 - nx) / 0.26, 1.5) * 34
+                            : (nx > 0.74 ? Math.pow((nx - 0.74) / 0.26, 1.5) * 34 : 0);
+            return Math.round(getGroundY(x, 'reef', pw, ph) - sideMound);
+        };
+
+        const farAtollCol = isLightMode ? 'rgba(12, 42, 68, 0.22)' : 'rgba(8, 12, 36, 0.48)';
+        const midAtollCol = isLightMode ? 'rgba(15, 52, 82, 0.34)' : 'rgba(12, 18, 50, 0.65)';
+        for (let x = 0; x < pw; x += 2) {
+            const nx = x / Math.max(1, pw);
+            const lagoonOpen = 0.45 + Math.pow(Math.abs(nx - 0.5) * 1.9, 1.3) * 0.85;
+            const gy = getGroundY(x, 'reef', pw, ph);
+            const farH = Math.round((42 + Math.sin(x * 0.022 + 0.5) * 12 + Math.cos(x * 0.05) * 6) * lagoonOpen);
+            sRect(x, gy - farH, 2, farH, farAtollCol);
+            const midH = Math.round((26 + Math.cos(x * 0.032 - 0.4) * 9 + Math.sin(x * 0.08) * 4) * lagoonOpen);
+            sRect(x, gy - midH, 2, midH, midAtollCol);
+        }
+
+        const colShade = isLightMode ? 'rgba(15, 42, 68, 0.48)' : 'rgba(17, 14, 48, 0.72)';
+        const colMid = isLightMode ? 'rgba(22, 62, 92, 0.52)' : 'rgba(28, 25, 68, 0.75)';
+        const colHi = isLightMode ? 'rgba(56, 189, 248, 0.28)' : 'rgba(139, 92, 246, 0.26)';
+        const colMoss = isLightMode ? 'rgba(20, 184, 166, 0.45)' : 'rgba(192, 132, 252, 0.32)';
         const ruinX = Math.round(pw * 0.26);
-        const ruinBaseY = getGroundY(ruinX, 'reef', pw, ph) + 2;
 
         [
             { cx: ruinX - 15, ch: 52, broken: false },
-            { cx: ruinX + 15, ch: 40, broken: true },
-            { cx: Math.round(pw * 0.76), ch: 46, broken: true }
+            { cx: ruinX + 15, ch: 38, broken: true },
+            { cx: Math.round(pw * 0.76), ch: 44, broken: true }
         ].forEach(col => {
-            const cy = getGroundY(col.cx, 'reef', pw, ph) + 2;
-            sRect(col.cx - 2, cy - 3, 13, 4, colShade);
-            sRect(col.cx, cy - col.ch, 9, col.ch, colShade);
-            sRect(col.cx + 1, cy - col.ch, 2, col.ch, colHi);
-            sRect(col.cx + 5, cy - col.ch + 4, 1, col.ch - 6, colHi);
+            const cy = reefFloorY(col.cx + 4) + 3;
+            sRect(col.cx - 3, cy - 3, 15, 4, colShade);
+            sRect(col.cx - 2, cy - 5, 13, 2, colMid);
+            sRect(col.cx - 2, cy - 5, 11, 1, colHi);
+
+            sRect(col.cx, cy - col.ch, 9, col.ch - 4, colShade);
+            sRect(col.cx + 1, cy - col.ch, 6, col.ch - 4, colMid);
+            sRect(col.cx + 1, cy - col.ch, 2, col.ch - 4, colHi);
+            sRect(col.cx + 5, cy - col.ch + 3, 1, col.ch - 7, colHi);
+
+            for (let sy = cy - col.ch + 8; sy < cy - 8; sy += 10) {
+                sRect(col.cx, sy, 9, 1, colShade);
+                sRect(col.cx + 6, sy - 1, 3, 2, colMoss);
+            }
+
             if (!col.broken) {
                 sRect(col.cx - 2, cy - col.ch - 2, 13, 3, colShade);
-                sRect(col.cx - 2, cy - col.ch - 2, 10, 1, colHi);
+                sRect(col.cx - 2, cy - col.ch - 2, 11, 1, colHi);
+                sRect(col.cx - 4, cy - col.ch - 5, 17, 3, colShade);
+                sRect(col.cx - 4, cy - col.ch - 5, 15, 1, colHi);
+                sRect(col.cx - 3, cy - col.ch - 6, 8, 1, colMoss);
             } else {
-                sRect(col.cx, cy - col.ch - 2, 5, 2, colShade);
+                sRect(col.cx, cy - col.ch - 2, 6, 2, colShade);
+                sRect(col.cx + 1, cy - col.ch - 3, 3, 1, colHi);
+                sRect(col.cx + 4, cy - col.ch - 1, 4, 1, colMoss);
             }
         });
-        sRect(ruinX - 17, ruinBaseY - 54, 22, 3, colShade);
-        sRect(ruinX - 17, ruinBaseY - 54, 20, 1, colHi);
+
+        // Kırık sağ sütundan düşüp resif tabanına oturmuş antik taş blok (havada durmaz)
+        const fallenX = ruinX - 2;
+        const fallenY = reefFloorY(fallenX + 6);
+        sRect(fallenX - 1, fallenY - 3, 14, 4, colShade);
+        sRect(fallenX, fallenY - 4, 12, 2, colMid);
+        sRect(fallenX, fallenY - 4, 10, 1, colHi);
+        sRect(fallenX + 3, fallenY - 5, 5, 1, colMoss);
 
         const bommies = [
             { cx: Math.round(pw * 0.06), rx: Math.round(pw * 0.18), h: 52 },
@@ -905,28 +947,34 @@ export function buildStaticEnvironmentLayer(hab) {
                 const w = Math.max(1, right - left);
 
                 sRect(left, y, w, 1, rockDark);
-                sRect(left + 2, y, Math.max(1, w - 4), 1, prog < 0.35 ? rockHi : rockMid);
-                if (y % 7 === 0 && w > 10) {
-                    sRect(left + 3, y, Math.max(2, w - 6), 1, rockHi);
+                sRect(left + 2, y, Math.max(1, w - 4), 1, prog < 0.32 ? rockHi : rockMid);
+                if (y === topY || (y % 7 === 0 && w > 10)) {
+                    sRect(left + 3, y, Math.max(2, w - 6), 1, prog < 0.25 ? rockRim : rockHi);
+                }
+                if (!isLightMode && y % 11 === 0 && w > 14) {
+                    sRect(left + 5 + (bIdx * 3), y, 4, 1, 'rgba(56, 189, 248, 0.28)');
                 }
             }
         });
 
+        const sandDark = isLightMode ? '#1e4e68' : '#111a3a';
+        const sandHi = isLightMode ? '#38bdf8' : '#1e2952';
+
         for (let x = 0; x < pw; x++) {
             const nx = x / Math.max(1, pw);
-            const sideMound = nx < 0.26 ? Math.pow((0.26 - nx) / 0.26, 1.5) * 34
-                            : (nx > 0.74 ? Math.pow((nx - 0.74) / 0.26, 1.5) * 34 : 0);
-            const gy = Math.round(getGroundY(x, 'reef', pw, ph) - sideMound);
+            const gy = reefFloorY(x);
+            const inCenterSand = nx > 0.30 && nx < 0.70;
+
             sRect(x, gy, 1, ph - gy, rockDark);
-            sRect(x, gy + 1, 1, Math.max(1, Math.floor((ph - gy) * 0.45)), rockMid);
-            sRect(x, gy, 1, 2, x % 9 === 0 ? '#38bdf8' : rockHi);
-            if (!isLightMode && (x % 19 === 0)) {
+            sRect(x, gy + 1, 1, Math.max(1, Math.floor((ph - gy) * 0.45)), inCenterSand ? sandDark : rockMid);
+            sRect(x, gy, 1, 2, x % 9 === 0 ? '#38bdf8' : (inCenterSand ? sandHi : rockHi));
+            if (!isLightMode && (x % 17 === 0)) {
                 sRect(x, gy + 4 + (x % 5), 3, 1, 'rgba(56, 189, 248, 0.35)');
             }
         }
         // BÖLÜM SONU: MERCAN RESİFİ STATİK ÇEVRESİ
     }
-
+        
     else if (hab.sceneProfile === 'koi-pond') {
         // BÖLÜM BAŞI: KOİ GÖLETİ STATİK ÇEVRESİ
         const stoneDark = isLightMode ? '#334155' : '#0f172a';
