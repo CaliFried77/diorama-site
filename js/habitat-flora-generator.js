@@ -381,7 +381,14 @@ if (hab.sceneProfile === 'meadow') {
         
     } else if (hab.sceneProfile === 'reef') {
         // BÖLÜM BAŞI: MERCAN RESİFİ BAŞLANGIÇ FLORASI
+        const ruinX = Math.round(pw * 0.26);
+        const clamX = Math.floor(pw * 0.72);
+        const rightColX = Math.round(pw * 0.76);
+
         for (let x = 10; x < pw - 10; x += 9 + Math.floor(Math.random() * 6)) {
+            if (Math.abs(x - clamX) < 14) continue;
+            if (Math.abs(x - (ruinX - 11)) < 7 || Math.abs(x - (ruinX + 19)) < 7 || Math.abs(x - (rightColX + 4)) < 7) continue;
+
             const nx = x / Math.max(1, pw);
             const sideMound = nx < 0.26 ? Math.pow((0.26 - nx) / 0.26, 1.5) * 34
                             : (nx > 0.74 ? Math.pow((nx - 0.74) / 0.26, 1.5) * 34 : 0);
@@ -394,7 +401,7 @@ if (hab.sceneProfile === 'meadow') {
                     type: 'kelp',
                     x,
                     baseY,
-                    h: 48 + Math.random() * 56,
+                    h: 48 + Math.random() * 54,
                     phase: Math.random() * Math.PI * 2
                 });
             } else if (r < 0.25) {
@@ -420,7 +427,7 @@ if (hab.sceneProfile === 'meadow') {
                     type: 'tube_sponge',
                     x,
                     baseY,
-                    h: 15 + Math.random() * 22,
+                    h: 15 + Math.random() * 20,
                     hue,
                     phase: Math.random() * Math.PI * 2
                 });
@@ -438,7 +445,7 @@ if (hab.sceneProfile === 'meadow') {
                     type: 'sea_fan',
                     x,
                     baseY,
-                    h: 22 + Math.random() * 28,
+                    h: 22 + Math.random() * 26,
                     hue,
                     phase: Math.random() * Math.PI * 2
                 });
@@ -446,6 +453,7 @@ if (hab.sceneProfile === 'meadow') {
         }
 
         // BÖLÜM SONU: MERCAN RESİFİ BAŞLANGIÇ FLORASI
+        
     } else if (hab.sceneProfile === 'koi-pond') {
         // BÖLÜM BAŞI: KOİ GÖLETİ BAŞLANGIÇ FLORASI
         const mapleReach = Math.min(150, Math.round(pw * 0.30));
