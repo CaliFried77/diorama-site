@@ -147,7 +147,7 @@ test('custom feed handler validates public HTTPS URLs before invoking its fetche
 
   const invalid = await handler(new Request('https://diorama.example/api/custom-news', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { Origin: 'https://diorama.example', 'Content-Type': 'application/json' },
     body: JSON.stringify({ url: 'http://localhost/rss' }),
   }));
   assert.equal(invalid.status, 400);
@@ -155,7 +155,7 @@ test('custom feed handler validates public HTTPS URLs before invoking its fetche
 
   const valid = await handler(new Request('https://diorama.example/api/custom-news', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { Origin: 'https://diorama.example', 'Content-Type': 'application/json' },
     body: JSON.stringify({ url: 'https://example.org/feed.xml' }),
   }));
   const payload = await valid.json();
@@ -171,7 +171,7 @@ test('custom feed endpoint returns safe errors and enforces method, content type
 
   const unavailable = await handler(new Request('https://diorama.example/api/custom-news', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { Origin: 'https://diorama.example', 'Content-Type': 'application/json' },
     body: JSON.stringify({ url: 'https://example.org/feed.xml' }),
   }));
   assert.equal(unavailable.status, 502);
@@ -182,7 +182,7 @@ test('custom feed endpoint returns safe errors and enforces method, content type
 
   const wrongType = await handler(new Request('https://diorama.example/api/custom-news', {
     method: 'POST',
-    headers: { 'Content-Type': 'text/plain' },
+    headers: { Origin: 'https://diorama.example', 'Content-Type': 'text/plain' },
     body: '{"url":"https://example.org/feed.xml"}',
   }));
   assert.equal(wrongType.status, 415);
@@ -193,7 +193,7 @@ test('custom feed endpoint returns safe errors and enforces method, content type
   });
   const oversized = await handler(new Request('https://diorama.example/api/custom-news', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { Origin: 'https://diorama.example', 'Content-Type': 'application/json' },
     body: stream,
     duplex: 'half',
   }));
@@ -211,6 +211,18 @@ test('custom feed URL is sent only in the POST body, never in the query string',
   assert.doesNotMatch(implementation, /searchParams\.set\(['"]url['"]/);
 });
 
+test('custom RSS API rejects requests without browser origin metadata', async () => {
+  let fetchCalls = 0;
+  const handler = createCustomNewsHandler({ fetchFeed: async () => { fetchCalls += 1; return parseRssXml(rssFixture); } });
+  const response = await handler(new Request('https://diorama.test/api/custom-news', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ url: 'https://example.org/feed.xml' }),
+  }));
+  assert.equal(response.status, 403);
+  assert.equal(fetchCalls, 0);
+});
+
 test('custom RSS API rejects cross-origin browser requests', () => {
   assert.equal(isSameOriginRequest(new Request('https://diorama.test/api/custom-news', {
     method: 'POST',
@@ -224,5 +236,9 @@ test('custom RSS API rejects cross-origin browser requests', () => {
     method: 'POST',
     headers: { 'sec-fetch-site': 'cross-site' },
   })), false);
-  assert.equal(isSameOriginRequest(new Request('https://diorama.test/api/custom-news', { method: 'POST' })), true);
+  assert.equal(isSameOriginRequest(new Request('https://diorama.test/api/custom-news', {
+    method: 'POST',
+    headers: { 'sec-fetch-site': 'same-origin' },
+  })), true);
+  assert.equal(isSameOriginRequest(new Request('https://diorama.test/api/custom-news', { method: 'POST' })), false);
 });
