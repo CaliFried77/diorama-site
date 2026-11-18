@@ -4,10 +4,10 @@ export const MAX_ARTICLES_PER_FEED = 12;
 
 function decodeXmlEntities(value) {
   return String(value ?? '')
-    .replace(/<!\\[CDATA\\[([\\s\\S]*?)\\]\\]>/g, '$1')
+    .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1')
     // Decode each XML entity exactly once. Sequential replacements can turn
     // &amp;lt; into < and accidentally strip text that was meant to stay literal.
-    .replace(/&(#x[\\da-f]+|#\\d+|nbsp|amp|quot|apos|lt|gt);/gi, (entity, token) => {
+    .replace(/&(#x[\da-f]+|#\d+|nbsp|amp|quot|apos|lt|gt);/gi, (entity, token) => {
       const normalized = token.toLowerCase();
       if (normalized.startsWith('#x')) {
         const code = Number.parseInt(normalized.slice(2), 16);
