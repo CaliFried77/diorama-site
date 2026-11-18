@@ -181,6 +181,8 @@ test('Wrangler config keeps API routes in the Worker and static assets in dist',
   assert.match(config, /main = "cloudflare\/worker\.mjs"/);
   assert.match(config, /directory = "\.\/dist"/);
   assert.match(config, /run_worker_first = \["\/api\/\*"\]/);
+  assert.match(config, /not_found_handling = "none"/);
+  assert.doesNotMatch(config, /not_found_handling = "single-page-application"/);
   assert.match(config, /global_fetch_strictly_public/);
   assert.match(config, /NEWS_RATE_LIMITER/);
   assert.match(config, /CUSTOM_NEWS_RATE_LIMITER/);
