@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import worker from '../cloudflare/worker.mjs';
 import { fetchAndParseFeedCloudflare } from '../cloudflare/rss-fetch.mjs';
+import { MAX_CUSTOM_FEED_BYTES } from '../server/rss-parser.mjs';
 
 const rssFixture = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0"><channel><item>
@@ -61,6 +62,39 @@ test('Cloudflare RSS transport rejects non-HTTPS initial URLs and oversized resp
       headers: { 'Content-Length': '26', 'Content-Type': 'application/rss+xml' },
     }),
   }), /boyut sınırını aşıyor/);
+});
+
+test('Cloudflare Worker applies the smaller response limit to custom RSS feeds', async () => {
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async () => new Response('x', {
+    status: 200,
+    headers: {
+      'Content-Length': String(MAX_CUSTOM_FEED_BYTES + 1),
+      'Content-Type': 'application/rss+xml',
+    },
+  });
+
+  try {
+    const response = await worker.fetch(
+      new Request('https://diorama-test.workers.dev/api/custom-news', {
+        method: 'POST',
+        headers: {
+          Origin: 'https://diorama-test.workers.dev',
+          'Content-Type': 'application/json',
+          'CF-Connecting-IP': '203.0.113.14',
+        },
+        body: JSON.stringify({ url: 'https://feeds.example.org/rss.xml' }),
+      }),
+      {
+        CUSTOM_NEWS_RATE_LIMITER: { limit: async () => ({ success: true }) },
+      },
+    );
+    const payload = await response.json();
+    assert.equal(response.status, 502);
+    assert.match(payload.message, /boyut sınırını aşıyor/);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
 });
 
 test('Cloudflare RSS transport applies a request timeout', async () => {
