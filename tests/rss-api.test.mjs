@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
+import { performance } from 'node:perf_hooks';
 import { parseRssXml, normalizePublicFeedUrl } from '../server/rss-parser.mjs';
 import { createNewsHandler } from '../server/news-handler.mjs';
 import { createCustomNewsHandler, isSameOriginRequest } from '../server/custom-news-handler.mjs';
@@ -52,6 +53,13 @@ test('RSS parser enforces UTF-8 byte-size and article-count limits', () => {
   const many = `<rss><channel><item><title>Haber 0</title><link>https://example.org/0</link></item><item><title>Haber 1</title><link>https://example.org/1</link></item><item><title>Haber 2</title><link>https://example.org/2</link></item><item><title>Haber 3</title><link>https://example.org/3</link></item><item><title>Haber 4</title><link>https://example.org/4</link></item><item><title>Haber 5</title><link>https://example.org/5</link></item><item><title>Haber 6</title><link>https://example.org/6</link></item><item><title>Haber 7</title><link>https://example.org/7</link></item><item><title>Haber 8</title><link>https://example.org/8</link></item><item><title>Haber 9</title><link>https://example.org/9</link></item><item><title>Haber 10</title><link>https://example.org/10</link></item><item><title>Haber 11</title><link>https://example.org/11</link></item><item><title>Haber 12</title><link>https://example.org/12</link></item><item><title>Haber 13</title><link>https://example.org/13</link></item><item><title>Haber 14</title><link>https://example.org/14</link></item><item><title>Haber 15</title><link>https://example.org/15</link></item><item><title>Haber 16</title><link>https://example.org/16</link></item><item><title>Haber 17</title><link>https://example.org/17</link></item><item><title>Haber 18</title><link>https://example.org/18</link></item><item><title>Haber 19</title><link>https://example.org/19</link></item></channel></rss>`;
   assert.equal(parseRssXml(many).length, 12);
   assert.equal(parseRssXml(many, { limit: 2 }).length, 2);
+});
+
+test('RSS parser handles a large sequence of unterminated item tags in linear time', () => {
+  const malformed = `<rss><channel>${'<item>'.repeat(80_000)}</channel></rss>`;
+  const startedAt = performance.now();
+  assert.throws(() => parseRssXml(malformed), /RSS veya Atom öğesi bulunamadı/);
+  assert.ok(performance.now() - startedAt < 1_500, 'malformed feed scanning should remain bounded');
 });
 
 test('custom RSS URLs accept public HTTPS hostnames and reject unsafe destinations', () => {
