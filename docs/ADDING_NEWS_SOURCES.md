@@ -37,7 +37,7 @@ Haber okuyucu üç kategoride yerleşik RSS/Atom kaynakları ve kullanıcı tara
 - Kullanıcı kaynakları `POST /api/custom-news` üzerinden alınır; URL JSON gövdesindedir ve query string'e yazılmaz.
 - Özel kaynak yanıtları `private, no-store` döner ve ortak CDN önbelleğine eklenmez.
 - Her iki API rotasının da ayrı IP anahtarlı hız sınırı vardır. Cloudflare limitleri veri merkezi bazında yaklaşık çalışır; küresel ve kesin sayaç değildir.
-- RSS yanıtı 1 MB, yönlendirme sayısı üç ve her kaynaktan gösterilen haber sayısı 12 ile sınırlıdır.
+- Yerleşik kaynakların RSS yanıtı 1 MB, kullanıcı tarafından eklenen özel RSS yanıtları 256 KiB ile sınırlıdır. Yönlendirme sayısı üç, her kaynaktan gösterilen haber sayısı 12'dir.
 
 ## RSS güvenliği
 
