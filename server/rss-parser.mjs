@@ -4,23 +4,31 @@ export const MAX_ARTICLES_PER_FEED = 12;
 
 function decodeXmlEntities(value) {
   return String(value ?? '')
-    .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1')
-    .replace(/&#x([\da-f]+);/gi, (_, hex) => {
-      const code = Number.parseInt(hex, 16);
-      return Number.isInteger(code) && code > 0 && code <= 0x10ffff && !(code >= 0xd800 && code <= 0xdfff)
-        ? String.fromCodePoint(code) : ' ';
-    })
-    .replace(/&#(\d+);/g, (_, decimal) => {
-      const code = Number(decimal);
-      return Number.isInteger(code) && code > 0 && code <= 0x10ffff && !(code >= 0xd800 && code <= 0xdfff)
-        ? String.fromCodePoint(code) : ' ';
-    })
-    .replace(/&nbsp;/gi, ' ')
-    .replace(/&amp;/gi, '&')
-    .replace(/&quot;/gi, '"')
-    .replace(/&apos;|&#39;/gi, "'")
-    .replace(/&lt;/gi, '<')
-    .replace(/&gt;/gi, '>');
+    .replace(/<!\\[CDATA\\[([\\s\\S]*?)\\]\\]>/g, '$1')
+    // Decode each XML entity exactly once. Sequential replacements can turn
+    // &amp;lt; into < and accidentally strip text that was meant to stay literal.
+    .replace(/&(#x[\\da-f]+|#\\d+|nbsp|amp|quot|apos|lt|gt);/gi, (entity, token) => {
+      const normalized = token.toLowerCase();
+      if (normalized.startsWith('#x')) {
+        const code = Number.parseInt(normalized.slice(2), 16);
+        return Number.isInteger(code) && code > 0 && code <= 0x10ffff && !(code >= 0xd800 && code <= 0xdfff)
+          ? String.fromCodePoint(code) : ' ';
+      }
+      if (normalized.startsWith('#')) {
+        const code = Number(normalized.slice(1));
+        return Number.isInteger(code) && code > 0 && code <= 0x10ffff && !(code >= 0xd800 && code <= 0xdfff)
+          ? String.fromCodePoint(code) : ' ';
+      }
+      switch (normalized) {
+        case 'nbsp': return ' ';
+        case 'amp': return '&';
+        case 'quot': return '"';
+        case 'apos': return "'";
+        case 'lt': return '<';
+        case 'gt': return '>';
+        default: return entity;
+      }
+    });
 }
 
 function plainText(value, limit) {
