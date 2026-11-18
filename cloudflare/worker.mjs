@@ -1,13 +1,17 @@
 import { createNewsHandler } from '../server/news-handler.mjs';
 import { createCustomNewsHandler } from '../server/custom-news-handler.mjs';
 import { fetchAndParseFeedCloudflare } from './rss-fetch.mjs';
+import { MAX_CUSTOM_FEED_BYTES } from '../server/rss-parser.mjs';
 
 const newsHandler = createNewsHandler({
   fetchFeed: (source) => fetchAndParseFeedCloudflare(source.rss),
 });
 
 const customNewsHandler = createCustomNewsHandler({
-  fetchFeed: (url) => fetchAndParseFeedCloudflare(url, { timeoutMs: 6_500 }),
+  fetchFeed: (url) => fetchAndParseFeedCloudflare(url, {
+    timeoutMs: 6_500,
+    maxBytes: MAX_CUSTOM_FEED_BYTES,
+  }),
 });
 
 const SECURITY_HEADERS = {
