@@ -3,9 +3,13 @@ name: Diorama quality gate
 on:
   push:
     branches:
+      - Deneme
+      - main
       - migration/cloudflare-pages
   pull_request:
     branches:
+      - Deneme
+      - main
       - migration/cloudflare-pages
   workflow_dispatch:
 
