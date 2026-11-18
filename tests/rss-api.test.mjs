@@ -46,6 +46,15 @@ test('RSS parser strips HTML tags encoded as XML entities in feed descriptions',
   assert.equal(item.description, 'TÜBİTAK açıklaması Ek bilgi');
 });
 
+test('RSS parser decodes XML entities only once and preserves double-escaped literal markup', () => {
+  const doubleEscaped = `<rss><channel><item>
+<title>Entity testi</title><link>https://example.org/entities</link>
+<description>&amp;lt;b&amp;gt;literal metin&amp;lt;/b&amp;gt; &amp;amp; devam</description>
+</item></channel></rss>`;
+  const [item] = parseRssXml(doubleEscaped);
+  assert.equal(item.description, '&lt;b&gt;literal metin&lt;/b&gt; &amp; devam');
+});
+
 test('RSS parser enforces UTF-8 byte-size and article-count limits', () => {
   assert.throws(() => parseRssXml('x'.repeat(1_000_001)), /boyutu aşıyor/);
   const oversizedUtf8 = 'ş'.repeat(600_000);
