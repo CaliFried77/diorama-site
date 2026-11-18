@@ -45,12 +45,16 @@ async function readJsonBodyLimited(request, maxBytes) {
 }
 
 export function isSameOriginRequest(request) {
+  const requestOrigin = new URL(request.url).origin;
   const origin = request.headers.get('origin');
   if (origin) {
-    try { return new URL(origin).origin === new URL(request.url).origin; }
+    try { return new URL(origin).origin === requestOrigin; }
     catch { return false; }
   }
-  return request.headers.get('sec-fetch-site')?.toLowerCase() !== 'cross-site';
+
+  // Browser metadata is required when Origin is absent. Missing metadata must
+  // not silently turn this endpoint into a general-purpose RSS fetch proxy.
+  return request.headers.get('sec-fetch-site')?.toLowerCase() === 'same-origin';
 }
 
 export function createCustomNewsHandler({ fetchFeed } = {}) {

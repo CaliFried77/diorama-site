@@ -108,7 +108,8 @@ import { registerWeatherPreviewRenderer } from './services.js';
         /* ---- Panel ---- */
         const DIRS = ['K', 'KD', 'D', 'GD', 'G', 'GB', 'B', 'KB'];
         const uvName = (u) => u < 3 ? 'Düşük' : u < 6 ? 'Orta' : u < 8 ? 'Yüksek' : u < 11 ? 'Çok yüksek' : 'Aşırı';
-        const hhmm = (str) => str.slice(11, 16);
+        const clampPercent = (value) => Math.max(0, Math.min(100, Number(value) || 0));
+        const hhmm = (str) => esc(String(str ?? '').slice(11, 16));
 
         function pixelMoonMarkup(phase) {
             const size = 9;
@@ -183,7 +184,7 @@ import { registerWeatherPreviewRenderer } from './services.js';
             document.getElementById('wxStats').innerHTML = [
                 stat('Nem', `%${Math.round(c.relative_humidity_2m)}`, '◌'),
                 stat('Rüzgar', `${Math.round(c.wind_speed_10m)} km/sa ${DIRS[Math.round(c.wind_direction_10m / 45) % 8]}`, '↗'),
-                stat('Yağış olasılığı', `%${dy.precipitation_probability_max[0] ?? 0}`, '⌁'),
+                stat('Yağış olasılığı', `%${clampPercent(dy.precipitation_probability_max[0])}`, '⌁'),
                 stat('Bulut örtüsü', `%${Math.round(c.cloud_cover)}`, '☁')
             ].join('');
 
@@ -263,7 +264,7 @@ import { registerWeatherPreviewRenderer } from './services.js';
             let hourlyMarkup = '';
             for (let i = i0; i < Math.min(i0 + 12, hr.time.length); i++) {
                 const hour = +hr.time[i].slice(11, 13);
-                const probability = hr.precipitation_probability[i] || 0;
+                const probability = clampPercent(hr.precipitation_probability[i]);
                 const label = i === i0 ? 'Şimdi' : `${String(hour).padStart(2, '0')}:00`;
                 hourlyMarkup += `
                     <div class="wx-hour-card">
@@ -282,7 +283,7 @@ import { registerWeatherPreviewRenderer } from './services.js';
                     : new Date(date + 'T12:00:00Z').toLocaleDateString('tr-TR', { weekday: 'short', timeZone: 'UTC' });
                 const min = dy.temperature_2m_min[index];
                 const max = dy.temperature_2m_max[index];
-                const probability = dy.precipitation_probability_max[index] || 0;
+                const probability = clampPercent(dy.precipitation_probability_max[index]);
                 const left = ((min - low) / (high - low || 1) * 100).toFixed(1);
                 const width = (Math.max(.08, (max - min) / (high - low || 1)) * 100).toFixed(1);
                 return `

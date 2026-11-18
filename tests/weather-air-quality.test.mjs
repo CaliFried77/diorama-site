@@ -13,6 +13,14 @@ test('air quality uses the documented Open-Meteo current variables', () => {
   assert.match(headers, /https:\/\/air-quality-api\.open-meteo\.com/);
 });
 
+test('weather HTML templates escape formatted times and normalize precipitation percentages', () => {
+  assert.ok(weather.includes("const hhmm = (str) => esc(String(str ?? '').slice(11, 16));"));
+  assert.ok(weather.includes("const clampPercent = (value) => Math.max(0, Math.min(100, Number(value) || 0));"));
+  assert.ok(weather.includes("clampPercent(dy.precipitation_probability_max[0])"));
+  assert.ok(weather.includes("clampPercent(hr.precipitation_probability[i])"));
+  assert.ok(weather.includes("clampPercent(dy.precipitation_probability_max[index])"));
+  assert.ok(weather.includes("Number(dy.uv_index_max[0])"));
+});
 test('air quality is optional and cannot block a successful weather forecast', () => {
   assert.match(weather, /void fetchAirQuality\(latitude, longitude, requestId\)/);
   assert.match(weather, /async function fetchAirQuality/);

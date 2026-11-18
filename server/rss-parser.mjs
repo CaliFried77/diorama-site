@@ -1,25 +1,34 @@
 export const MAX_FEED_BYTES = 1_000_000;
+export const MAX_CUSTOM_FEED_BYTES = 256 * 1024;
 export const MAX_ARTICLES_PER_FEED = 12;
 
 function decodeXmlEntities(value) {
   return String(value ?? '')
     .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1')
-    .replace(/&#x([\da-f]+);/gi, (_, hex) => {
-      const code = Number.parseInt(hex, 16);
-      return Number.isInteger(code) && code > 0 && code <= 0x10ffff && !(code >= 0xd800 && code <= 0xdfff)
-        ? String.fromCodePoint(code) : ' ';
-    })
-    .replace(/&#(\d+);/g, (_, decimal) => {
-      const code = Number(decimal);
-      return Number.isInteger(code) && code > 0 && code <= 0x10ffff && !(code >= 0xd800 && code <= 0xdfff)
-        ? String.fromCodePoint(code) : ' ';
-    })
-    .replace(/&nbsp;/gi, ' ')
-    .replace(/&amp;/gi, '&')
-    .replace(/&quot;/gi, '"')
-    .replace(/&apos;|&#39;/gi, "'")
-    .replace(/&lt;/gi, '<')
-    .replace(/&gt;/gi, '>');
+    // Decode each XML entity exactly once. Sequential replacements can turn
+    // &amp;lt; into < and accidentally strip text that was meant to stay literal.
+    .replace(/&(#x[\da-f]+|#\d+|nbsp|amp|quot|apos|lt|gt);/gi, (entity, token) => {
+      const normalized = token.toLowerCase();
+      if (normalized.startsWith('#x')) {
+        const code = Number.parseInt(normalized.slice(2), 16);
+        return Number.isInteger(code) && code > 0 && code <= 0x10ffff && !(code >= 0xd800 && code <= 0xdfff)
+          ? String.fromCodePoint(code) : ' ';
+      }
+      if (normalized.startsWith('#')) {
+        const code = Number(normalized.slice(1));
+        return Number.isInteger(code) && code > 0 && code <= 0x10ffff && !(code >= 0xd800 && code <= 0xdfff)
+          ? String.fromCodePoint(code) : ' ';
+      }
+      switch (normalized) {
+        case 'nbsp': return ' ';
+        case 'amp': return '&';
+        case 'quot': return '"';
+        case 'apos': return "'";
+        case 'lt': return '<';
+        case 'gt': return '>';
+        default: return entity;
+      }
+    });
 }
 
 function plainText(value, limit) {
@@ -57,12 +66,100 @@ function extractLink(block) {
   return '';
 }
 
+function findMarkupEnd(xml, start) {
+  const declaration = xml.startsWith('<!', start);
+  let quote = '';
+  let subsetDepth = 0;
+
+  for (let index = start + 1; index < xml.length; index += 1) {
+    const character = xml[index];
+    if (quote) {
+      if (character === quote) quote = '';
+      continue;
+    }
+    if (character === '"' || character === "'") {
+      quote = character;
+      continue;
+    }
+    if (declaration) {
+      if (character === '[') { subsetDepth += 1; continue; }
+      if (character === ']' && subsetDepth > 0) { subsetDepth -= 1; continue; }
+    }
+    if (character === '>' && subsetDepth === 0) return index;
+  }
+  return -1;
+}
+
+// A single forward pass avoids retrying an unclosed <item>/<entry> from every
+// later opening tag. Only the first bounded set of complete blocks is needed.
+function scanItemBlocks(xml, maxBlocks) {
+  const blocks = [];
+  const stopAfter = Math.max(1, maxBlocks);
+  let pendingStart = -1;
+  let cursor = 0;
+
+  while (cursor < xml.length && blocks.length < stopAfter) {
+    const open = xml.indexOf('<', cursor);
+    if (open === -1) break;
+
+    if (xml.startsWith('<!--', open)) {
+      const end = xml.indexOf('-->', open + 4);
+      if (end === -1) break;
+      cursor = end + 3;
+      continue;
+    }
+    if (xml.startsWith('<![CDATA[', open)) {
+      const end = xml.indexOf(']]>', open + 9);
+      if (end === -1) break;
+      cursor = end + 3;
+      continue;
+    }
+    if (xml.startsWith('<?', open)) {
+      const end = xml.indexOf('?>', open + 2);
+      if (end === -1) break;
+      cursor = end + 2;
+      continue;
+    }
+
+    const end = findMarkupEnd(xml, open);
+    if (end === -1) break;
+
+    let nameStart = open + 1;
+    const closing = xml[nameStart] === '/';
+    if (closing) nameStart += 1;
+
+    let nameEnd = nameStart;
+    while (nameEnd < end) {
+      const code = xml.charCodeAt(nameEnd);
+      if (code === 32 || code === 9 || code === 10 || code === 13 || code === 47 || code === 62) break;
+      nameEnd += 1;
+    }
+
+    const qualifiedName = xml.slice(nameStart, nameEnd);
+    const localName = qualifiedName.slice(qualifiedName.lastIndexOf(':') + 1).toLowerCase();
+    if (localName === 'item' || localName === 'entry') {
+      if (closing) {
+        if (pendingStart !== -1) {
+          blocks.push(xml.slice(pendingStart, end + 1));
+          pendingStart = -1;
+        }
+      } else if (pendingStart === -1) {
+        pendingStart = open;
+      }
+    }
+
+    cursor = end + 1;
+  }
+
+  return blocks;
+}
+
 export function parseRssXml(xml, { limit = MAX_ARTICLES_PER_FEED } = {}) {
   if (typeof xml !== 'string' || !xml.trim() || new TextEncoder().encode(xml).byteLength > MAX_FEED_BYTES) {
     throw new Error('RSS akışı boş veya izin verilen boyutu aşıyor.');
   }
   const boundedLimit = Math.max(0, Math.min(Number.isInteger(limit) ? limit : MAX_ARTICLES_PER_FEED, MAX_ARTICLES_PER_FEED));
-  const blocks = [...xml.matchAll(/<(?:[\w.-]+:)?(?:item|entry)\b[^>]*>[\s\S]*?<\/(?:[\w.-]+:)?(?:item|entry)\s*>/gi)].map((match) => match[0]);
+  const blocks = scanItemBlocks(xml, boundedLimit);
   if (!blocks.length) throw new Error('RSS veya Atom öğesi bulunamadı.');
 
   const items = [];

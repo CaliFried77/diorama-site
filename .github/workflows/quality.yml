@@ -3,9 +3,13 @@ name: Diorama quality gate
 on:
   push:
     branches:
+      - Deneme
+      - main
       - migration/cloudflare-pages
   pull_request:
     branches:
+      - Deneme
+      - main
       - migration/cloudflare-pages
   workflow_dispatch:
 
@@ -37,7 +41,7 @@ jobs:
       - name: Run static security audit
         run: npm run security
       - name: Validate Cloudflare Worker bundle without deploying
-        if: github.ref == 'refs/heads/migration/cloudflare-pages' || (github.event_name == 'pull_request' && github.event.pull_request.base.ref == 'migration/cloudflare-pages')
+        if: github.ref == 'refs/heads/migration/cloudflare-pages' || github.ref == 'refs/heads/Deneme' || github.ref == 'refs/heads/main' || (github.event_name == 'pull_request' && (github.event.pull_request.base.ref == 'migration/cloudflare-pages' || github.event.pull_request.base.ref == 'Deneme' || github.event.pull_request.base.ref == 'main'))
         run: npx --yes wrangler@4.162.0 deploy --dry-run --outdir .wrangler-cloudflare-dry-run
       - name: Upload build artifact
         uses: actions/upload-artifact@v7

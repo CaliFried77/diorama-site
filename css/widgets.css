@@ -745,6 +745,13 @@
 .calendar-event-form > button:hover { background: rgba(56,189,248,.22); border-color: rgba(125,211,252,.38); }
 .calendar-footnote { margin: 10px 2px 0; color: rgba(255,255,255,.55); font-size: .72rem; line-height: 1.45; }
 
+/* Keep task and note delete controls comfortably targetable on precise pointers too. */
+.del-task-btn,
+#stickyNotesGrid button {
+  min-width: 24px;
+  min-height: 24px;
+}
+
 /* Keep the journal form and data backup controls inside their glass surfaces. */
 .notes-task-form { display: grid; grid-template-columns: 36px minmax(0,1fr) 52px; align-items: stretch; gap: 7px; width: 100%; min-width: 0; box-sizing: border-box; }
 .notes-task-form > * { min-width: 0; box-sizing: border-box; }

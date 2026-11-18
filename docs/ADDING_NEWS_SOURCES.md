@@ -35,9 +35,10 @@ Haber okuyucu üç kategoride yerleşik RSS/Atom kaynakları ve kullanıcı tara
 - İstemci yalnızca kategoriye ait kaynak kimliklerini gönderir; sunucu RSS adresini katalogdan alır ve keyfi URL kabul etmez.
 - Başarılı yerleşik kategori yanıtları Cloudflare Cache API üzerinde dört dakikaya kadar saklanır; tarayıcı önbelleği 30 saniyedir. Elle yenileme ortak önbelleği atlar.
 - Kullanıcı kaynakları `POST /api/custom-news` üzerinden alınır; URL JSON gövdesindedir ve query string'e yazılmaz.
+- Özel kaynak isteği aynı kaynaklı `Origin` veya `Sec-Fetch-Site: same-origin` bilgisi taşımak zorundadır; bu başlıklar yoksa istek 403 ile reddedilir.
 - Özel kaynak yanıtları `private, no-store` döner ve ortak CDN önbelleğine eklenmez.
 - Her iki API rotasının da ayrı IP anahtarlı hız sınırı vardır. Cloudflare limitleri veri merkezi bazında yaklaşık çalışır; küresel ve kesin sayaç değildir.
-- RSS yanıtı 1 MB, yönlendirme sayısı üç ve her kaynaktan gösterilen haber sayısı 12 ile sınırlıdır.
+- Yerleşik kaynakların RSS yanıtı 1 MB, kullanıcı tarafından eklenen özel RSS yanıtları 256 KiB ile sınırlıdır. Yönlendirme sayısı üç, her kaynaktan gösterilen haber sayısı 12'dir.
 
 ## RSS güvenliği
 
