@@ -39,6 +39,7 @@ GitHub Actions; Node.js modül/import kontrollerini, testleri, güvenlik denetim
 - HTTP, IP literal, yerel hostname, kimlik bilgili URL, hatalı yönlendirme ve büyük RSS yanıtları reddedilir.
 - Her iki rate-limit binding'i de bağımsız çalışır; bağlama eksikliği güvenli şekilde 503 verir.
 - Worker yanıtları güvenlik başlıkları taşır; statik yanıtlar `_headers` politikası alır.
+- Var olmayan statik dosya yolları (ör. `/js/olmayan.js`) `index.html` yerine `404 Not Found` döndürür.
 - API cache hit/miss, kısmi RSS kaynak hataları ve forced refresh kontrol edilir.
 - Cloudflare CPU süresi, günlük istek sayısı ve cache hit oranı gerçek önizlemede ölçülür.
 
