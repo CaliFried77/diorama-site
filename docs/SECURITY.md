@@ -14,7 +14,7 @@ Static and Worker API responses also send HSTS (`max-age=31536000`, without `inc
 
 - Built-in news endpoints accept only source IDs present in the selected category in `config/news-feeds.js`.
 - Custom feed URLs are accepted only as HTTPS URLs on the default port, with no credentials, literal IP address, or local/reserved hostname suffix.
-- Custom feed requests require same-origin browser metadata, JSON content type and a streamed request body no larger than 4 KB.
+- Custom feed requests require a matching `Origin` header or `Sec-Fetch-Site: same-origin`; requests with no browser-origin metadata are rejected. They also require JSON content type and a streamed request body no larger than 4 KB. This is a CSRF/abuse barrier, not user authentication.
 - The RSS transport follows redirects manually and validates every destination before making the next request.
 - Built-in feed responses are bounded to 1 MB and user-supplied custom feeds to 256 KiB; the parser returns at most 12 articles and requests have an abort timeout.
 - Cloudflare's `global_fetch_strictly_public` compatibility behavior is enabled for Worker outbound fetches. This is a platform routing setting, not a substitute for application-level URL validation.
