@@ -22,6 +22,10 @@ Static and Worker API responses also send HSTS (`max-age=31536000`, without `inc
 
 Cloudflare's public-network fetch behavior and runtime restrictions should be rechecked when the compatibility date or transport changes. This implementation does not use the Netlify implementation's DNS-to-IPv4 pinning method; do not describe it as DNS-pinned protection.
 
+## Static asset routing
+
+Workers Static Assets uses `not_found_handling = "none"`. This app has a single root entry and no client-side page router, so unknown paths should remain real 404 responses instead of silently returning the home page with status 200. This also prevents missing files from being mistaken for valid application assets.
+
 ## Caching
 
 Built-in category responses may be cached at the Cloudflare edge for four minutes when at least one configured source succeeds. A forced refresh bypasses that cache. Custom feed responses use `private, no-store` and are never added to the shared cache.
